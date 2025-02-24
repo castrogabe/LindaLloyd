@@ -73,6 +73,10 @@ export default function Signin() {
                 Create your account
               </Link>
             </div>
+            <div className='mb-3'>
+              Forget Password?{' '}
+              <Link to={`/forget-password`}>Reset Password</Link>
+            </div>
           </Form>
         </Col>
         <Col md={6} className='mt-3'>
