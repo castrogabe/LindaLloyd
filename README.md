@@ -125,3 +125,11 @@ from terminal > cd project root
 3. git commit -m "commit message"
 4. git status (tells us that everything is committed "working tree clean" on main branch)
 5. git push
+
+# 3rd Commit add static data
+
+FRONTEND
+.folder: pages
+Product.js > added
+
+data.js > added (root)
