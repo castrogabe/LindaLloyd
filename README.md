@@ -424,3 +424,34 @@ ProductMagRow.js > added (optional use)
 ShippingAddress.js > updated
 
 index.css > updated
+
+# 12th Commit-Stripe Delivery Receipt thru nodemailer, sidebar toast notification, low quantity
+
+. Modify toast notification and create sidebar for desktop, keeping toast notification for mobile
+. Add Delivery email information thru nodemailer for admin (added deliveryDays, carrierName, trackingNumber)
+
+BACKEND
+folder: models
+orderModel.js > updated (added deliveryDays, carrierName, trackingNumber)
+
+folder: routes
+orderRoutes.js > update (added deliveryDays, carrierName, trackingNumber)
+stripeRoutes.js > updated
+
+server.js > updated
+utils.js > updated
+
+FRONTEND
+folder: components
+Header.js > updated
+Product.js > updated (low quantity, count in stock 5 or less)
+Sidebar.js > added
+
+folder: pages
+Home.js > updated (added sidebar toast notification in desktop)
+Order.js > updated (added deliveryDays, carrierName, trackingNumber)
+OrderHistory.js > updated (added deliveryDays, carrierName, trackingNumber)
+OrderList.js > updated (added deliveryDays, carrierName, trackingNumber), add user info for admin mailing @ contact info
+Search.js > updated (added sidebar toast notification in desktop)
+
+index.css > updated

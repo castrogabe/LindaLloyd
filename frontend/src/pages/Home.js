@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useState } from 'react';
 import Jumbotron from '../components/Jumbotron';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { getError } from '../utils';
 import { Helmet } from 'react-helmet-async';
 import { Row, Col, Button } from 'react-bootstrap';
@@ -10,6 +10,8 @@ import { LinkContainer } from 'react-router-bootstrap';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import Product from '../components/Product';
+import Sidebar from '../components/Sidebar';
+import { useMediaQuery } from 'react-responsive';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -33,6 +35,19 @@ const reducer = (state, action) => {
 };
 
 export default function Home() {
+  const isMobile = useMediaQuery({ maxWidth: 767 });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleSidebarOpen = () => {
+    setIsSidebarOpen(true);
+    setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, 2000); // Close sidebar 2000 milliseconds (2 second)
+  };
+  // By adding the setTimeout callback inside the handleSidebarOpen function,
+  // it will open the sidebar by setting isSidebarOpen to true and then close it by
+  // setting isSidebarOpen back to false after the specified duration.
+
   const navigate = useNavigate();
   const { search } = useLocation();
   const sp = new URLSearchParams(search); // /search?category = products
@@ -45,6 +60,9 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Simulate delay for 1.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       try {
         const { data } = await axios.get(`/api/products/search?page=${page}`);
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
@@ -56,7 +74,7 @@ export default function Home() {
       }
     };
     fetchData();
-  }, [page]);
+  }, [page, error]);
 
   const [categories, setCategories] = useState([]);
   useEffect(() => {
@@ -71,7 +89,6 @@ export default function Home() {
     fetchCategories();
   }, [dispatch]);
 
-  // pagination
   const getFilterUrl = (filter) => {
     const filterPage = filter.page || page;
     return `/?&page=${filterPage}`;
@@ -79,7 +96,7 @@ export default function Home() {
 
   return (
     <>
-      <div className='jumbotron1' alt='antiques'>
+      <div className='jumbotron1' alt='tools'>
         <Jumbotron
           text={[
             'Antiques',
@@ -87,7 +104,7 @@ export default function Home() {
             'Collectibles',
             'Vintage Items',
             '@',
-            'antiquepox.com',
+            'lindalloyd.com',
           ]}
         />
       </div>
@@ -95,7 +112,7 @@ export default function Home() {
       <div className='content'>
         <br />
         <Helmet>
-          <title>Antiquepox</title>
+          <title>Linda Lloyd</title>
         </Helmet>
         <div className='box'>
           <p>
@@ -106,8 +123,15 @@ export default function Home() {
         <br />
         <Row>
           <Col>
+            {/* react skeleton for product card */}
             {loading ? (
-              <LoadingBox></LoadingBox>
+              <Row>
+                {[...Array(12).keys()].map((i) => (
+                  <Col key={i} sm={6} md={4} lg={3} className='mb-3'>
+                    <LoadingBox />
+                  </Col>
+                ))}
+              </Row>
             ) : error ? (
               <MessageBox variant='danger'>{error}</MessageBox>
             ) : (
@@ -124,10 +148,26 @@ export default function Home() {
                       lg={3}
                       className='mb-3'
                     >
-                      <Product product={product}></Product>
+                      {/* Product comes from components > Product.js */}
+                      <Product
+                        key={product.id}
+                        product={product}
+                        handleSidebarOpen={handleSidebarOpen}
+                      />
                     </Col>
                   ))}
                 </Row>
+
+                {/* Desktop renders sidebar, if mobile do not show sidebar and get toast notifications */}
+                {!isMobile ? (
+                  isSidebarOpen && (
+                    <div className='sidebar'>
+                      <Sidebar handleSidebarOpen={handleSidebarOpen} />
+                    </div>
+                  )
+                ) : (
+                  <ToastContainer position='bottom-center' />
+                )}
 
                 {/* pagination */}
                 <div>
