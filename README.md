@@ -133,3 +133,24 @@ FRONTEND
 Product.js > added
 
 data.js > added (root)
+
+# 4th Commit create backend
+
+Terminal: mkdir backend
+cd backend
+npm init (enter thru the prompts) creates {}package.json
+
+BACKEND
+data.js > added
+.gitiginore > added
+server.js > added
+. create route for api/products
+. update and fetch products from backend using axios
+. get state from useReducer
+. update HomeScreen.js
+
+FRONTEND
+.folder: pages
+Gallery.js > updated
+Home.js > updated
+Product.js > updated
