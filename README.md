@@ -508,3 +508,24 @@ ForgetPassword.js > added
 ResetPassword.js > added
 
 App.js > updated (ForgetPassword.js, ResetPassword.js)
+
+# 15th Commit-Regex complexity for password
+
+BACKEND
+folder > routes
+stripeRoutes > updated
+userRoutes > updated
+
+utils.js > updated
+
+FRONTEND
+folder > components
+Header.js > updated
+Product.js > updated
+
+folder > pages
+ResetPassword.js > updated
+Signup.js > updated
+Signup.js > updated
+
+index.css > update image size in components > Product.js

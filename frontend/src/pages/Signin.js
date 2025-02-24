@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { Row, Col, Container, Form, Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useContext, useEffect, useState } from 'react';
 import { Store } from '../Store';
@@ -44,45 +44,48 @@ export default function Signin() {
       <Helmet>
         <title>Sign Up</title>
       </Helmet>
-      <Row>
-        <Col md={6}>
-          <h1 className='my-3'>Sign In</h1>
-          <Form onSubmit={submitHandler}>
-            <Form.Group className='mb-3' controlId='email'>
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type='email'
-                required
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3' controlId='password'>
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type='password'
-                required
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Form.Group>
-            <div className='mb-3'>
-              <Button type='submit'>Sign In</Button>
-            </div>
-            <div className='mb-3'>
-              New customer?{' '}
-              <Link to={`/signup?redirect=${redirect}`}>
-                Create your account
-              </Link>
-            </div>
-            <div className='mb-3'>
-              Forget Password?{' '}
-              <Link to={`/forget-password`}>Reset Password</Link>
-            </div>
-          </Form>
-        </Col>
-        <Col md={6} className='mt-3'>
-          <img src='/images/signin.png' alt='signin' />
-        </Col>
-      </Row>
+      <Container>
+        <br />
+        <Row>
+          <Col md={6}>
+            <h1 className='my-3'>Sign In</h1>
+            <Form onSubmit={submitHandler}>
+              <Form.Group className='mb-3' controlId='email'>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type='email'
+                  required
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className='mb-3' controlId='password'>
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type='password'
+                  required
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Form.Group>
+              <div className='mb-3'>
+                <Button type='submit'>Sign In</Button>
+              </div>
+              <div className='mb-3'>
+                New customer?{' '}
+                <Link to={`/signup?redirect=${redirect}`}>
+                  Create your account
+                </Link>
+              </div>
+              <div className='mb-3'>
+                Forget Password?{' '}
+                <Link to={`/forget-password`}>Reset Password</Link>
+              </div>
+            </Form>
+          </Col>
+          <Col md={6} className='mt-3'>
+            <img src='/images/signin.png' alt='signin' />
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }

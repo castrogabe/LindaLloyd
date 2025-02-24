@@ -1,8 +1,6 @@
 import Axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { Container, Button, Form } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -44,11 +42,12 @@ export default function ResetPassword() {
   };
 
   return (
-    <Container className='small-container'>
+    <Container className='content'>
       <Helmet>
         <title>Reset Password</title>
       </Helmet>
-      <h1 className='my-3'>Reset Password</h1>
+      <br />
+      <h2 className='my-3'>Reset Password</h2>
       <Form onSubmit={submitHandler}>
         <Form.Group className='mb-3' controlId='password'>
           <Form.Label>New Password</Form.Label>
@@ -56,6 +55,9 @@ export default function ResetPassword() {
             type='password'
             required
             onChange={(e) => setPassword(e.target.value)}
+            placeholder='Minimum 8 characters with at least one digit, one uppercase letter, one lowercase letter, and one special character'
+            pattern='^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d]).{8,}$'
+            title='Minimum 8 characters with at least one digit, one uppercase letter, one lowercase letter, and one special character'
           />
         </Form.Group>
         <Form.Group className='mb-3' controlId='confirmPassword'>
