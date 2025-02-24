@@ -254,3 +254,38 @@ add: MONGODB_URI = your mongo_db connection
 . fix components > Product.js in frontend (Line 16)
 . fix pages > Product.jd (Line 81)
 . Comment out \_id's in data.js (backend)
+
+# 8th Commit-Checkout/OrderHistory
+
+BACKEND
+folder: models
+orderModel.js > added
+
+folder: routes
+orderRoutes.js > added
+
+server.js > updated
+utils.js > updated
+
+FRONTEND
+folder: components
+CheckoutSteps.js > added
+Searchbox.js > added
+Header1.js > added (optional)
+
+folder: pages
+Order.js > added
+OrderHistory.js > added
+PaymentMethod.js > added
+PlaceOrder.js > added
+Profile.js > added
+ShippingAddress.js added
+Signup.js > added
+
+. Create Bottom header for categories.
+. Create SideBar for categories (optional), Header1
+. Create Categories for categories (optional), Header
+. Create SearchScreen (optional).
+components/Header.js without searchBar or sideBar
+components/Header1.js with searchBar and sideBar (optional)
+. Update App.js
