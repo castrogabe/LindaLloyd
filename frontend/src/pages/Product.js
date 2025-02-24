@@ -78,7 +78,7 @@ function Product() {
               ></Rating>
             </ListGroup.Item>
             <ListGroup.Item>Price : ${product.price}</ListGroup.Item>
-            <ListGroup.Item>From : {product.from}</ListGroup.Item>
+            <ListGroup.Item>Made In : {product.MadeIn}</ListGroup.Item>
             <ListGroup.Item>Finish : {product.finish}</ListGroup.Item>
             <ListGroup.Item>
               Description:
