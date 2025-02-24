@@ -1,9 +1,8 @@
 import { useContext } from 'react';
 import { Store } from '../Store';
 import { Helmet } from 'react-helmet-async';
-import { Row, Col, Button, Card } from 'react-bootstrap';
+import { Row, Col, Button, Card, ListGroup } from 'react-bootstrap';
 import MessageBox from '../components/MessageBox';
-import ListGroup from 'react-bootstrap/ListGroup';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -36,21 +35,22 @@ export default function Cart() {
   return (
     <div className='content'>
       <Helmet>
-        <title>Shopping Cart</title>
+        <title>Cart</title>
       </Helmet>
-      <h1>Shopping Cart</h1>
+      <br />
+      <h4 className='box'>Cart</h4>
       <Row>
         <Col md={8}>
           {cartItems.length === 0 ? (
             <MessageBox>
-              Cart is empty. <Link to='/'>Go Shopping</Link>
+              Cart is empty. <Link to='/'> Go Shopping</Link>
             </MessageBox>
           ) : (
             <ListGroup>
               {cartItems.map((item) => (
                 <ListGroup.Item key={item._id}>
                   <Row className='align-items-center'>
-                    <Col md={4}>
+                    <Col md={5}>
                       <img
                         src={item.image}
                         alt={item.name}
@@ -79,7 +79,7 @@ export default function Cart() {
                         <i className='fas fa-plus-circle'></i>
                       </Button>
                     </Col>
-                    <Col md={3}>${item.price}</Col>
+                    <Col md={2}>Price: ${item.price}</Col>
                     <Col md={2}>
                       <Button
                         onClick={() => removeItemHandler(item)}
@@ -125,3 +125,9 @@ export default function Cart() {
     </div>
   );
 }
+
+// step 1 (Cart)  <= CURRENT STEP
+// step 2 (ShippingAddresses)
+// step 3 (PaymentMethod)
+// step 4 (PreviewOrder)
+// lands on OrderScreen for payment

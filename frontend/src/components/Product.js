@@ -4,6 +4,7 @@ import Rating from './Rating';
 import axios from 'axios';
 import { useContext } from 'react';
 import { Store } from '../Store';
+import { toast } from 'react-toastify';
 
 function Product(props) {
   const { product } = props;
@@ -25,16 +26,23 @@ function Product(props) {
       type: 'CART_ADD_ITEM',
       payload: { ...item, quantity },
     });
+    // toast notification for add to cart
+    toast.success(`${product.name} added to cart`, {
+      position: 'bottom-center',
+      autoClose: 1000, // Duration in milliseconds (1 second)
+    });
   };
 
   return (
-    <Card>
+    <Card className='home-card'>
       <Link to={`/product/${product.slug}`}>
         <img src={product.image} className='card-img-top' alt={product.name} />
       </Link>
       <Card.Body>
         <Link to={`/product/${product.slug}`}>
           <Card.Title>{product.name}</Card.Title>
+          <Card.Title>From: {product.from}</Card.Title>
+          <Card.Title>Finish: {product.finish}</Card.Title>
         </Link>
         <Rating rating={product.rating} numReviews={product.numReviews} />
         <Card.Text>${product.price}</Card.Text>
@@ -43,7 +51,12 @@ function Product(props) {
             Out of stock
           </Button>
         ) : (
-          <Button onClick={() => addToCartHandler(product)}>Add to cart</Button>
+          <Button
+            className='btn btn-primary btn-sm'
+            onClick={() => addToCartHandler(product)}
+          >
+            Add to cart
+          </Button>
         )}
       </Card.Body>
     </Card>

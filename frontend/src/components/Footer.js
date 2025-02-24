@@ -7,12 +7,17 @@ const Footer = () => {
     <footer>
       <Row>
         <Col md={4}>
-          Stay in touch
+          Connect with us
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <li>
                 <Link to='https://www.facebook.com/' className='facebookIcon'>
                   <i className='fab fa-facebook'></i> Facebook
+                </Link>
+              </li>
+              <li>
+                <Link to='https://www.instagram.com/' className='instagramIcon'>
+                  <i className='fab fa-instagram'></i> Instagram
                 </Link>
               </li>
 
@@ -50,9 +55,17 @@ const Footer = () => {
         <Col md={4}>
           Merchandise Questions
           <div className='socialIcon'>
-            <a href='mailto:email@gmail.com' className='email'>
-              <i className='fa fa-envelope'></i> Contact Us
-            </a>
+            <ul className='list-unstyled'>
+              <Link to='/contact' className='email'>
+                {' '}
+                <i className='fa fa-envelope'></i> Contact Us
+              </Link>
+              <li>
+                <a href='mailto:email@gmail.com' className='email'>
+                  <i className='fa fa-envelope'></i> Email Me via gmail
+                </a>
+              </li>
+            </ul>
           </div>
         </Col>
       </Row>
@@ -61,7 +74,7 @@ const Footer = () => {
 
       <Row>
         <Col className='text-center mt-3'>
-          &copy;{new Date().getFullYear()} ~ ANTIQUEPOX ~
+          ~ &copy;{new Date().getFullYear()} ANTIQUEPOX ~
         </Col>
       </Row>
     </footer>

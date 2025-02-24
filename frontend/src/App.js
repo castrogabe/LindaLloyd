@@ -1,51 +1,53 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
-// components
+
+// COMPONENTS
 import Header from './components/Header';
 import BottomHeader from './components/BottomHeader';
 import Footer from './components/Footer';
-import AdminRoute from './components/AdminRoute';
 import BottomFooter from './components/BottomFooter';
+import AdminRoute from './components/AdminRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// pages
-import Product from './pages/Product';
-import Home from './pages/Home';
-import AboutUs from './pages/AboutUs';
-import Gallery from './pages/Gallery';
-import Cart from './pages/Cart';
-import Signin from './pages/Signin';
-import ShippingAddress from './pages/ShippingAddress';
-import Signup from './pages/Signup';
-import Search from './pages/Search';
-import OrderScreen from './pages/Order';
-import PlaceOrder from './pages/PlaceOrder';
-import PaymentMethod from './pages/PaymentMethod';
-import OrderHistory from './pages/OrderHistory';
-import Profile from './pages/Profile';
+// ADMIN PAGES
 import Dashboard from './pages/Dashboard';
 import ProductList from './pages/ProductList';
 import ProductEdit from './pages/ProductEdit';
-import Order from './pages/Order';
 import OrderList from './pages/OrderList';
 import UserList from './pages/UserList';
 import UserEdit from './pages/UserEdit';
+import Messages from './pages/Messages';
+
+// PAGES
+import AboutUs from './pages/AboutUs';
+import Gallery from './pages/Gallery';
+import Cart from './pages/Cart'; // step 1
+import Contact from './pages/Contact';
+import Home from './pages/Home';
+import OrderHistory from './pages/OrderHistory';
+import Order from './pages/Order';
+import PaymentMethod from './pages/PaymentMethod'; // step 3
+import PlaceOrder from './pages/PlaceOrder'; // step 4
+import ProductMag from './pages/ProductMag';
+import Profile from './pages/Profile';
+import Search from './pages/Search';
+import ShippingAddress from './pages/ShippingAddress'; // step 2
+import Signin from './pages/Signin';
+import Signup from './pages/Signup';
 
 function App() {
   return (
     <BrowserRouter>
       <Header />
       <BottomHeader />
-      <ToastContainer />
       <main className='mt-0'>
         <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/product/:slug' element={<Product />} />
-          <Route path='/cart' element={<Cart />} />
-          <Route path='/search' element={<Search />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/gallery' element={<Gallery />} />
+          <Route path='/product/:slug' element={<ProductMag />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/search' element={<Search />} />
           <Route path='/signin' element={<Signin />} />
           <Route path='/signup' element={<Signup />} />
           <Route
@@ -64,10 +66,7 @@ function App() {
                 <Order />
               </ProtectedRoute>
             }
-          />
-          <Route path='/order/:id' element={<OrderScreen />} />
-          <Route path='/shipping' element={<ShippingAddress />} />
-          <Route path='/payment' element={<PaymentMethod />} />
+          ></Route>
           <Route
             path='/orderhistory'
             element={
@@ -75,7 +74,9 @@ function App() {
                 <OrderHistory />
               </ProtectedRoute>
             }
-          />
+          ></Route>
+          <Route path='/shipping' element={<ShippingAddress />}></Route>
+          <Route path='/payment' element={<PaymentMethod />}></Route>
           {/* Admin Routes */}
           <Route
             path='/admin/dashboard'
@@ -110,6 +111,14 @@ function App() {
             }
           ></Route>
           <Route
+            path='/admin/messages'
+            element={
+              <AdminRoute>
+                <Messages />
+              </AdminRoute>
+            }
+          ></Route>
+          <Route
             path='/admin/product/:id'
             element={
               <AdminRoute>
@@ -125,6 +134,8 @@ function App() {
               </AdminRoute>
             }
           ></Route>
+
+          <Route path='/' element={<Home />} />
         </Routes>
       </main>
       <Footer />
