@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Link } from 'react-router-dom';
 import { Store } from '../Store';
+import SearchBox from '../components/SearchBox';
 
 const Header = () => {
   const { state, dispatch: ctxDispatch } = useContext(Store);
@@ -26,6 +27,8 @@ const Header = () => {
         <Navbar.Toggle aria-controls='basic-navbar-nav' />
         <Navbar.Collapse id='basic-navbar-nav'>
           <Nav className='mr-auto  w-100  justify-content-end'>
+            {/* SearchBox Optional */}
+            <SearchBox />
             <LinkContainer to='/about'>
               <Nav.Link>
                 <i className='fas fa-info'></i> About Me

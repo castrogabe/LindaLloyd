@@ -1,14 +1,13 @@
-import React from 'react';
-import { Button, Card } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import Rating from './Rating';
 import axios from 'axios';
 import { useContext } from 'react';
 import { Store } from '../Store';
-import { toast } from 'react-toastify';
 
 function Product(props) {
   const { product } = props;
+
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
     cart: { cartItems },
@@ -26,10 +25,6 @@ function Product(props) {
       type: 'CART_ADD_ITEM',
       payload: { ...item, quantity },
     });
-    // toast notification
-    toast.success(`${product.name} added to cart`, {
-      position: 'bottom-center',
-    });
   };
 
   return (
@@ -40,8 +35,6 @@ function Product(props) {
       <Card.Body>
         <Link to={`/product/${product.slug}`}>
           <Card.Title>{product.name}</Card.Title>
-          <Card.Title>From: {product.from}</Card.Title>
-          <Card.Title>Finish: {product.finish}</Card.Title>
         </Link>
         <Rating rating={product.rating} numReviews={product.numReviews} />
         <Card.Text>${product.price}</Card.Text>
@@ -50,14 +43,10 @@ function Product(props) {
             Out of stock
           </Button>
         ) : (
-          <Button onClick={() => addToCartHandler(product)}>
-            {' '}
-            Add to cart
-          </Button>
+          <Button onClick={() => addToCartHandler(product)}>Add to cart</Button>
         )}
       </Card.Body>
     </Card>
   );
 }
-
 export default Product;
