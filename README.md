@@ -392,3 +392,35 @@ Profile.js > updated
 Search.js > updated
 ShippingAddress.js > updated
 UserList.js > updated
+
+# 11th Commit-ProductMag Lightbox, Options, nodemailer purchase receipt
+
+. Add Toast notifications to components > Product.js
+. Update count in stock
+. Low Quantity Alert!
+. Optional vertical thumbnails for ProductMag.js or horizontal thumbnails for ProductMagRow.js
+. Add Lightbox and carousel for ProductMag.js
+. Add nodemailer for payment receipt
+
+BACKEND
+folder: routes
+orderRoutes > updated/count in stock
+
+config.js > updated
+utils.js > updated (nodemailer receipt)
+
+FRONTEND
+folder: components
+Header.js > updated
+Header1.js > updated
+Product.js > updated
+
+folder: pages
+Messages.js > updated
+ProductMag > updated
+ProductMagRow (optional) > added
+Home.js > updated
+ProductMagRow.js > added (optional use)
+ShippingAddress.js > updated
+
+index.css > updated

@@ -133,6 +133,7 @@ export default function Messages() {
           <Table responsive striped bordered className='noWrap'>
             <thead>
               <tr>
+                <th>DATE</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
                 <th>SUBJECT</th>
