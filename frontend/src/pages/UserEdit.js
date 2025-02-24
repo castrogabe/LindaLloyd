@@ -4,7 +4,7 @@ import { Container, Form, Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonUserEdit from '../components/skeletons/SkeletonUserEdit';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
@@ -95,7 +95,7 @@ export default function UserEdit() {
       <h1>Edit User {userId}</h1>
 
       {loading ? (
-        <LoadingBox></LoadingBox>
+        <SkeletonUserEdit />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
@@ -131,7 +131,7 @@ export default function UserEdit() {
             <Button disabled={loadingUpdate} type='submit'>
               Update
             </Button>
-            {loadingUpdate && <LoadingBox></LoadingBox>}
+            {loadingUpdate && <SkeletonUserEdit />}
           </div>
         </Form>
       )}

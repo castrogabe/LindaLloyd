@@ -59,7 +59,7 @@ function Header() {
 
                 {/* Categories on mobile */}
                 <NavDropdown
-                  // className='nav-categories'
+                  className='nav-categories'
                   title='Categories'
                   id='basic-nav-dropdown'
                 >

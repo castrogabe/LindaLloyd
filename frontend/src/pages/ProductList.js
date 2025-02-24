@@ -5,7 +5,7 @@ import { Row, Col, Button, Table } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
 import { Store } from '../Store';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonProductList from '../components/skeletons/SkeletonProductList';
 import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
 
@@ -150,11 +150,11 @@ export default function ProductListScreen() {
         </Col>
       </Row>
 
-      {loadingCreate && <LoadingBox delay={1000} />}
-      {loadingDelete && <LoadingBox delay={1000} />}
+      {loadingCreate && <SkeletonProductList delay={1000} />}
+      {loadingDelete && <SkeletonProductList delay={1000} />}
 
       {loading ? (
-        <LoadingBox delay={1000} />
+        <SkeletonProductList delay={1000} />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (

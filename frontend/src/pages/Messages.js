@@ -3,7 +3,7 @@ import { Table, Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonMessage from '../components/skeletons/SkeletonMessage';
 import MessageBox from '../components/MessageBox';
 import axios from 'axios';
 import { getError } from '../utils';
@@ -124,9 +124,9 @@ export default function Messages() {
       <br />
       <h1 className='box'>Your Messages</h1>
       <div className='box'>
-        {loadingDelete && <LoadingBox></LoadingBox>}
+        {loadingDelete && <SkeletonMessage />}
         {loading ? (
-          <LoadingBox></LoadingBox>
+          <SkeletonMessage />
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (

@@ -74,7 +74,7 @@ const Footer = () => {
 
       <Row>
         <Col className='text-center mt-3'>
-          ~ &copy;{new Date().getFullYear()} LINDA LLOYD ~
+          ~ &copy;{new Date().getFullYear()} ANTIQUEPOX ~
         </Col>
       </Row>
     </footer>

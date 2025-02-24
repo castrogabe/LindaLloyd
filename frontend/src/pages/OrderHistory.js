@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Table, Button, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonOrderHistory from '../components/skeletons/SkeletonOrderHistory';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
@@ -85,7 +85,7 @@ export default function OrderHistory() {
           <Row>
             {[...Array(8).keys()].map((i) => (
               <Col key={i} md={12} className='mb-3'>
-                <LoadingBox />
+                <SkeletonOrderHistory />
               </Col>
             ))}
           </Row>

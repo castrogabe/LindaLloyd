@@ -5,7 +5,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonUserList from '../components/skeletons/SkeletonUserList';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
@@ -106,9 +106,9 @@ export default function UserList() {
       <br />
       <h1 className='box'>Users</h1>
       <div className='box'>
-        {loadingDelete && <LoadingBox></LoadingBox>}
+        {loadingDelete && <SkeletonUserList />}
         {loading ? (
-          <LoadingBox></LoadingBox>
+          <SkeletonUserList />
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (

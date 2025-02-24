@@ -3,7 +3,7 @@ import Chart from 'react-google-charts';
 import axios from 'axios';
 import { Store } from '../Store';
 import { getError } from '../utils';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonDashboard from '../components/skeletons/SkeletonDashboard';
 import MessageBox from '../components/MessageBox';
 import { Row, Col, Card } from 'react-bootstrap';
 
@@ -54,7 +54,7 @@ export default function Dashboard() {
       <br />
       <h1 className='box'>Dashboard</h1>
       {loading ? (
-        <LoadingBox />
+        <SkeletonDashboard />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
