@@ -204,3 +204,53 @@ Product.js > updated
 . Create Cart page
 . add app.get to server.js to fetch products by \_id
 . Update index.js for React 18
+
+# 7th Commit-CSS, Jumbotron
+
+BACKEND
+data.js > comment out id number updated
+env.example > added
+server.js > updated
+
+folder: models
+productModel.js > added
+userModel.js > added
+
+folder: routes
+productRoutes.js > added
+seedRoutes.js > added
+userRoutes.js > added
+
+utils.js > added
+
+FRONTEND
+folder: components
+Header.js > updated
+Product.js > updated
+Jumbotron.js > added
+
+folder: pages
+Home.js > updated Typewriter Effect
+Product.js > updated
+Signing.js > added
+
+Store.js > updated
+
+index.css > updated
+. CSS adjustments for Responsive logo in Navbar.Brand
+left side use ClassName="me-auto" (Line 22)
+CSS realignment by category
+. Add toast notification to components > Product.js (Line 29-32)
+app.js (Lines 11-12, 20)
+. Jumbotron with react-typewriter-effect
+add components > Jumbotron.js
+add Jumbotron in Home.js (Lines 46-50)
+. Connect to MongoDB using Atlas (create account if you don't have one)
+add: JWT_SECRET = your secret word
+add: MONGODB_URI = your mongo_db connection
+. Update and install all dependencies in {}package.json needed in backend
+. Signin to API
+. read data.js to database (fix data.js, all lowercase)
+. fix components > Product.js in frontend (Line 16)
+. fix pages > Product.jd (Line 81)
+. Comment out \_id's in data.js (backend)

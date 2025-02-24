@@ -6,6 +6,7 @@ import logger from 'use-reducer-logger';
 import Product from '../components/Product';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
+import Jumbotron from '../components/Jumbotron';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -42,11 +43,25 @@ function Home() {
 
   return (
     <>
+      <div className='jumbotron1' alt='antiques'>
+        <Jumbotron
+          text={[
+            'Antiques',
+            'Art',
+            'Collectibles',
+            'Vintage Items',
+            '@',
+            'lindalloyd.com',
+          ]}
+        />
+      </div>
       <div className='content'>
         <Helmet>
           <title>Linda Lloyd</title>
         </Helmet>
-        <h1>Antiques, Art, Collectibles</h1>
+
+        <br />
+
         <div className='box'>
           <p>
             ~ I hand picked all the items over years of collecting and
