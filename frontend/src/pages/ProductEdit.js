@@ -6,8 +6,8 @@ import { Store } from '../Store';
 import { getError } from '../utils';
 import { Container, Form, Button, ListGroup } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
-import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
+import SkeletonProductEdit from '../components/skeletons/SkeletonProductEdit';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -26,21 +26,17 @@ const reducer = (state, action) => {
     case 'UPLOAD_REQUEST':
       return { ...state, loadingUpload: true, errorUpload: '' };
     case 'UPLOAD_SUCCESS':
-      return {
-        ...state,
-        loadingUpload: false,
-        errorUpload: '',
-      };
+      return { ...state, loadingUpload: false, errorUpload: '' };
     case 'UPLOAD_FAIL':
       return { ...state, loadingUpload: false, errorUpload: action.payload };
-
     default:
       return state;
   }
 };
+
 export default function ProductEdit() {
   const navigate = useNavigate();
-  const params = useParams(); // /product/:id
+  const params = useParams();
   const { id: productId } = params;
 
   const { state } = useContext(Store);
@@ -55,11 +51,18 @@ export default function ProductEdit() {
   const [slug, setSlug] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
   const [images, setImages] = useState([]);
+  const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
   const [category, setCategory] = useState('');
   const [countInStock, setCountInStock] = useState('');
   const [from, setFrom] = useState('');
-  const [finish, setFinish] = useState('');
+  const [condition, setCondition] = useState('');
+  const [dimensions, setDimensions] = useState('');
+  const [materials, setMaterials] = useState('');
+  const [period, setPeriod] = useState('');
+  const [maker, setMaker] = useState('');
+  const [provenance, setProvenance] = useState(false);
   const [description, setDescription] = useState('');
 
   useEffect(() => {
@@ -72,10 +75,17 @@ export default function ProductEdit() {
         setPrice(data.price);
         setImage(data.image);
         setImages(data.images);
+        setAdditionalImagePreviews(data.images || []);
         setCategory(data.category);
         setCountInStock(data.countInStock);
         setFrom(data.from);
-        setFinish(data.finish);
+        setCondition(data.condition);
+        setDimensions(data.dimensions);
+        setMaterials(data.materials);
+        setPeriod(data.period);
+        setMaker(data.maker);
+        setProvenance(data.provenance || false);
+        setCountInStock(data.countInStock);
         setDescription(data.description);
         dispatch({ type: 'FETCH_SUCCESS' });
       } catch (err) {
@@ -103,7 +113,12 @@ export default function ProductEdit() {
           images,
           category,
           from,
-          finish,
+          condition,
+          dimensions,
+          materials,
+          period,
+          maker,
+          provenance,
           countInStock,
           description,
         },
@@ -114,13 +129,18 @@ export default function ProductEdit() {
       dispatch({
         type: 'UPDATE_SUCCESS',
       });
-      toast.success('Product updated successfully');
-      navigate('/admin/products');
+      toast.success('Product updated successfully', {
+        autoClose: 1000, // Display success message for 1 second
+      });
+      setTimeout(() => {
+        navigate('/admin/products');
+      }, 1000);
     } catch (err) {
       toast.error(getError(err));
       dispatch({ type: 'UPDATE_FAIL' });
     }
   };
+
   const uploadFileHandler = async (e, forImages) => {
     const file = e.target.files[0];
     const bodyFormData = new FormData();
@@ -136,16 +156,24 @@ export default function ProductEdit() {
       dispatch({ type: 'UPLOAD_SUCCESS' });
 
       if (forImages) {
-        setImages([...images, data.secure_url]);
+        setImages([...images, data]); // Updated to use returned file path
+        setAdditionalImagePreviews([
+          ...additionalImagePreviews,
+          URL.createObjectURL(file),
+        ]);
       } else {
-        setImage(data.secure_url);
+        setImage(data); // Updated to use returned file path
+        setImagePreview(URL.createObjectURL(file));
       }
-      toast.success('Image uploaded successfully. click Update to apply it');
+      toast.success('Image uploaded successfully. Click Update to apply it', {
+        autoClose: 1000,
+      });
     } catch (err) {
       toast.error(getError(err));
       dispatch({ type: 'UPLOAD_FAIL', payload: getError(err) });
     }
   };
+
   const deleteFileHandler = async (fileName, f) => {
     console.log(fileName, f);
     console.log(images);
@@ -153,15 +181,17 @@ export default function ProductEdit() {
     setImages(images.filter((x) => x !== fileName));
     toast.success('Image removed successfully. click Update to apply it');
   };
+
   return (
-    <Container>
+    <Container className='small-screen'>
       <Helmet>
         <title>Edit Product ${productId}</title>
       </Helmet>
-      <h1>Edit Product {productId}</h1>
+      <br />
+      <h4 className='box'>Edit Product {productId}</h4>
 
       {loading ? (
-        <LoadingBox></LoadingBox>
+        <SkeletonProductEdit delay={1000} />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
@@ -174,14 +204,7 @@ export default function ProductEdit() {
               required
             />
           </Form.Group>
-          <Form.Group className='mb-3' controlId='slug'>
-            <Form.Label>Slug</Form.Label>
-            <Form.Control
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              required
-            />
-          </Form.Group>
+
           <Form.Group className='mb-3' controlId='name'>
             <Form.Label>Price</Form.Label>
             <Form.Control
@@ -190,41 +213,67 @@ export default function ProductEdit() {
               required
             />
           </Form.Group>
+
           <Form.Group className='mb-3' controlId='image'>
-            <Form.Label>Image File</Form.Label>
+            <Form.Label>Main Image File</Form.Label>
             <Form.Control
               value={image}
               onChange={(e) => setImage(e.target.value)}
               required
             />
           </Form.Group>
+
           <Form.Group className='mb-3' controlId='imageFile'>
             <Form.Label>Upload Image</Form.Label>
-            <Form.Control type='file' onChange={uploadFileHandler} />
-            {loadingUpload && <LoadingBox></LoadingBox>}
+            <Form.Control
+              type='file'
+              onChange={(e) => uploadFileHandler(e, false)}
+            />
+            {loadingUpload && <SkeletonProductEdit delay={1000} />}
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt='Main Preview'
+                style={{ width: '100px', height: '100px', marginTop: '10px' }}
+              />
+            )}
           </Form.Group>
 
           <Form.Group className='mb-3' controlId='additionalImage'>
             <Form.Label>Additional Images</Form.Label>
-            {images.length === 0 && <MessageBox>No image</MessageBox>}
+            {additionalImagePreviews.length === 0 && (
+              <MessageBox>No image</MessageBox>
+            )}
             <ListGroup variant='flush'>
-              {images.map((x) => (
-                <ListGroup.Item key={x}>
-                  {x}
-                  <Button variant='light' onClick={() => deleteFileHandler(x)}>
+              {additionalImagePreviews.map((x, index) => (
+                <ListGroup.Item key={index}>
+                  <img
+                    src={x}
+                    alt={`Additional Preview ${index}`}
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <Button
+                    variant='light'
+                    onClick={() => deleteFileHandler(images[index])}
+                  >
                     <i className='fa fa-times-circle'></i>
                   </Button>
                 </ListGroup.Item>
               ))}
             </ListGroup>
           </Form.Group>
+
           <Form.Group className='mb-3' controlId='additionalImageFile'>
             <Form.Label>Upload Additional Image</Form.Label>
             <Form.Control
               type='file'
               onChange={(e) => uploadFileHandler(e, true)}
             />
-            {loadingUpload && <LoadingBox></LoadingBox>}
+            {loadingUpload && <SkeletonProductEdit delay={1000} />}
           </Form.Group>
 
           <Form.Group className='mb-3' controlId='category'>
@@ -235,24 +284,70 @@ export default function ProductEdit() {
               required
             />
           </Form.Group>
-          {/* Change to suit your needs */}
+
           <Form.Group className='mb-3' controlId='from'>
-            <Form.Label>From Country</Form.Label>
+            <Form.Label>From</Form.Label>
             <Form.Control
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               required
             />
           </Form.Group>
-          {/* Change to suit your needs */}
-          <Form.Group className='mb-3' controlId='finish'>
-            <Form.Label>Finish</Form.Label>
+
+          <Form.Group className='mb-3' controlId='condition'>
+            <Form.Label>Condition</Form.Label>
             <Form.Control
-              value={finish}
-              onChange={(e) => setFinish(e.target.value)}
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
               required
             />
           </Form.Group>
+
+          <Form.Group className='mb-3' controlId='dimensions'>
+            <Form.Label>Dimensions</Form.Label>
+            <Form.Control
+              value={dimensions}
+              onChange={(e) => setDimensions(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className='mb-3' controlId='materials'>
+            <Form.Label>Materials</Form.Label>
+            <Form.Control
+              value={materials}
+              onChange={(e) => setMaterials(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className='mb-3' controlId='period'>
+            <Form.Label>Period</Form.Label>
+            <Form.Control
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className='mb-3' controlId='maker'>
+            <Form.Label>Maker</Form.Label>
+            <Form.Control
+              value={maker}
+              onChange={(e) => setMaker(e.target.value)}
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className='mb-3' controlId='provenance'>
+            <Form.Check
+              type='checkbox'
+              label='Provenance'
+              checked={provenance}
+              onChange={(e) => setProvenance(e.target.checked)}
+            />
+          </Form.Group>
+
           <Form.Group className='mb-3' controlId='countInStock'>
             <Form.Label>Count In Stock</Form.Label>
             <Form.Control
@@ -261,22 +356,27 @@ export default function ProductEdit() {
               required
             />
           </Form.Group>
+
           <Form.Group className='mb-3' controlId='description'>
             <Form.Label>Description</Form.Label>
             <Form.Control
+              as='textarea'
+              rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
             />
           </Form.Group>
+
           <div className='mb-3'>
             <Button disabled={loadingUpdate} type='submit'>
               Update
             </Button>
-            {loadingUpdate && <LoadingBox></LoadingBox>}
+            {loadingUpdate && <SkeletonProductEdit delay={1000} />}
           </div>
         </Form>
       )}
+      <br />
     </Container>
   );
 }

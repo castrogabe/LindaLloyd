@@ -1,14 +1,15 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useReducer } from 'react';
-import { Button, Table, Col } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import { toast } from 'react-toastify';
+import { Button, Table, Row, Col } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, Link } from 'react-router-dom';
-import SkeletonOrderList from '../components/skeletons/SkeletonOrderList';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
-import { toast } from 'react-toastify';
+import AdminPagination from '../components/AdminPagination';
+import SkeletonOrderList from '../components/skeletons/SkeletonOrderList';
+import { utils, writeFile } from 'xlsx';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -17,7 +18,10 @@ const reducer = (state, action) => {
     case 'FETCH_SUCCESS':
       return {
         ...state,
-        orders: action.payload,
+        orders: action.payload.orders,
+        totalOrders: action.payload.totalOrders,
+        page: action.payload.page,
+        pages: action.payload.pages,
         loading: false,
       };
     case 'FETCH_FAIL':
@@ -29,21 +33,11 @@ const reducer = (state, action) => {
         ...state,
         loadingDelete: false,
         successDelete: true,
-        autoClose: action.payload.autoClose,
       };
     case 'DELETE_FAIL':
       return { ...state, loadingDelete: false };
     case 'DELETE_RESET':
       return { ...state, loadingDelete: false, successDelete: false };
-    // return deliveryDays, carrierName, trackingNumber
-    case 'SHIPPING_REQUEST':
-      return { ...state, loadingShipped: true };
-    case 'SHIPPING_SUCCESS':
-      return { ...state, loadingShipped: false, successShipped: true };
-    case 'SHIPPING_FAIL':
-      return { ...state, loadingShipped: false };
-    case 'SHIPPING_RESET':
-      return { ...state, loadingShipped: false, successShipped: false };
     default:
       return state;
   }
@@ -51,51 +45,31 @@ const reducer = (state, action) => {
 
 export default function OrderList() {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const sp = new URLSearchParams(search);
+  const page = sp.get('page') || 1;
+
   const { state } = useContext(Store);
   const { userInfo } = state;
   const [
-    {
-      loading,
-      error,
-      orders,
-      users,
-      loadingDelete,
-      successDelete,
-      page,
-      pages,
-    },
+    { loading, error, orders, totalOrders, pages, successDelete },
     dispatch,
   ] = useReducer(reducer, {
     loading: true,
     error: '',
+    orders: [],
+    totalOrders: 0,
+    pages: 0,
+    successDelete: false,
   });
 
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate delay for 1.5 seconds
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       try {
-        dispatch({ type: 'FETCH_REQUEST' });
-        const { data: ordersData } = await axios.get(`/api/orders`, {
+        const { data } = await axios.get(`/api/orders/admin?page=${page}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-
-        // Extract user IDs from the orders
-        const userIds = ordersData.map((order) => order.user._id);
-
-        // Fetch user data for the extracted user IDs
-        const { data: usersData } = await axios.post(`/api/users/usersByIds`, {
-          userIds,
-        });
-
-        // Update orders with user information
-        const ordersWithUsers = ordersData.map((order) => {
-          const user = usersData.find((user) => user._id === order.user._id);
-          return { ...order, user };
-        });
-
-        dispatch({ type: 'FETCH_SUCCESS', payload: ordersWithUsers });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
@@ -103,13 +77,12 @@ export default function OrderList() {
         });
       }
     };
-
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
     } else {
       fetchData();
     }
-  }, [userInfo, successDelete]);
+  }, [page, userInfo, successDelete]);
 
   const deleteHandler = async (order) => {
     if (window.confirm('Are you sure to delete?')) {
@@ -119,55 +92,84 @@ export default function OrderList() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         toast.success('Order deleted successfully', {
-          autoClose: 1000, // Duration in milliseconds (1 second)
+          autoClose: 1000,
         });
+        dispatch({ type: 'DELETE_SUCCESS' });
       } catch (err) {
-        toast.error(getError(error));
-        dispatch({ type: 'DELETE_FAIL' });
-      } finally {
+        toast.error(getError(err));
         dispatch({
-          type: 'DELETE_SUCCESS',
-          payload: {
-            autoClose: 1000, // Duration in milliseconds (1 second)
-          },
+          type: 'DELETE_FAIL',
         });
       }
     }
   };
 
-  // MM-DD-YYYY
+  // Function to format date (MM-DD-YYYY)
   function formatDate(dateString) {
     const dateObject = new Date(dateString);
-    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0');
     const day = String(dateObject.getDate()).padStart(2, '0');
     const year = dateObject.getFullYear();
-
     return `${month}-${day}-${year}`;
   }
 
-  // Pagination
-  const getFilterUrl = (filter) => {
-    const filterPage = filter.page || page;
-    return `/?&page=${filterPage}`;
+  const exportToExcel = () => {
+    const data = orders.map((order) => ({
+      ID: order._id,
+      Product: order.orderItems.map((item) => item.name).join(', '),
+      Quantity: order.orderItems.reduce(
+        (total, item) => total + item.quantity,
+        0
+      ),
+      OrderPrice: order.itemsPrice,
+      ShippingCost: order.shippingPrice,
+      Tax: order.taxPrice,
+      Total: order.totalPrice.toFixed(2),
+      User: order.user ? order.user.name : 'DELETED USER',
+      Email: order.user ? order.user.email : '',
+      Address: order.shippingAddress
+        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode}, ${order.shippingAddress.country}`
+        : '',
+      Date: formatDate(order.createdAt),
+      PaidAt: order.isPaid ? formatDate(order.paidAt) : 'No',
+      Paid: order.isPaid ? 'Yes' : 'No',
+      PaymentMethod: order.paymentMethod,
+      ShippedDate: formatDate(order.shippedAt),
+      DeliveryDays: order.deliveryDays,
+      CarrierName: order.carrierName,
+      TrackingNumber: order.trackingNumber,
+    }));
+
+    const worksheet = utils.json_to_sheet(data);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Orders');
+    writeFile(workbook, 'Orders.xlsx');
   };
 
   return (
     <div className='content'>
       <Helmet>
-        <title>Orders List</title>
+        <title>Order List</title>
       </Helmet>
       <br />
-      <h4 className='box'>Orders List</h4>
+      <h4 className='box'>
+        Order List Page (
+        {totalOrders !== undefined ? totalOrders : 'Loading...'} )
+      </h4>
       <div className='box'>
-        {loadingDelete && <SkeletonOrderList />}
+        <Button variant='primary' onClick={exportToExcel}>
+          Download as Excel
+        </Button>
+        <br />
+        <br />
         {loading ? (
-          <div>
+          <Row>
             {[...Array(8).keys()].map((i) => (
-              <Col key={i} className='mb-1'>
+              <Col key={i} md={12} className='mb-3'>
                 <SkeletonOrderList />
               </Col>
             ))}
-          </div>
+          </Row>
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (
@@ -177,6 +179,9 @@ export default function OrderList() {
                 <th>ID / PRODUCT</th>
                 <th>USER</th>
                 <th>DATE</th>
+                <th>ORDER PRICE</th>
+                <th>SHIPPING COST</th>
+                <th>TAX</th>
                 <th>TOTAL</th>
                 <th>QTY</th>
                 <th>PAID</th>
@@ -199,6 +204,7 @@ export default function OrderList() {
                           alt={item.name}
                           className='img-fluid rounded img-thumbnail'
                         />
+                        <br />
                         <Link to={`/product/${item.slug}`}>{item.name}</Link>
                       </div>
                     ))}
@@ -225,6 +231,9 @@ export default function OrderList() {
                     )}
                   </td>
                   <td>{formatDate(order.createdAt)}</td>
+                  <td>{order.itemsPrice.toFixed(2)}</td>
+                  <td>{order.shippingPrice.toFixed(2)}</td>
+                  <td>{order.taxPrice.toFixed(2)}</td>
                   <td>{order.totalPrice.toFixed(2)}</td>
                   <td>
                     {order.orderItems.reduce(
@@ -237,9 +246,7 @@ export default function OrderList() {
                     <br />
                     {order.paymentMethod}
                   </td>
-                  <td>
-                    <div>{formatDate(order.shippedAt)}</div>
-                  </td>
+                  <td>{formatDate(order.shippedAt)}</td>
                   <td>{order.deliveryDays}</td>
                   <td>{order.carrierName}</td>
                   <td>{order.trackingNumber}</td>
@@ -269,23 +276,14 @@ export default function OrderList() {
         )}
       </div>
 
-      {/* Pagination */}
-      <div>
-        {[...Array(pages).keys()].map((x) => (
-          <LinkContainer
-            key={x + 1}
-            className='mx-1'
-            to={getFilterUrl({ page: x + 1 })}
-          >
-            <Button
-              className={Number(page) === x + 1 ? 'text-bold' : ''}
-              variant='light'
-            >
-              {x + 1}
-            </Button>
-          </LinkContainer>
-        ))}
-      </div>
+      {/* Admin Pagination */}
+      <AdminPagination
+        currentPage={page}
+        totalPages={pages}
+        isAdmin={true} // or false based on whether it's admin or not
+        keyword='OrderList' // Specify the keyword for OrderList pagination
+      />
+
       <br />
     </div>
   );

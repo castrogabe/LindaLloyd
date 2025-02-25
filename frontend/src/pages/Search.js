@@ -8,9 +8,8 @@ import { Row, Col, Button } from 'react-bootstrap';
 import Rating from '../components/Rating';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
-import Product from '../components/Product';
-import LinkContainer from 'react-router-bootstrap/LinkContainer';
-import Sidebar from '../components/Sidebar';
+import ProductCard from '../components/ProductCard';
+import Pagination from '../components/Pagination';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -27,7 +26,6 @@ const reducer = (state, action) => {
       };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
-
     default:
       return state;
   }
@@ -48,21 +46,21 @@ const prices = [
   },
 ];
 
-const ratings = [
+export const ratings = [
   {
-    name: '4stars & up',
+    name: '4 stars & up',
     rating: 4,
   },
   {
-    name: '3stars & up',
+    name: '3 stars & up',
     rating: 3,
   },
   {
-    name: '2stars & up',
+    name: '2 stars & up',
     rating: 2,
   },
   {
-    name: '1stars & up',
+    name: '1 star & up',
     rating: 1,
   },
 ];
@@ -94,7 +92,7 @@ export default function Search() {
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
-          payload: getError(err),
+          payload: getError(error),
         });
       }
     };
@@ -124,34 +122,26 @@ export default function Search() {
     return `/search?category=${filterCategory}&query=${filterQuery}&price=${filterPrice}&rating=${filterRating}&order=${sortOrder}&page=${filterPage}`;
   };
 
-  const [isMobile] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const handleSidebarOpen = () => {
-    setIsSidebarOpen(true);
-    setTimeout(() => {
-      setIsSidebarOpen(false);
-    }, 2000);
-  };
-
   return (
     <div className='content'>
       <Helmet>
         <title>Search Products</title>
       </Helmet>
+
       <Row className='mt-3'>
         <Col md={3} className='search'>
           <div>
-            <h3>Department</h3>
+            <h3>Categories</h3>
             <ul>
               <li>
                 <Link
-                  className={category === 'all' ? 'text-bold' : ''}
+                  className={'all' === category ? 'text-bold' : ''}
                   to={getFilterUrl({ category: 'all' })}
                 >
                   Any
                 </Link>
               </li>
+
               {categories.map((c) => (
                 <li key={c}>
                   <Link
@@ -164,12 +154,13 @@ export default function Search() {
               ))}
             </ul>
           </div>
+
           <div>
             <h3>Price</h3>
             <ul>
               <li>
                 <Link
-                  className={price === 'all' ? 'text-bold' : ''}
+                  className={'all' === price ? 'text-bold' : ''}
                   to={getFilterUrl({ price: 'all' })}
                 >
                   Any
@@ -178,8 +169,8 @@ export default function Search() {
               {prices.map((p) => (
                 <li key={p.value}>
                   <Link
-                    className={p.value === price ? 'text-bold' : ''}
                     to={getFilterUrl({ price: p.value })}
+                    className={p.value === price ? 'text-bold' : ''}
                   >
                     {p.name}
                   </Link>
@@ -187,30 +178,32 @@ export default function Search() {
               ))}
             </ul>
           </div>
+
           <div>
             <h3>Avg. Customer Review</h3>
             <ul>
               {ratings.map((r) => (
                 <li key={r.name}>
                   <Link
-                    className={`${r.rating}` === `${rating}` ? 'text-bold' : ''}
                     to={getFilterUrl({ rating: r.rating })}
+                    className={`${r.rating}` === `${rating}` ? 'text-bold' : ''}
                   >
-                    <Rating caption={' & up'} rating={r.rating} />
+                    <Rating caption={' & up'} rating={r.rating}></Rating>
                   </Link>
                 </li>
               ))}
               <li>
                 <Link
-                  className={rating === 'all' ? 'text-bold' : ''}
                   to={getFilterUrl({ rating: 'all' })}
+                  className={rating === 'all' ? 'text-bold' : ''}
                 >
-                  <Rating caption={' & up'} rating={0} />
+                  <Rating caption={' & up'} rating={0}></Rating>
                 </Link>
               </li>
             </ul>
           </div>
         </Col>
+
         <Col md={9}>
           {loading ? (
             <LoadingBox />
@@ -221,70 +214,58 @@ export default function Search() {
               <Row className='justify-content-between mb-3'>
                 <Col md={6}>
                   <div>
-                    {countProducts === 0 ? (
-                      <MessageBox>No Product Found</MessageBox>
-                    ) : (
-                      <MessageBox>{countProducts} Results Found</MessageBox>
-                    )}
+                    {countProducts === 0 ? 'No' : countProducts} Results
+                    {query !== 'all' && ' : ' + query}
+                    {category !== 'all' && ' : ' + category}
+                    {price !== 'all' && ' : Price ' + price}
+                    {rating !== 'all' && ' : Rating ' + rating + ' & up'}
+                    {query !== 'all' ||
+                    category !== 'all' ||
+                    rating !== 'all' ||
+                    price !== 'all' ? (
+                      <Button
+                        variant='light'
+                        onClick={() => navigate('/search')}
+                      >
+                        <i className='fas fa-times-circle'></i>
+                      </Button>
+                    ) : null}
                   </div>
                 </Col>
-                <Col md={6} className='text-end'>
-                  <div>
-                    Sort by{' '}
-                    <select
-                      value={order}
-                      onChange={(e) =>
-                        navigate(getFilterUrl({ order: e.target.value }))
-                      }
-                    >
-                      <option value='newest'>Newest Arrivals</option>
-                      <option value='lowest'>Price: Low to High</option>
-                      <option value='highest'>Price: High to Low</option>
-                      <option value='toprated'>Avg. Customer Reviews</option>
-                    </select>
-                  </div>
+
+                <Col className='text-end'>
+                  Sort by{' '}
+                  <select
+                    value={order}
+                    onChange={(e) => {
+                      navigate(getFilterUrl({ order: e.target.value }));
+                    }}
+                  >
+                    <option value='newest'>Newest Arrivals</option>
+                    <option value='lowest'>Price: Low to High</option>
+                    <option value='highest'>Price: High to Low</option>
+                    <option value='toprated'>Avg. Customer Reviews</option>
+                  </select>
                 </Col>
               </Row>
+
+              {products.length === 0 && (
+                <MessageBox>No Product Found</MessageBox>
+              )}
               <Row>
                 {products.map((product) => (
-                  <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
-                    {/* Product comes from components > Product.js */}
-                    <Product
-                      key={product.id}
-                      product={product}
-                      handleSidebarOpen={handleSidebarOpen}
-                    />
+                  <Col sm={6} lg={4} className='mb-3' key={product._id}>
+                    <ProductCard product={product}></ProductCard>
                   </Col>
                 ))}
               </Row>
 
-              {/* Desktop renders sidebar, if mobile do not show sidebar and get toast notifications */}
-              {!isMobile && (
-                <div className={isSidebarOpen ? 'sidebar' : ''}>
-                  {isSidebarOpen && (
-                    <Sidebar handleSidebarOpen={handleSidebarOpen} />
-                  )}
-                </div>
-              )}
-
-              {/* pagination */}
-              <div>
-                {[...Array(pages).keys()].map((x) => (
-                  <LinkContainer
-                    key={x + 1}
-                    className='mx-1'
-                    to={getFilterUrl({ page: x + 1 })}
-                  >
-                    <Button
-                      className={Number(page) === x + 1 ? 'text-bold' : ''}
-                      variant='light'
-                    >
-                      {x + 1}
-                    </Button>
-                  </LinkContainer>
-                ))}
-              </div>
-              <br />
+              {/* Pagination Component */}
+              <Pagination
+                currentPage={page}
+                totalPages={pages}
+                getFilterUrl={getFilterUrl}
+              />
             </>
           )}
         </Col>

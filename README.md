@@ -529,3 +529,56 @@ Signup.js > updated
 Signup.js > updated
 
 index.css > update image size in components > Product.js
+
+# 16 Commit-Converted BACKEND from ES6 to CommonJS, EmailList, Slugify
+
+BACKEND
+npm i: "slugify": "^1.6.6",
+folder: models
+aboutContentModel.js > added
+askedQuestionsModel.js > added
+designListModel.js > added
+emailListModel.js > added
+homeContentModel.js > added
+faqContentModel.js > added
+productModel.js > updated for slugify
+
+folder: routes
+aboutRoutes.js > added for dynamic edit
+designRoutes.js > added for dynamic edit
+emailRoutes.js > added sends automated mass email with attachments
+faqRoutes.js > added for dynamic edit
+homeContentRoutes.js > added for dynamic title, h4, p, jumbotron
+productRoutes.js > updated to handle image deletion from uploads directory
+uploadRoutes.js > updated, removed Cloudinary and using Multer to store images
+
+. mkdir uploads in root to handle images and delete images when product is deleted in DB
+
+server.js > updated with /api/emails, api/about, api/design, api/faqs, api/homeContent
+utils.js > updated with corrected client email (lindalloydantantiques@gmail.com)
+
+FRONTEND
+npm i : > "xlsx": "^0.17.0" for downloading orders to Excel/google sheets
+folder: components
+Header.js > updated with Admin dropdown > Edit Pages: AboutUsEdit, AskedQuestionsEdit, DesignEdit, HomeEdit
+Footer.js > updated
+ProductCard.js > updated (comment out Add to Cart) add href for Chairish and Contact page
+
+folder: pages
+UserList.js > added EmailList Form to UserList.js
+AboutUs.js > updated from static to dynamic
+AboutUsEdit.js > added
+AskedQuestions.js > updated from static to dynamic
+AskedQuestion.js > added
+Design.js > updated from static to dynamic
+DesignEdit.js > added
+Home.js > updated from static to dynamic
+HomeContentEdit.js > added
+Signin.js > updated to show password
+Signup.js > updated to show password
+ProductMag.js > updated with href and Link commented out
+
+index.css > updated
+CustomCarousel.css > added
+
+App.js > updated with AboutUsEdit, AskedQuestionsEdit, DesignEdit, HomeEdit

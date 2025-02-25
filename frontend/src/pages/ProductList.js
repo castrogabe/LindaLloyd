@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useReducer } from 'react';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Row, Col, Button, Table } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
 import { Store } from '../Store';
-import SkeletonProductList from '../components/skeletons/SkeletonProductList';
 import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
+import AdminPagination from '../components/AdminPagination';
+import SkeletonProductList from '../components/skeletons/SkeletonProductList';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -17,6 +18,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         products: action.payload.products,
+        totalProducts: action.payload.totalProducts, // Include totalProducts in the state
         page: action.payload.page,
         pages: action.payload.pages,
         loading: false,
@@ -32,7 +34,6 @@ const reducer = (state, action) => {
       };
     case 'CREATE_FAIL':
       return { ...state, loadingCreate: false };
-
     case 'DELETE_REQUEST':
       return { ...state, loadingDelete: true, successDelete: false };
     case 'DELETE_SUCCESS':
@@ -43,7 +44,6 @@ const reducer = (state, action) => {
       };
     case 'DELETE_FAIL':
       return { ...state, loadingDelete: false, successDelete: false };
-
     case 'DELETE_RESET':
       return { ...state, loadingDelete: false, successDelete: false };
     default:
@@ -51,12 +51,13 @@ const reducer = (state, action) => {
   }
 };
 
-export default function ProductListScreen() {
+export default function ProductList() {
   const [
     {
       loading,
       error,
       products,
+      totalProducts, // totalProducts display in h4
       pages,
       loadingCreate,
       loadingDelete,
@@ -66,27 +67,30 @@ export default function ProductListScreen() {
   ] = useReducer(reducer, {
     loading: true,
     error: '',
+    products: [], // Ensure products is initialized as an empty array
   });
 
   const navigate = useNavigate();
   const { search } = useLocation();
   const sp = new URLSearchParams(search);
   const page = sp.get('page') || 1;
-
   const { state } = useContext(Store);
   const { userInfo } = state;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get(`/api/products/admin?page=${page} `, {
+        const { data } = await axios.get(`/api/products/admin?page=${page}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
-      } catch (err) {}
+      } catch (err) {
+        dispatch({
+          type: 'FETCH_FAIL',
+          payload: getError(err),
+        });
+      }
     };
-
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
     } else {
@@ -105,13 +109,13 @@ export default function ProductListScreen() {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           }
         );
-        toast.success('product created successfully', {
+        toast.success('Product created successfully', {
           autoClose: 1000, // Display success message for 1 second
         });
         dispatch({ type: 'CREATE_SUCCESS' });
         navigate(`/admin/product/${data.product._id}`);
       } catch (err) {
-        toast.error(getError(error));
+        toast.error(getError(err));
         dispatch({
           type: 'CREATE_FAIL',
         });
@@ -125,10 +129,12 @@ export default function ProductListScreen() {
         await axios.delete(`/api/products/${product._id}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        toast.success('product deleted successfully');
+        toast.success('Product deleted successfully', {
+          autoClose: 1000, // Display success message for 1 second
+        });
         dispatch({ type: 'DELETE_SUCCESS' });
       } catch (err) {
-        toast.error(getError(error));
+        toast.error(getError(err));
         dispatch({
           type: 'DELETE_FAIL',
         });
@@ -138,23 +144,34 @@ export default function ProductListScreen() {
 
   return (
     <div className='content'>
+      <Helmet>
+        <title>Product List</title>
+      </Helmet>
       <br />
       <Row className='box'>
         <Col md={6}>
-          <h4>Product List Screen</h4>
+          <h4>
+            Product List Page (
+            {totalProducts !== undefined ? totalProducts : 'Loading...'}{' '}
+            Products Database)
+          </h4>
         </Col>
         <Col md={6} className='col text-end'>
           <Button type='button' onClick={createHandler}>
-            Create Product
+            Create New Product
           </Button>
         </Col>
       </Row>
-
       {loadingCreate && <SkeletonProductList delay={1000} />}
       {loadingDelete && <SkeletonProductList delay={1000} />}
-
       {loading ? (
-        <SkeletonProductList delay={1000} />
+        <Row>
+          {[...Array(8).keys()].map((i) => (
+            <Col key={i} md={12} className='mb-3'>
+              <SkeletonProductList delay={1000} />
+            </Col>
+          ))}
+        </Row>
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
@@ -169,7 +186,10 @@ export default function ProductListScreen() {
                   <th>PRICE</th>
                   <th>CATEGORY</th>
                   <th>FROM</th>
-                  <th>FINISH</th>
+                  <th>MATERIALS</th>
+                  <th>PERIOD</th>
+                  <th>MAKER</th>
+                  <th>PROVENANCE</th>
                   <th>ACTIONS</th>
                 </tr>
               </thead>
@@ -192,7 +212,10 @@ export default function ProductListScreen() {
                     <td>{product.price}</td>
                     <td>{product.category}</td>
                     <td>{product.from}</td>
-                    <td>{product.finish}</td>
+                    <td>{product.materials}</td>
+                    <td>{product.period}</td>
+                    <td>{product.maker}</td>
+                    <td>{product.provenance ? 'Yes' : 'No'}</td>
                     <td>
                       <Button
                         type='button'
@@ -218,23 +241,12 @@ export default function ProductListScreen() {
             </Table>
           </div>
 
-          {/* Pagination */}
-          <div>
-            {[...Array(pages).keys()].map((x) => (
-              <LinkContainer
-                key={x + 1}
-                className='mx-1'
-                to={`/admin/products?page=${x + 1}`}
-              >
-                <Button
-                  className={Number(page) === x + 1 ? 'text-bold' : ''}
-                  variant='light'
-                >
-                  {x + 1}
-                </Button>
-              </LinkContainer>
-            ))}
-          </div>
+          {/* Admin Pagination */}
+          <AdminPagination
+            currentPage={page}
+            totalPages={pages}
+            isAdmin={true}
+          />
           <br />
         </>
       )}

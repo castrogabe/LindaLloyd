@@ -1,17 +1,17 @@
+import axios from 'axios';
 import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Col, Row, ListGroup, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
-import { getError } from '../utils'; // frontend utils.js
+import { getError } from '../utils';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js/pure';
 import StripeCheckout from '../components/StripeCheckout';
+import SkeletonOrderDetails from '../components/skeletons/SkeletonOrderDetails';
 
 function reducer(state, action) {
   switch (action.type) {
@@ -46,7 +46,7 @@ function reducer(state, action) {
   }
 }
 
-export default function Order() {
+export default function OrderDetails() {
   const { state } = useContext(Store);
   const { userInfo } = state;
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -55,8 +55,6 @@ export default function Order() {
   const params = useParams();
   const { id: orderId } = params;
   const navigate = useNavigate();
-
-  // shipping email confirmation
   const [deliveryDays, setDeliveryDays] = useState('');
   const [carrierName, setCarrierName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -218,7 +216,6 @@ export default function Order() {
     e.preventDefault();
     try {
       dispatch({ type: 'SHIPPED_REQUEST' });
-      // Make an API call to update the order with the shipping information
       const { data } = await axios.put(
         `/api/orders/${order._id}/shipped`,
         {
@@ -241,7 +238,13 @@ export default function Order() {
   };
 
   return loading ? (
-    <LoadingBox></LoadingBox>
+    <Row>
+      {[...Array(8).keys()].map((i) => (
+        <Col key={i} md={12} className='mb-3'>
+          <SkeletonOrderDetails />
+        </Col>
+      ))}
+    </Row>
   ) : error ? (
     <MessageBox variant='danger'>{error}</MessageBox>
   ) : (
@@ -318,7 +321,10 @@ export default function Order() {
             <div className='body'>
               <title>Payment</title>
               <text>
-                <strong>Method:</strong> {order.paymentMethod}
+                <strong>Method:</strong>{' '}
+                {order.paymentMethod === 'Stripe'
+                  ? 'Credit Card'
+                  : order.paymentMethod}
               </text>
               {order.isPaid ? (
                 <MessageBox variant='success'>
@@ -390,7 +396,7 @@ export default function Order() {
                   <ListGroup.Item>
                     {paymentMethod === 'PayPal' ? (
                       isPending ? (
-                        <LoadingBox />
+                        <SkeletonOrderDetails />
                       ) : (
                         <div>
                           <PayPalButtons
@@ -399,18 +405,19 @@ export default function Order() {
                             onError={onError}
                           />
                           {/* Send payment receipt when item is paid */}
-                          {loadingPay && <LoadingBox></LoadingBox>}
+                          {loadingPay && <SkeletonOrderDetails />}
                         </div>
                       )
                     ) : (
                       <div>
                         {/* Send payment receipt when item is paid */}
-                        {!order.isPaid && !stripe && <LoadingBox />}
+                        {!order.isPaid && !stripe && <SkeletonOrderDetails />}
                         {!order.isPaid && stripe && (
                           <StripeCheckout
                             stripe={stripe}
                             orderId={order._id}
                             handleStripeSuccess={handleStripeSuccess}
+                            successPay={successPay}
                           />
                         )}
                       </div>
@@ -420,7 +427,7 @@ export default function Order() {
 
                 {userInfo.isAdmin && order.isPaid && !order.isShipped && (
                   <ListGroup.Item>
-                    {loadingShipped && <LoadingBox />}
+                    {loadingShipped && <SkeletonOrderDetails />}
                     <div className='d-grid'>
                       {/* send shipping confirmation email when order ships */}
                       <h6>
@@ -467,8 +474,8 @@ export default function Order() {
   );
 }
 
-// step 1 (CartScreen)
-// step 2 (ShippingAddress2Screen)
-// step 3 (PaymentMethod3Screen)
-// step 4 (PlaceOrder4Screen)
-// lands on OrderScreen for payment <= CURRENT STEP
+// step 1 (Cart)
+// step 2 (ShippingAddress)
+// step 3 (PaymentMethod) select radial button for PayPal or Stripe
+// step 4 (PlaceOrder)
+// lands on OrderDetails for payment <= CURRENT STEP

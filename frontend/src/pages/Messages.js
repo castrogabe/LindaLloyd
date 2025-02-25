@@ -1,12 +1,14 @@
-import React, { useEffect, useState, useReducer } from 'react';
-import { Table, Button } from 'react-bootstrap';
-import { Helmet } from 'react-helmet-async';
-import { LinkContainer } from 'react-router-bootstrap';
-import { toast } from 'react-toastify';
-import SkeletonMessage from '../components/skeletons/SkeletonMessage';
-import MessageBox from '../components/MessageBox';
 import axios from 'axios';
+import React, { useEffect, useContext, useState, useReducer } from 'react';
+import { Table, Button, Row, Col, Form } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
+import { Store } from '../Store';
+import { Helmet } from 'react-helmet-async';
+import { toast } from 'react-toastify';
+import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
+import AdminPagination from '../components/AdminPagination';
+import SkeletonMessage from '../components/skeletons/SkeletonMessage';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -15,7 +17,10 @@ const reducer = (state, action) => {
     case 'FETCH_SUCCESS':
       return {
         ...state,
-        orders: action.payload,
+        users: action.payload.users,
+        totalMessages: action.payload.totalMessages, // Include totalMessages in the state
+        page: action.payload.page,
+        pages: action.payload.pages,
         loading: false,
       };
     case 'FETCH_FAIL':
@@ -32,12 +37,21 @@ const reducer = (state, action) => {
       return { ...state, loadingDelete: false };
     case 'DELETE_RESET':
       return { ...state, loadingDelete: false, successDelete: false };
+    case 'REPLY_SUCCESS':
+      return { ...state, replyLoading: false, replySuccess: true };
+    case 'REPLY_FAIL':
+      return { ...state, replyLoading: false, replyError: action.payload };
     default:
-      return state;
   }
 };
-
 export default function Messages() {
+  const { search } = useLocation();
+  const sp = new URLSearchParams(search);
+  const page = sp.get('page') || 1;
+
+  const { state } = useContext(Store);
+  const { userInfo } = state;
+
   const [messages, setMessages] = useState([
     {
       update_time: '',
@@ -48,61 +62,83 @@ export default function Messages() {
     },
   ]);
   const [
-    { loading, error, loadingDelete, successDelete, page, pages },
+    { loading, error, loadingDelete, totalMessages, successDelete, pages },
     dispatch,
   ] = useReducer(reducer, {
     loading: true,
     error: '',
   });
 
-  useEffect(() => {
-    fetch('/messages')
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-      })
-      .then((jsonRes) => setMessages(jsonRes));
-  }, []);
+  const [replyVisible, setReplyVisible] = useState(false);
+  const [replyMessage, setReplyMessage] = useState({
+    fullName: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
 
-  // delete messages
+  const sendReply = async () => {
+    try {
+      const response = await axios.post('/api/messages/reply', {
+        email: replyMessage.email,
+        subject: replyMessage.subject,
+        message: replyMessage.replyContent,
+      });
+
+      console.log(response.data);
+      setReplyVisible(false);
+    } catch (error) {
+      //  console.error('Error sending reply:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        dispatch({ type: 'FETCH_REQUEST' });
-        const message = await axios.get(`/messages`);
-        dispatch({ type: 'FETCH_SUCCESS', payload: message });
+        const { data } = await axios.get(`/api/messages/admin?page=${page}`, {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+        setMessages(data.messages);
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
           payload: getError(err),
         });
+        console.error('Error fetching messages:', err);
       }
     };
+
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
     } else {
       fetchData();
     }
-  }, [messages, successDelete]);
+  }, [page, userInfo, successDelete]);
 
-  const deleteHandler = async (message) => {
+  const deleteHandler = async (messageToDelete) => {
     if (window.confirm('Are you sure to delete?')) {
       try {
         dispatch({ type: 'DELETE_REQUEST' });
-        await axios.delete('/messages', {
+        await axios.delete('/api/messages', {
           data: {
-            update_time: message.update_time,
-            fullName: message.fullName,
-            email: message.email,
-            subject: message.subject,
-            message: message.message,
+            update_time: messageToDelete.update_time,
+            fullName: messageToDelete.fullName,
+            email: messageToDelete.email,
+            subject: messageToDelete.subject,
+            message: messageToDelete.message,
           },
         });
-        toast.success('Message deleted successfully');
+        toast.success('Message deleted successfully', {
+          autoClose: 1500,
+        });
         dispatch({ type: 'DELETE_SUCCESS' });
+
+        setMessages((prevMessages) =>
+          prevMessages.filter((message) => message.id !== messageToDelete.id)
+        );
       } catch (err) {
-        toast.error(getError(error));
+        toast.error(getError(err));
         dispatch({
           type: 'DELETE_FAIL',
         });
@@ -110,83 +146,154 @@ export default function Messages() {
     }
   };
 
-  // Pagination
-  const getFilterUrl = (filter) => {
-    const filterPage = filter.page || page;
-    return `/?&page=${filterPage}`;
-  };
+  // MM-DD-YYYY
+  function formatDate(dateString) {
+    const dateObject = new Date(dateString);
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    const year = dateObject.getFullYear();
+    return `${month}-${day}-${year}`;
+  }
 
   return (
-    <div className='content'>
+    <>
       <Helmet>
         <title>Messages</title>
       </Helmet>
-      <br />
-      <h1 className='box'>Your Messages</h1>
-      <div className='box'>
-        {loadingDelete && <SkeletonMessage />}
-        {loading ? (
-          <SkeletonMessage />
-        ) : error ? (
-          <MessageBox variant='danger'>{error}</MessageBox>
-        ) : (
-          <Table responsive striped bordered className='noWrap'>
-            <thead>
-              <tr>
-                <th>DATE</th>
-                <th>NAME</th>
-                <th>EMAIL</th>
-                <th>SUBJECT</th>
-                <th>Message</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages &&
-                messages.map((message) => (
-                  <tr key={message}>
-                    <td>
-                      {message.createdAt
-                        ? message.createdAt.substring(0, 10)
-                        : ''}
-                    </td>
-                    <td>{message.fullName}</td>
-                    <td>{message.email}</td>
-                    <td>{message.subject}</td>
-                    <td>{message.message}</td>
-                    <td>
-                      <Button
-                        type='button'
-                        variant='primary'
-                        onClick={() => deleteHandler(message)}
-                      >
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        )}
-      </div>
+      <div className='content'>
+        <br />
+        <h4 className='box'>
+          Messages ({totalMessages !== undefined ? totalMessages : 'Loading...'}
+          )
+        </h4>
+        <div className='box'>
+          {loadingDelete && <SkeletonMessage />}
+          {loading ? (
+            <Row>
+              {[...Array(8).keys()].map((i) => (
+                <Col key={i} md={12} className='mb-3'>
+                  <SkeletonMessage />
+                </Col>
+              ))}
+            </Row>
+          ) : error ? (
+            <MessageBox variant='danger'>{error}</MessageBox>
+          ) : (
+            <Table responsive striped bordered className='noWrap'>
+              <thead>
+                <tr>
+                  <th>DATE</th>
+                  <th>NAME</th>
+                  <th>EMAIL</th>
+                  <th>SUBJECT</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                {messages &&
+                  messages.map((message) => (
+                    <tr key={message}>
+                      <td>{formatDate(message.createdAt)}</td>
+                      <td>{message.fullName}</td>
+                      <td>{message.email}</td>
+                      <td>{message.subject}</td>
+                      {/* <td>{message.message}</td> */}
+                      <td>
+                        <textarea
+                          className='td.message-cell'
+                          rows='3' // You can adjust the number of rows as needed
+                          cols='40' // width of cell
+                          value={message.message}
+                          readOnly // Make the text box read-only since you're displaying the message
+                        />
+                      </td>
+                      <td>
+                        <Button
+                          type='button'
+                          variant='primary'
+                          onClick={() => {
+                            setReplyMessage({
+                              fullName: message.fullName,
+                              email: message.email,
+                              subject: `Re: ${message.subject}`,
+                              message: `Dear ${message.fullName},\n\n`,
+                            });
+                            setReplyVisible(true);
+                          }}
+                        >
+                          Reply
+                        </Button>
+                      </td>
+                      <td>
+                        <Button
+                          type='button'
+                          variant='primary'
+                          onClick={() => deleteHandler(message)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
+          )}
+        </div>
 
-      {/* Pagination */}
-      <div>
-        {[...Array(pages).keys()].map((x) => (
-          <LinkContainer
-            key={x + 1}
-            className='mx-1'
-            to={getFilterUrl({ page: x + 1 })}
-          >
-            <Button
-              className={Number(page) === x + 1 ? 'text-bold' : ''}
-              variant='light'
-            >
-              {x + 1}
-            </Button>
-          </LinkContainer>
-        ))}
+        {/* Reply Form/Dialog */}
+        {replyVisible && (
+          <div className='box'>
+            <h2>Reply Email to: {replyMessage.fullName} </h2>
+            <Form>
+              <Form.Group>
+                <Form.Label>
+                  Email Address: {replyMessage.email}, Message:{' '}
+                  {replyMessage.subject}
+                </Form.Label>
+                <Form.Control
+                  as='textarea'
+                  rows={5}
+                  value={replyMessage.replyContent}
+                  onChange={(e) =>
+                    setReplyMessage({
+                      ...replyMessage,
+                      replyContent: e.target.value,
+                    })
+                  }
+                />
+              </Form.Group>
+              <br />
+              {/* Submit button and close button */}
+              <Button
+                type='submit'
+                variant='primary'
+                onClick={sendReply}
+                className='send-reply-button'
+              >
+                Send Reply
+              </Button>
+              &nbsp;
+              <Button
+                type='button'
+                variant='primary'
+                onClick={() => setReplyVisible(false)}
+                className='send-reply-button'
+              >
+                Close
+              </Button>
+            </Form>
+          </div>
+        )}
+
+        {/* Admin Pagination */}
+        <AdminPagination
+          currentPage={page}
+          totalPages={pages}
+          isAdmin={true}
+          keyword='Messages'
+        />
+        <br />
       </div>
-      <br />
-    </div>
+    </>
   );
 }

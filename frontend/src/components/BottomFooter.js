@@ -6,11 +6,11 @@ const BottomFooter = () => {
     <div className='bottom-footer'>
       <Row>
         <Col className='text-center'>
-          MERN stack app developed by{' '}
+          Web Development{' '}
           <a
             href='https://www.gabewd.com/'
             target='_blank'
-            results='noreferrer'
+            rel='noopener noreferrer'
             id='linked'
           >
             &copy; gabewd.com

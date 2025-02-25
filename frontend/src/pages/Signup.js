@@ -12,14 +12,16 @@ export default function Signup() {
   const { search } = useLocation();
   const redirectInUrl = new URLSearchParams(search).get('redirect');
   const redirect = redirectInUrl ? redirectInUrl : '/';
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { userInfo } = state;
+
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -46,15 +48,26 @@ export default function Signup() {
     }
   }, [navigate, redirect, userInfo]);
 
+  // Function to toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword); // Toggle showPassword state
+  };
+
+  // Function to toggle confirm password visibility
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword); // Toggle showConfirmPassword state
+  };
+
   return (
     <div className='content'>
       <Helmet>
         <title>Sign Up</title>
       </Helmet>
+      <br />
       <Row>
+        <h4 className='box'>Sign Up</h4>
         <Col md={6}>
-          <h1 className='my-3'>Sign Up</h1>
-          <Form onSubmit={submitHandler}>
+          <Form onSubmit={submitHandler} className='box'>
             <Form.Group className='mb-3' controlId='name'>
               <Form.Label>Name</Form.Label>
               <Form.Control
@@ -71,28 +84,55 @@ export default function Signup() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </Form.Group>
+
             <Form.Group className='mb-3' controlId='password'>
               <Form.Label>Password</Form.Label>
-              <Form.Control
-                type='password'
-                required
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder='Minimum 8 characters with at least one digit, one uppercase letter, one lowercase letter, and one special character'
-                pattern='^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d]).{8,}$'
-                title='Minimum 8 characters with at least one digit, one uppercase letter, one lowercase letter, and one special character'
-              />
-              <Form.Group className='mb-3' controlId='confirmPassword'>
-                <Form.Label>Confirm Password</Form.Label>
+              <div className='input-group'>
                 <Form.Control
-                  type='password'
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='Example: minimum length, uppercase, lowercase, digit, and special character'
                   required
+                  onChange={(e) => setPassword(e.target.value)}
                 />
-              </Form.Group>
+                <Button
+                  variant='outline-secondary'
+                  onClick={togglePasswordVisibility}
+                >
+                  <i
+                    className={`fa ${
+                      showPassword ? 'fas fa-eye-slash' : 'fa-eye'
+                    }`}
+                  ></i>
+                </Button>
+              </div>
             </Form.Group>
+
+            <Form.Group className='mb-3' controlId='password'>
+              <Form.Label>Confirm Password</Form.Label>
+              <div className='input-group'>
+                <Form.Control
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='Example: minimum length, uppercase, lowercase, digit, and special character'
+                  required
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <Button
+                  variant='outline-secondary'
+                  onClick={toggleConfirmPasswordVisibility}
+                >
+                  <i
+                    className={`fa ${
+                      showPassword ? 'fas fa-eye-slash' : 'fa-eye'
+                    }`}
+                  ></i>
+                </Button>
+              </div>
+            </Form.Group>
+
             <div className='mb-3'>
               <Button type='submit'>Sign Up</Button>
             </div>
+
             <div className='mb-3'>
               Already have an account?{' '}
               <Link to={`/signin?redirect=${redirect}`}>Sign-In</Link>
@@ -101,7 +141,11 @@ export default function Signup() {
         </Col>
 
         <Col md={6} className='mt-3'>
-          <img src='/images/register.png' alt='register' />
+          <img
+            src='/images/register.png'
+            alt='register'
+            className='img-fluid'
+          />
         </Col>
       </Row>
     </div>
