@@ -582,3 +582,11 @@ index.css > updated
 CustomCarousel.css > added
 
 App.js > updated with AboutUsEdit, AskedQuestionsEdit, DesignEdit, HomeEdit
+
+# 17th Commit-final with package.json for render
+
+Backend
+{}package.json > updated
+
+ROOT FOR RENDER
+{}package.json in root
