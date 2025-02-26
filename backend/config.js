@@ -5,7 +5,7 @@ dotenv.config();
 module.exports = {
   PORT: process.env.PORT || 8000,
   JWT_SECRET: process.env.JWT_SECRET || 'Objetsdart',
-  MONGODB_URL: process.env.MONGODB_URI || 'mongodb://localhost/frontend',
+  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost/lindalloyd',
 
   PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
 
@@ -13,6 +13,6 @@ module.exports = {
     process.env.STRIPE_PUBLISHABLE_KEY || 'your_stripe_publishable_key',
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'your_stripe_secret_key',
 
-  auth: process.env.NODE_USER,
-  auth: process.env.NODE_PASSWORD,
+  NODE_USER: process.env.NODE_USER,
+  NODE_PASSWORD: process.env.NODE_PASSWORD,
 };

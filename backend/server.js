@@ -41,10 +41,15 @@ app.get('/api/keys/paypal', (req, res) => {
 // Serve the uploads directory statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://lindalloyd.onrender.com', // Add your Render URL here
+];
+
 app.use(
   cors({
-    origin: 'http://localhost:3000', // Allow requests from this origin
-    credentials: true, // Allow credentials to be sent with requests
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
 
