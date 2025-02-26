@@ -585,8 +585,17 @@ App.js > updated with AboutUsEdit, AskedQuestionsEdit, DesignEdit, HomeEdit
 
 # 17th Commit-final with package.json for render
 
-Backend
+BACKEND
 {}package.json > updated
 
 ROOT FOR RENDER
 {}package.json in root
+
+# 18th Commit-final fix config
+
+BACKEND
+config > updated with stripe keys
+
+FRONTEND
+folder: components
+Footer > update with phone number

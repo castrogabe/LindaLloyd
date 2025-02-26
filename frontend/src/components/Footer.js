@@ -111,8 +111,8 @@ const Footer = () => {
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <li>1276 N Yale Ave</li>
-              <li>Claremont, CA</li>
-              <li>91711</li>
+              <li>Claremont, CA. 91711</li>
+              <li>(626) 392-2979</li>
             </ul>
           </div>
         </Col>
