@@ -144,7 +144,7 @@ orderRouter.put(
 
       // ***************** send purchase receipt email ***********************
       const emailContent = {
-        from: 'gabudemy@gmail.com',
+        from: 'gabudemy@gmail.com', // your email
         to: customerEmail,
         subject: 'PayPal Purchase Receipt from antiquepox', // email subject
         html: purchaseDetails,
@@ -189,7 +189,7 @@ orderRouter.put(
 
     // Create email content for the shipping confirmation
     const emailContent = {
-      from: 'antiquepox@gmail.com', // your email
+      from: 'gabudemy@gmail.com', // your email
       to: customerEmail,
       subject: 'Shipping notification from antiquepox', // email subject
       html: shippingDetails,

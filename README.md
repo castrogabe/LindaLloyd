@@ -484,3 +484,32 @@ ProductList.js (Lines 10, 81-83, 160-170)
 ProductMag.js (Lines 26, 71-73, 173)
 UserEdit.js (Lines 10, 50-52, 101, 137)
 UserList.js (Lines 3, 11, 57-59, 112-120)
+
+# 14th Commit-Regex complexity for password, Utils.js, Password reset added
+
+BACKEND
+utils.js > update for date format (mm/dd/yyyy)
+
+folder: models
+userModel.js > updated
+
+folder: routes
+orderRoutes.js > updated
+userRoutes.js > updated
+stripeRoutes > updated
+
+FRONTEND
+folder: components
+Header.js > updated
+Product.js > updated
+
+folder > pages
+Signin.js > updated
+ForgetPassword.js > added
+ResetPassword.js > added
+Signup.js > updated
+Signup.js > updated
+
+App.js > updated (ForgetPassword.js, ResetPassword.js)
+
+index.css > update image size in components > Product.js
