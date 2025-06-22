@@ -1,7 +1,7 @@
-const express = require('express');
-const asyncHandler = require('express-async-handler');
-const ProductMagContent = require('../models/productMagContentModel');
-const { isAuth, isAdmin } = require('../utils.js');
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import ProductMagContent from '../models/productMagContentModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
 const router = express.Router();
 
@@ -30,4 +30,4 @@ router.put(
   })
 );
 
-module.exports = router;
+export default router;

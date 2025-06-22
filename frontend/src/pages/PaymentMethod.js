@@ -92,8 +92,23 @@ export default function PaymentMethod() {
                         setIsPayPalSelected(false);
                       }}
                     />
-                    <i className='fab fa-cc-stripe'></i>
+                    <i className='fab fa-cc-visa'></i>{' '}
+                    <i className='fab fa-cc-mastercard'></i>
+                    <i className='fab fa-cc-amex'></i>
+                    <i className='fab fa-cc-discover'></i>
                   </div>
+                  {/* <div>
+                    <img
+                      src='https://upload.wikimedia.org/wikipedia/commons/5/5b/Google_Pay_Logo.svg'
+                      alt='Google Pay'
+                      style={{ height: '24px', marginLeft: '10px' }}
+                    />
+                    <img
+                      src='https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Pay_logo.svg'
+                      alt='Apple Pay'
+                      style={{ height: '24px', marginLeft: '10px' }}
+                    />
+                  </div> */}
                 </div>
 
                 <div className='mb-3'>

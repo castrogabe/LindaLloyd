@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useReducer, useState } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Button, Form, Table, Modal } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -59,6 +59,39 @@ export default function UserList() {
   const { state } = useContext(Store);
   const { userInfo } = state;
 
+  // State to manage notes modal
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [notes, setNotes] = useState('');
+
+  // Function to open notes modal
+  const openNotesModal = (user) => {
+    setSelectedUser(user);
+    setNotes(user.notes || '');
+    setShowNotesModal(true);
+  };
+
+  // Function to save notes and refresh the list
+  const saveNotes = async () => {
+    try {
+      await axios.put(
+        `/api/users/${selectedUser._id}/notes`,
+        { notes },
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Notes updated successfully', { autoClose: 1000 });
+      setShowNotesModal(false);
+
+      // Refresh list to reflect saved notes
+      const { data } = await axios.get(`/api/users/admin?page=${page}`, {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      });
+      dispatch({ type: 'FETCH_SUCCESS', payload: data });
+    } catch (err) {
+      toast.error(getError(err));
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -67,18 +100,15 @@ export default function UserList() {
         });
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
-        dispatch({
-          type: 'FETCH_FAIL',
-          payload: getError(err),
-        });
+        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
     };
-    if (successDelete) {
+    if (successDelete || !showNotesModal) {
+      // Ensure refresh when notes update or deletion resets
       dispatch({ type: 'DELETE_RESET' });
-    } else {
       fetchData();
     }
-  }, [page, userInfo, successDelete]);
+  }, [page, userInfo, successDelete, showNotesModal]);
 
   const deleteHandler = async (user) => {
     if (window.confirm('Are you sure to delete?')) {
@@ -87,19 +117,39 @@ export default function UserList() {
         await axios.delete(`/api/users/${user._id}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        toast.success('User deleted successfully', {
-          autoClose: 1000,
-        });
+        toast.success('User deleted successfully', { autoClose: 1000 });
         dispatch({ type: 'DELETE_SUCCESS' });
       } catch (error) {
-        toast.error(getError(error));
-        dispatch({
-          type: 'DELETE_FAIL',
-        });
+        toast.error(getError(error), { autoClose: 1000 });
+        dispatch({ type: 'DELETE_FAIL' });
       }
     }
   };
 
+  const deleteNotesHandler = async (user) => {
+    if (
+      window.confirm(`Are you sure you want to delete notes for ${user.name}?`)
+    ) {
+      try {
+        await axios.put(
+          `/api/users/${user._id}/notes`,
+          { notes: '' },
+          { headers: { Authorization: `Bearer ${userInfo.token}` } }
+        );
+        toast.success('Notes deleted successfully', { autoClose: 1000 });
+
+        // Refresh list to reflect deleted notes
+        const { data } = await axios.get(`/api/users/admin?page=${page}`, {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+      } catch (error) {
+        toast.error(getError(error));
+      }
+    }
+  };
+
+  // State for mass emails and manual user addition
   const [emailList, setEmailList] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
@@ -107,6 +157,11 @@ export default function UserList() {
     { file: null, description: '', price: '' },
   ]);
   const [logoFile, setLogoFile] = useState(null);
+
+  // State for manual user addition
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
   useEffect(() => {
     if (users.length > 0) {
@@ -132,18 +187,15 @@ export default function UserList() {
     formData.append('emailSubject', emailSubject);
     formData.append('emailMessage', emailMessage);
     if (logoFile) {
-      formData.append('logoFile', logoFile); // Add logo file to form data if available
+      formData.append('logoFile', logoFile);
     }
-    products.forEach((product, index) => {
+    products.forEach((product) => {
       if (product.file) {
         formData.append('emailFiles', product.file);
         formData.append('descriptions', product.description);
         formData.append('prices', product.price);
       }
     });
-
-    console.log(formData.getAll('descriptions'), formData.getAll('prices')); // Debugging
-
     try {
       const { data } = await axios.post('/api/emails/mass-email', formData, {
         headers: {
@@ -151,13 +203,30 @@ export default function UserList() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      toast.success(data.message, {
-        autoClose: 1000,
-      });
+      toast.success(data.message, { autoClose: 1000 });
     } catch (error) {
-      toast.error(getError(error), {
-        autoClose: 1000,
+      toast.error(getError(error), { autoClose: 1000 });
+    }
+  };
+
+  const addUserHandler = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await axios.post(
+        '/api/users/add',
+        { name, email, phone },
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('User added successfully', { autoClose: 1000 });
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: { users: [...users, data], totalUsers: totalUsers + 1 },
       });
+      setName('');
+      setEmail('');
+      setPhone('');
+    } catch (err) {
+      toast.error(getError(err));
     }
   };
 
@@ -177,48 +246,109 @@ export default function UserList() {
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (
-          <Table responsive striped bordered className='noWrap'>
-            <thead className='thead'>
-              <tr>
-                <th>ID</th>
-                <th>NAME</th>
-                <th>EMAIL</th>
-                <th>IS ADMIN</th>
-                <th>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user._id}>
-                  <td>{user._id}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.isAdmin ? 'YES' : 'NO'}</td>
-                  <td>
-                    <Button
-                      type='button'
-                      variant='primary'
-                      onClick={() => navigate(`/admin/user/${user._id}`)}
-                    >
-                      Edit
-                    </Button>
-                    &nbsp;
-                    <Button
-                      type='button'
-                      variant='primary'
-                      onClick={() => deleteHandler(user)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
+          <>
+            <div className='box'>
+              <h5>Manually Add User</h5>
+              <Form onSubmit={addUserHandler}>
+                <Form.Group className='mb-3' controlId='name'>
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type='text'
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className='mb-3' controlId='email'>
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type='email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className='mb-3' controlId='phone'>
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control
+                    type='text'
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </Form.Group>
+                <Button type='submit' variant='primary'>
+                  Add User
+                </Button>
+              </Form>
+            </div>
+            <Table responsive striped bordered className='noWrap'>
+              <thead className='thead'>
+                <tr>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th>EMAIL</th>
+                  <th>PHONE</th>
+                  <th>IS ADMIN</th>
+                  <th>ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <React.Fragment key={user._id}>
+                    <tr>
+                      <td>{user._id}</td>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.phone || 'N/A'}</td>
+                      <td>{user.isAdmin ? 'YES' : 'NO'}</td>
+                      <td>
+                        <Button
+                          type='button'
+                          variant='primary'
+                          onClick={() => navigate(`/admin/user/${user._id}`)}
+                        >
+                          Edit
+                        </Button>
+                        &nbsp;
+                        <Button
+                          type='button'
+                          variant='danger'
+                          onClick={() => deleteHandler(user)}
+                        >
+                          Delete
+                        </Button>
+                        &nbsp;
+                        <Button
+                          type='button'
+                          variant='info'
+                          onClick={() => openNotesModal(user)}
+                        >
+                          Notes
+                        </Button>
+                      </td>
+                    </tr>
+                    {user.notes && (
+                      <tr className='notes-row'>
+                        <td colSpan='5' className='notes-cell'>
+                          <strong>Notes:</strong> {user.notes}
+                          <Button
+                            variant='danger'
+                            size='sm'
+                            className='float-end'
+                            onClick={() => deleteNotesHandler(user)}
+                          >
+                            <i className='fa fa-trash'></i> Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </Table>
+          </>
         )}
       </div>
-
-      {/* Form for mass emails */}
       <div className='box'>
         <h5>Send Mass Email</h5>
         <Form onSubmit={handleEmailSubmit}>
@@ -233,7 +363,6 @@ export default function UserList() {
               required
             />
           </Form.Group>
-
           <Form.Group controlId='emailSubject'>
             <Form.Label>Email Subject</Form.Label>
             <Form.Control
@@ -244,7 +373,6 @@ export default function UserList() {
               required
             />
           </Form.Group>
-
           <Form.Group controlId='emailMessage'>
             <Form.Label>Email Message</Form.Label>
             <Form.Control
@@ -256,7 +384,6 @@ export default function UserList() {
               required
             />
           </Form.Group>
-
           <Form.Group controlId='logoFile'>
             <Form.Label>Attach Logo Image</Form.Label>
             <Form.Control
@@ -265,7 +392,6 @@ export default function UserList() {
               onChange={(e) => setLogoFile(e.target.files[0])}
             />
           </Form.Group>
-
           {products.map((product, index) => (
             <div key={index}>
               <Form.Group controlId={`emailFile${index}`}>
@@ -304,19 +430,44 @@ export default function UserList() {
               </Form.Group>
             </div>
           ))}
-
           <Button type='button' variant='secondary' onClick={addProduct}>
             Add Another Product
           </Button>
-
           <br />
           <Button type='submit' variant='primary' className='mt-3'>
             Send Email
           </Button>
         </Form>
       </div>
-
-      {/* Admin Pagination */}
+      <div>
+        <Modal show={showNotesModal} onHide={() => setShowNotesModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Customer Notes</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group controlId='userNotes'>
+              <Form.Label>Notes for {selectedUser?.name}</Form.Label>
+              <Form.Control
+                as='textarea'
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant='secondary'
+              onClick={() => setShowNotesModal(false)}
+            >
+              Close
+            </Button>
+            <Button variant='primary' onClick={saveNotes}>
+              Save Notes
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
       <AdminPagination
         currentPage={page}
         totalPages={pages}

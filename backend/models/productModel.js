@@ -1,6 +1,5 @@
-// productModel.js
-const mongoose = require('mongoose');
-const slugify = require('slugify');
+import mongoose from 'mongoose';
+import slugify from 'slugify';
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -18,12 +17,13 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true, unique: true },
     slug: { type: String, required: true, unique: true },
     image: { type: String, required: true },
-    images: [String],
+    images: [{ type: String }],
     from: { type: String, required: true },
     category: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
     countInStock: { type: Number, required: true },
+    charishLink: { type: String, required: false }, // URL to Charish listing
     rating: { type: Number, required: true },
     numReviews: { type: Number, required: true },
     reviews: [reviewSchema],
@@ -48,4 +48,5 @@ productSchema.pre('save', function (next) {
 });
 
 const Product = mongoose.model('Product', productSchema);
-module.exports = Product;
+
+export default Product;

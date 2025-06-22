@@ -383,22 +383,39 @@ function ProductMag() {
                 </Row>
               </ListGroup.Item>
 
-              {product.countInStock > 0 && (
-                <ListGroup.Item>
-                  <div className='d-grid'>
-                    {/* low quantity alert 5 or less */}
-                    {product.countInStock <= 5 && (
-                      <p style={{ color: 'red' }}>
-                        Only {product.countInStock} Left, buy Now!
-                      </p>
-                    )}
-                    {/* end low quantity alert */}
-                    <Button onClick={addToCartHandler} variant='primary'>
-                      Add to Cart
+              <ListGroup.Item>
+                <div className='d-grid'>
+                  {product.charishLink ? (
+                    // Display "View on Charish" if the product has a Charish link
+                    <a
+                      href={product.charishLink}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      <Button variant='warning' className='btn-sm'>
+                        View on Charish
+                      </Button>
+                    </a>
+                  ) : product.countInStock > 0 ? (
+                    <>
+                      {/* Display low quantity warning if 5 or less in stock */}
+                      {product.countInStock <= 5 && (
+                        <p style={{ color: 'red' }}>
+                          Only {product.countInStock} Left, Buy Now!
+                        </p>
+                      )}
+                      {/* Display "Add to Cart" button if no Charish link */}
+                      <Button onClick={addToCartHandler} variant='primary'>
+                        Add to Cart
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant='light' disabled>
+                      Out of stock
                     </Button>
-                  </div>
-                </ListGroup.Item>
-              )}
+                  )}
+                </div>
+              </ListGroup.Item>
             </ListGroup>
           </div>
         </Col>

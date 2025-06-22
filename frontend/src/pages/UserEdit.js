@@ -40,6 +40,7 @@ export default function UserEdit() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // Added phone state
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingDelay, setLoadingDelay] = useState(true);
 
@@ -52,6 +53,7 @@ export default function UserEdit() {
         });
         setName(data.name);
         setEmail(data.email);
+        setPhone(data.phone || ''); // Fetch phone, default to empty string if missing
         setIsAdmin(data.isAdmin);
         setTimeout(() => {
           setLoadingDelay(false); // Set loadingDelay to false after the delay
@@ -73,7 +75,7 @@ export default function UserEdit() {
       dispatch({ type: 'UPDATE_REQUEST' });
       await axios.put(
         `/api/users/${userId}`,
-        { _id: userId, name, email, isAdmin },
+        { _id: userId, name, email, phone, isAdmin }, // Include phone number in request
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
@@ -119,6 +121,15 @@ export default function UserEdit() {
                   type='email'
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                />
+              </Form.Group>
+
+              <Form.Group className='mb-3' controlId='phone'>
+                <Form.Label>Phone Number</Form.Label>
+                <Form.Control
+                  type='text'
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </Form.Group>
 

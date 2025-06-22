@@ -504,6 +504,18 @@ a.email:hover {
   border-color: var(--primary);
 }
 
+/* Customer Notes */
+.notes-row {
+  background-color: #fdf2c3; /* Light yellow background */
+}
+
+.notes-cell {
+  font-weight: bold;
+  color: #8b5e3c; /* Brown text */
+  padding: 10px;
+  border-top: 2px solid #ffcc00; /* Yellow border to separate notes */
+}
+
 /* Bottom Footer */
 .bottom-footer {
   text-decoration: none;

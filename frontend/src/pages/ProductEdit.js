@@ -64,6 +64,8 @@ export default function ProductEdit() {
   const [maker, setMaker] = useState('');
   const [provenance, setProvenance] = useState(false);
   const [description, setDescription] = useState('');
+  const [isCharish, setIsCharish] = useState(false);
+  const [charishLink, setCharishLink] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +89,8 @@ export default function ProductEdit() {
         setProvenance(data.provenance || false);
         setCountInStock(data.countInStock);
         setDescription(data.description);
+        setIsCharish(data.charishLink ? true : false);
+        setCharishLink(data.charishLink || '');
         dispatch({ type: 'FETCH_SUCCESS' });
       } catch (err) {
         dispatch({
@@ -121,6 +125,7 @@ export default function ProductEdit() {
           provenance,
           countInStock,
           description,
+          charishLink: isCharish ? charishLink.trim() : '',
         },
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
@@ -156,14 +161,11 @@ export default function ProductEdit() {
       dispatch({ type: 'UPLOAD_SUCCESS' });
 
       if (forImages) {
-        setImages([...images, data]); // Updated to use returned file path
-        setAdditionalImagePreviews([
-          ...additionalImagePreviews,
-          URL.createObjectURL(file),
-        ]);
+        setImages([...images, data.url]); // Store only the string URL
+        setAdditionalImagePreviews([...additionalImagePreviews, data.url]);
       } else {
-        setImage(data); // Updated to use returned file path
-        setImagePreview(URL.createObjectURL(file));
+        setImage(data.url); // Store only the string URL
+        setImagePreview(data.url);
       }
       toast.success('Image uploaded successfully. Click Update to apply it', {
         autoClose: 1000,
@@ -174,12 +176,12 @@ export default function ProductEdit() {
     }
   };
 
-  const deleteFileHandler = async (fileName, f) => {
-    console.log(fileName, f);
-    console.log(images);
-    console.log(images.filter((x) => x !== fileName));
-    setImages(images.filter((x) => x !== fileName));
-    toast.success('Image removed successfully. click Update to apply it');
+  const deleteFileHandler = (fileUrl) => {
+    setImages((prevImages) => prevImages.filter((img) => img !== fileUrl));
+    setAdditionalImagePreviews((prevPreviews) =>
+      prevPreviews.filter((preview) => preview !== fileUrl)
+    );
+    toast.success('Image removed successfully. Click Update to apply it');
   };
 
   return (
@@ -256,10 +258,7 @@ export default function ProductEdit() {
                       marginRight: '10px',
                     }}
                   />
-                  <Button
-                    variant='light'
-                    onClick={() => deleteFileHandler(images[index])}
-                  >
+                  <Button variant='light' onClick={() => deleteFileHandler(x)}>
                     <i className='fa fa-times-circle'></i>
                   </Button>
                 </ListGroup.Item>
@@ -367,6 +366,28 @@ export default function ProductEdit() {
               required
             />
           </Form.Group>
+
+          <Form.Group className='mb-3' controlId='charishCheckbox'>
+            <Form.Check
+              type='checkbox'
+              label='Sold on Charish?'
+              checked={isCharish}
+              onChange={(e) => setIsCharish(e.target.checked)}
+            />
+          </Form.Group>
+
+          {isCharish && (
+            <Form.Group className='mb-3' controlId='charishLink'>
+              <Form.Label>Charish Listing URL</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Enter Charish product URL (e.g., https://www.charish.com/... )'
+                value={charishLink}
+                onChange={(e) => setCharishLink(e.target.value)}
+                required={isCharish}
+              />
+            </Form.Group>
+          )}
 
           <div className='mb-3'>
             <Button disabled={loadingUpdate} type='submit'>

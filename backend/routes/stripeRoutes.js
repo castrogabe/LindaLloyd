@@ -1,7 +1,7 @@
-const Stripe = require('stripe');
-const express = require('express');
-const config = require('../config.js');
-const Order = require('../models/orderModel.js');
+import Stripe from 'stripe';
+import express from 'express';
+import config from '../config.js';
+import Order from '../models/orderModel.js';
 
 const stripe = Stripe(config.STRIPE_SECRET_KEY);
 
@@ -13,16 +13,18 @@ stripeRouter.get('/secret/:id', async (req, res) => {
       'user',
       '_id name email'
     );
+
     if (!order) {
       return res.status(404).send({ error: 'Order not found' });
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: order.totalPrice * 100, // Amount in cents
-      currency: 'usd', // Currency type (USD in this case)
-      metadata: { integration_check: 'accept_a_payment' }, // Metadata for integration check
+      amount: order.totalPrice * 100,
+      currency: 'usd',
+      metadata: { integration_check: 'accept_a_payment' },
     });
 
+    // Update order to mark it as paid
     order.isPaid = true;
     order.paidAt = Date.now();
     order.paymentResult = {
@@ -43,4 +45,4 @@ stripeRouter.get('/key', (req, res) => {
   res.send(config.STRIPE_PUBLISHABLE_KEY);
 });
 
-module.exports = stripeRouter;
+export default stripeRouter;

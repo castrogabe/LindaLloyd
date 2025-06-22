@@ -1,12 +1,16 @@
-const express = require('express');
-const asyncHandler = require('express-async-handler');
-const AboutContent = require('../models/aboutContentModel');
-const { isAuth, isAdmin } = require('../utils.js');
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import multer from 'multer';
+import { isAuth, isAdmin } from '../utils.js';
+import AboutContent from '../models/aboutContentModel.js';
 
-const router = express.Router();
+// Multer setup for file uploads
+const upload = multer({ dest: 'uploads/' });
+
+const aboutRouter = express.Router();
 
 // Fetch about content
-router.get(
+aboutRouter.get(
   '/',
   asyncHandler(async (req, res) => {
     const content = await AboutContent.findOne({});
@@ -14,20 +18,61 @@ router.get(
   })
 );
 
-// Update about content
-router.put(
+// Update about content (with multiple image upload)
+aboutRouter.put(
   '/',
   isAuth,
   isAdmin,
+  upload.array('images', 10), // Allow multiple images to be uploaded at once
   asyncHandler(async (req, res) => {
     const { sections } = req.body;
+
+    // Map through sections and update images if new files are provided
+    const updatedSections = sections.map((section, sectionIndex) => {
+      const images = section.images.map((image, imgIndex) => {
+        const uploadedFile = req.files && req.files[imgIndex];
+
+        return {
+          url: uploadedFile ? `/uploads/${uploadedFile.filename}` : image.url,
+          name: image.name || '',
+        };
+      });
+
+      return { ...section, images };
+    });
+
     const content = await AboutContent.findOneAndUpdate(
       {},
-      { sections },
+      { sections: updatedSections },
       { new: true, upsert: true }
     );
     res.json(content);
   })
 );
 
-module.exports = router;
+// Update a specific section by index
+aboutRouter.put(
+  '/section/:sectionIndex',
+  isAuth,
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const { sectionIndex } = req.params;
+    const updatedSection = req.body.section;
+
+    // Retrieve the current content document
+    const content = await AboutContent.findOne({});
+    if (content && content.sections[sectionIndex]) {
+      // Initialize images array if it's missing
+      if (!updatedSection.images) {
+        updatedSection.images = [];
+      }
+      content.sections[sectionIndex] = updatedSection; // Update the specific section
+      await content.save(); // Save the changes
+      res.json({ message: 'Section updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Section not found' });
+    }
+  })
+);
+
+export default aboutRouter;

@@ -10,7 +10,7 @@ import { useMediaQuery } from 'react-responsive';
 
 function ProductCard(props) {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const { product, handleSidebarOpen } = props; // Added handleSidebarOpen here
+  const { product, handleSidebarOpen } = props;
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
     cart: { cartItems },
@@ -35,7 +35,7 @@ function ProductCard(props) {
 
     setSidebarIsOpen(!sidebarIsOpen);
     handleSidebarOpen({
-      autoClose: 2000, // Duration in milliseconds (2 second)
+      autoClose: 2000,
     });
 
     if (isMobile) {
@@ -53,7 +53,7 @@ function ProductCard(props) {
         </div>,
         {
           position: 'bottom-center',
-          autoClose: 1000, // Duration in milliseconds (1 second)
+          autoClose: 1000,
         }
       );
     }
@@ -81,7 +81,19 @@ function ProductCard(props) {
         </Link>
         <Rating rating={product.rating} numReviews={product.numReviews} />
         <Card.Text>${product.price}</Card.Text>
-        {product.countInStock === 0 ? (
+
+        {product.charishLink ? (
+          // If the product is listed on Charish, show "View on Charish" button
+          <a
+            href={product.charishLink}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <Button variant='warning' className='btn-sm'>
+              View on Chairish
+            </Button>
+          </a>
+        ) : product.countInStock === 0 ? (
           <Button variant='light' disabled>
             Out of stock
           </Button>
@@ -90,12 +102,12 @@ function ProductCard(props) {
             <Col xs={8}>
               {product.countInStock <= 5 && (
                 <p style={{ color: 'red' }}>
-                  Only {product.countInStock} Left, buy Now!
+                  Only {product.countInStock} Left, Buy Now!
                 </p>
               )}
             </Col>
             <Col xs={4}>
-              {/* add to cart button */}
+              {/* 🛒 Show "Add to Cart" for regular products */}
               <Button
                 className='btn btn-primary btn-sm'
                 onClick={() => addToCartHandler(product)}

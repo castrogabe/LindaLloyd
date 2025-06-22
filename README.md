@@ -485,23 +485,52 @@ ProductMag.js (Lines 26, 71-73, 173)
 UserEdit.js (Lines 10, 50-52, 101, 137)
 UserList.js (Lines 3, 11, 57-59, 112-120)
 
-# 14th Commit-Regex complexity for password, Utils.js, Password reset added
+# 14th Commit-Modify Backend Utils.js, Password reset added
 
-BACKEND utils.js > update for date format (mm/dd/yyyy)
+BACKEND
+utils.js > update for date format (mm/dd/yyyy)
 
-folder: models userModel.js > updated
+folder: models
+userModel.js > updated
 
-folder: routes orderRoutes.js > updated userRoutes.js > updated stripeRoutes > updated
+folder: routes
+orderRoutes.js > updated
+userRoutes.js > updated
 
-FRONTEND folder: components Header.js > updated Product.js > updated
+FRONTEND
+folder: components
+Header.js > updated
+Header1.js > updated
 
-folder > pages Signin.js > updated ForgetPassword.js > added ResetPassword.js > added Signup.js > updated Signup.js > updated
+folder > pages
+Signin.js > updated
+ForgetPassword.js > added
+ResetPassword.js > added
 
 App.js > updated (ForgetPassword.js, ResetPassword.js)
 
+# 15th Commit-Regex complexity for password
+
+BACKEND
+folder > routes
+stripeRoutes > updated
+userRoutes > updated
+
+utils.js > updated
+
+FRONTEND
+folder > components
+Header.js > updated
+Product.js > updated
+
+folder > pages
+ResetPassword.js > updated
+Signup.js > updated
+Signup.js > updated
+
 index.css > update image size in components > Product.js
 
-# 15 Commit-Converted BACKEND from ES6 to CommonJS, EmailList, Slugify
+# 16 Commit-Converted BACKEND from ES6 to CommonJS, EmailList, Slugify
 
 BACKEND
 npm i: "slugify": "^1.6.6",
@@ -553,3 +582,52 @@ index.css > updated
 CustomCarousel.css > added
 
 App.js > updated with AboutUsEdit, AskedQuestionsEdit, DesignEdit, HomeEdit
+
+# 16th Commit-UserList, Chairish, PaymentMethod Icons, Backend to ES6, package.json for render, fix config
+
+ROOT FOR RENDER
+{}package.json in root
+
+BACKEND
+{}package.json > updated
+
+config > updated with stripe keys
+
+convert to ES6
+server.js > updated
+on Render Dashboard added a disk.
+🔧 Fixing the Upload Directory Permission Error on Render
+Check if the Persistent Disk is Set Up Correctly
+Go to Render Dashboard → Your Backend Service.
+Click on Disks (left-side menu).
+Check if a persistent disk is attached.
+If missing, add a new disk:
+Name: uploads
+Mount Path: /var/data/uploads
+Size: 1GB (or more)
+Click Save Changes.
+Redeploy your service.
+
+folder: models
+productModel.js > updated for CharishLink
+userModel.js > updated
+
+folder: routes
+productRoutes.js > updated fro CharishLink
+userRoutes.js > updated
+
+FRONTEND
+folder: components
+Footer > update with phone number
+ProductCard.js > updated to display View on Charish
+
+FRONTEND
+folder: pages
+PlaceOrder.js > Modify h1 to display a Padlock and secure order method, tax modified to 9.5%
+PaymentMethod.js > Removed Stripe | added Visa, MasterCard, Amex, Discover icons
+ProductEdit.js > updated with all the Form.Groups
+ProductMag.js > updated with Chairish
+UserEdit.js > updated with phone number, Added Charish Form.Group checkbox
+UserList.js > updated with ability to upload manually users phone number and notes, updated to save the notes until admin deletes, updated with all the Form.Groups
+
+index.css > added styling for user notes

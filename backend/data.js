@@ -1,7 +1,7 @@
 // http://localhost:8000/api/seed
 // go to this link and it will load the data into the database
 
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const data = {
   users: [
@@ -421,4 +421,4 @@ const data = {
   ],
 };
 
-module.exports = data;
+export default data;

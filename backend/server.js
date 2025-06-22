@@ -1,35 +1,78 @@
-const express = require('express');
-const path = require('path');
-const mongoose = require('mongoose');
-const config = require('./config.js');
-const seedRouter = require('./routes/seedRoutes.js');
-const productRouter = require('./routes/productRoutes.js');
-const userRouter = require('./routes/userRoutes.js');
-const orderRouter = require('./routes/orderRoutes.js');
-const uploadRouter = require('./routes/uploadRoutes.js');
-const stripeRouter = require('./routes/stripeRoutes.js');
-const messageRouter = require('./routes/messageRoutes.js');
-const emailRouter = require('./routes/emailRoutes.js');
-const aboutRouter = require('./routes/aboutRoutes.js');
-const designRouter = require('./routes/designRoutes.js');
-const faqRouter = require('./routes/faqRoutes.js');
-const homeContentRouter = require('./routes/homeContentRoutes.js');
-const productMagContentRouter = require('./routes/productMagContentRoutes.js');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from 'express';
+import path from 'path';
+import mongoose from 'mongoose';
+import config from './config.js';
+import fs from 'fs';
+import seedRouter from './routes/seedRoutes.js';
+import stripeRouter from './routes/stripeRoutes.js';
+import productRouter from './routes/productRoutes.js';
+import userRouter from './routes/userRoutes.js';
+import orderRouter from './routes/orderRoutes.js';
+import uploadRouter from './routes/uploadRoutes.js';
+import messageRouter from './routes/messageRoutes.js';
+import emailRouter from './routes/emailRoutes.js';
+import homeContentRouter from './routes/homeContentRoutes.js';
+import aboutRouter from './routes/aboutRoutes.js';
+import designRouter from './routes/designRoutes.js';
+import faqRouter from './routes/faqRoutes.js';
+import productMagContentRouter from './routes/productMagContentRoutes.js';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// Recreate __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('connected to db');
-  })
-  .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err.message);
-  });
+// Determine whether we're in production or development
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Use /var/data/uploads for Render (production) and ./uploads for local development
+const uploadDir = isProduction
+  ? '/var/data/uploads'
+  : path.join(__dirname, 'uploads');
+
+// Ensure the upload directory exists
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    fs.chmodSync(uploadDir, 0o777); // Grant full permissions
+  }
+} catch (error) {
+  console.error('Failed to create upload directory:', error.message);
+  throw new Error('Upload directory setup failed');
+}
 
 const app = express();
+
+// Endpoint to list uploaded files (for debugging)
+app.get('/list-uploads', (req, res) => {
+  fs.readdir(uploadDir, (err, files) => {
+    if (err) {
+      return res.status(500).send('Unable to scan directory');
+    }
+    res.send(files);
+  });
+});
+
+// mongoose
+//   .connect(process.env.MONGODB_URI)
+//   .then(() => {
+//     console.log('connected to db');
+//   })
+//   .catch((err) => {
+//     console.log(err.message);
+//   });
+
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+  })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => {
+    console.error('MongoDB Connection Error:', err.message);
+  });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,8 +81,7 @@ app.get('/api/keys/paypal', (req, res) => {
   res.send(config.PAYPAL_CLIENT_ID || 'sb');
 });
 
-// Serve the uploads directory statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('/var/data/uploads')); // This should serve the uploads folder from the persistent disk
 
 app.use(
   cors({
@@ -48,7 +90,7 @@ app.use(
   })
 );
 
-// routes
+// Routes
 app.use('/api/upload', uploadRouter);
 app.use('/api/seed', seedRouter);
 app.use('/api/products', productRouter);
@@ -57,24 +99,26 @@ app.use('/api/orders', orderRouter);
 app.use('/api/stripe', stripeRouter);
 app.use('/api/messages', messageRouter);
 app.use('/api/emails', emailRouter);
+app.use('/api/homecontent', homeContentRouter);
 app.use('/api/about', aboutRouter);
 app.use('/api/design', designRouter);
 app.use('/api/faqs', faqRouter);
-app.use('/api/homecontent', homeContentRouter);
 app.use('/api/productmagcontent', productMagContentRouter);
 
-// Serve frontend build directory
-const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
-app.use(express.static(frontendBuildPath));
+// This must come before your React app routing
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// React app serving
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 app.get('*', (req, res) =>
-  res.sendFile(path.join(frontendBuildPath, 'index.html'))
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'))
 );
+
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(500).send({ message: err.message });
 });
 
 const port = config.PORT || 8000;
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`serve at http://localhost:${port}`);
 });

@@ -1,21 +1,19 @@
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 
 // Function to calculate the total quantity of items in the order
 const calculateTotalQuantity = (order) => {
   return order.orderItems.reduce((total, item) => total + item.quantity, 0);
 };
 
-// Function to get base URL based on environment
-const baseUrl = () =>
+export const baseUrl = () =>
   process.env.BASE_URL
     ? process.env.BASE_URL
     : process.env.NODE_ENV !== 'production'
     ? 'http://localhost:3000'
-    : 'https://lindalloyd.com'; // example.com <= your website address
+    : 'https://lindalloyd.onrender.com'; // example.com <= your website address
 
-// Function to generate JWT token for user authentication
-const generateToken = (user) => {
+export const generateToken = (user) => {
   return jwt.sign(
     {
       _id: user._id,
@@ -23,57 +21,54 @@ const generateToken = (user) => {
       email: user.email,
       isAdmin: user.isAdmin,
     },
-    process.env.JWT_SECRET, // Secret key for token generation
+    process.env.JWT_SECRET,
     {
-      expiresIn: '30d', // Token expiration time
+      expiresIn: '30d',
     }
   );
 };
 
-// Middleware to check if user is authenticated
-const isAuth = (req, res, next) => {
+export const isAuth = (req, res, next) => {
   const authorization = req.headers.authorization;
   if (authorization) {
-    const token = authorization.slice(7, authorization.length); // Extracting token from Authorization header
+    const token = authorization.slice(7, authorization.length); // Bearer XXXXXX
     jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
       if (err) {
-        res.status(401).send({ message: 'Invalid Token' }); // Invalid token error response
+        res.status(401).send({ message: 'Invalid Token' });
       } else {
-        req.user = decode; // Set user details in request object
-        next(); // Proceed to next middleware
+        req.user = decode;
+        next();
       }
     });
   } else {
-    res.status(401).send({ message: 'No Token' }); // No token error response
+    res.status(401).send({ message: 'No Token' });
   }
 };
 
-// Middleware to check if user is an admin
-const isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
-    next(); // Proceed to next middleware if user is an admin
+    next();
   } else {
-    res.status(401).send({ message: 'Invalid Admin Token' }); // Invalid admin token error response
+    res.status(401).send({ message: 'Invalid Admin Token' });
   }
 };
 
-// Create a transporter object using SMTP transport for sending emails
-const transporter = nodemailer.createTransport({
-  service: 'Gmail', // SMTP service provider
-  port: 587, // Port number
-  secure: false, // Set to true if using SSL/TLS
+// Create a transporter object using SMTP transport
+export const transporter = nodemailer.createTransport({
+  service: 'Gmail', // e.g., 'smtp.gmail.com'
+  port: 587,
+  secure: false, // set to true if using SSL/TLS
   auth: {
-    user: process.env.NODE_USER, // Sender email address
-    pass: process.env.NODE_PASSWORD, // Sender email password
+    user: process.env.NODE_USER,
+    pass: process.env.NODE_PASSWORD,
   },
 });
 
-// Email template for order payment receipt
-const payOrderEmailTemplate = (order) => {
-  // Calculate total quantity of items
+// Send email receipt
+export const payOrderEmailTemplate = (order) => {
+  // Calculate the total quantity
   const totalQuantity = calculateTotalQuantity(order);
 
-  // Format date for display
   const formattedDate = `${(order.createdAt.getMonth() + 1)
     .toString()
     .padStart(2, '0')}-${order.createdAt
@@ -151,9 +146,13 @@ const payOrderEmailTemplate = (order) => {
     </p>
   `;
 };
+// end email receipt
 
-// Email template for order shipping confirmation
-const shipOrderEmailTemplate = (order) => {
+// ************************* send confirmation email *************************
+
+export const shipOrderEmailTemplate = (order) => {
+  // console.log('Order:', order);
+
   // Calculate the total quantity
   const totalQuantity = calculateTotalQuantity(order);
 
@@ -171,10 +170,12 @@ const shipOrderEmailTemplate = (order) => {
   return `<h1>Your order is on the way!</h1>
     <p>
     Hi ${order.user.name}, thanks for shopping with lindalloyd.com</p>
-    <p>Great News, your order has been shipped, and will arrive within <strong>${deliveryDays}</strong> days.</p>
-    <p>Your package shipped with <strong>${carrierName}.</strong></p>
-    <p>Your tracking number is: <strong>${trackingNumber}</strong></p>
-    <p>Please email me at lindalloydantantiques@gmail.com if you have any questions.</p> 
+    <p>Great News, your order has been shipped, and will arrive within <strong>${
+      order.deliveryDays
+    }</strong> days.</p>
+    <p>Your package shipped <strong>${order.carrierName}.</strong></p>
+    <p>Your tracking number is: <strong>${order.trackingNumber}</strong></p>
+    <p>Please email me at exoticwoodpen@gmail.com if you have any questions.</p>
     
     <h2>Purchase Order ${order._id} (${formattedDate})</h2>
     <h2>Shipped Order ${order._id} (${formattedDate})</h2>
@@ -245,7 +246,7 @@ const shipOrderEmailTemplate = (order) => {
 };
 
 // Shipping confirmation email thru nodemailer
-const sendShippingConfirmationEmail = async (req, order) => {
+export const sendShippingConfirmationEmail = async (req, order) => {
   const customerEmail = order.user.email;
   const shippingConfirmationDetails = shipOrderEmailTemplate(order);
 
@@ -254,26 +255,15 @@ const sendShippingConfirmationEmail = async (req, order) => {
     from: 'lindalloydantantiques@gmail.com', // Sender email address <= add your own email here
     to: customerEmail,
     subject: 'Shipping Confirmation from lindalloyd.com', // Email subject <= add your own website here
-    html: shippingConfirmationDetails, // HTML content for email body
+    html: shippingConfirmationDetails,
   };
 
   try {
     // Send the shipping confirmation email using the `transporter`
     const info = await transporter.sendMail(emailContent);
+
+    // console.log('Shipping confirmation email sent:', info.messageId);
   } catch (error) {
-    // Log error message if email sending fails
     console.error('Error sending shipping confirmation email:', error);
   }
-};
-
-module.exports = {
-  calculateTotalQuantity,
-  baseUrl,
-  generateToken,
-  isAuth,
-  isAdmin,
-  transporter,
-  payOrderEmailTemplate,
-  shipOrderEmailTemplate,
-  sendShippingConfirmationEmail,
 };

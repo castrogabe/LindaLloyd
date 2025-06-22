@@ -1,5 +1,4 @@
-// models/faqContentModel.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const faqContentSchema = new mongoose.Schema({
   faqs: [
@@ -12,4 +11,4 @@ const faqContentSchema = new mongoose.Schema({
 
 const FaqContent = mongoose.model('FaqContent', faqContentSchema);
 
-module.exports = FaqContent;
+export default FaqContent;

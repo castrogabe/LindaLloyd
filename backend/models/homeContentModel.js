@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const homeContentSchema = new mongoose.Schema({
   jumbotronText: { type: [String], required: true },
@@ -9,4 +9,4 @@ const homeContentSchema = new mongoose.Schema({
 
 const HomeContent = mongoose.model('HomeContent', homeContentSchema);
 
-module.exports = HomeContent;
+export default HomeContent;

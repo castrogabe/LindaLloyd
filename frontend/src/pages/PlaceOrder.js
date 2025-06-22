@@ -1,5 +1,5 @@
 import Axios from 'axios';
-import React, { useContext, useEffect, useReducer, useState } from 'react'; // lesson 12
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { getError } from '../utils';
 import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
-import SkeletonPlaceOrder from '../components/skeletons/SkeletonPlaceOrder'; // lesson 12
+import SkeletonPlaceOrder from '../components/skeletons/SkeletonPlaceOrder';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -37,7 +37,7 @@ export default function PlaceOrder() {
   // round2(10) => $10.00 SHIPPING PRICE IF LESS (>) THAN $100
   // IF OVER $101 SHIPPING IS FREE
   cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
-  cart.taxPrice = round2(0.05 * cart.itemsPrice); // TAX PRICE 5%
+  cart.taxPrice = round2(0.095 * cart.itemsPrice); // TAX PRICE 9.5%
   cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
 
   const placeOrderHandler = async () => {
@@ -76,7 +76,6 @@ export default function PlaceOrder() {
     }
   }, [cart, navigate]);
 
-  // lesson 12
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -89,17 +88,25 @@ export default function PlaceOrder() {
 
   return (
     <div className='content'>
-      {/* lesson 12 */}
       {isLoading ? (
         <SkeletonPlaceOrder />
       ) : (
         <>
+          <br />
           <CheckoutSteps step1 step2 step3 step4></CheckoutSteps>
           <Helmet>
             <title>Place Order</title>
           </Helmet>
           <br />
-          <h1 className='box'>Place Order</h1>
+          {/* <h1 className='box'>Place Order</h1> */}
+
+          <h1 className='box'>
+            <i
+              className='fas fa-lock'
+              style={{ color: 'green', marginRight: '10px' }}
+            ></i>
+            Secure Checkout - Place Your Order
+          </h1>
           <Row>
             <Col md={8}>
               <Card className='box'>
