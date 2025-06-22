@@ -111,8 +111,17 @@ Add Bootstrap and all css
 2. git add .
 3. git commit -m "First Commit"
 4. git branch -M master
-5. git remote add origin https://github.com/castrogabe/Lloyd.git
+5. git remote add origin https://github.com/(yourname)/lindalloyd.git
 6. git push -u origin master
-# Lloyd
-# LindaLloyd
-# LindaLloyd
+
+# 2nd Commit add static images data.js and for second commit
+
+#### How to Add second commit
+
+from terminal > cd project root
+
+1. git add .
+2. git status (shows stages files ready to commit in green)
+3. git commit -m "commit message"
+4. git status (tells us that everything is committed "working tree clean" on main branch)
+5. git push
