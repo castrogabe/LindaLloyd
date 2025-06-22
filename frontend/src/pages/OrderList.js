@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useReducer } from 'react';
-import { Button, Table } from 'react-bootstrap';
+import { Button, Table, Col } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link } from 'react-router-dom';
@@ -35,6 +35,15 @@ const reducer = (state, action) => {
       return { ...state, loadingDelete: false };
     case 'DELETE_RESET':
       return { ...state, loadingDelete: false, successDelete: false };
+    // return deliveryDays, carrierName, trackingNumber
+    case 'SHIPPING_REQUEST':
+      return { ...state, loadingShipped: true };
+    case 'SHIPPING_SUCCESS':
+      return { ...state, loadingShipped: false, successShipped: true };
+    case 'SHIPPING_FAIL':
+      return { ...state, loadingShipped: false };
+    case 'SHIPPING_RESET':
+      return { ...state, loadingShipped: false, successShipped: false };
     default:
       return state;
   }
@@ -45,7 +54,16 @@ export default function OrderList() {
   const { state } = useContext(Store);
   const { userInfo } = state;
   const [
-    { loading, error, orders, loadingDelete, successDelete, page, pages },
+    {
+      loading,
+      error,
+      orders,
+      users,
+      loadingDelete,
+      successDelete,
+      page,
+      pages,
+    },
     dispatch,
   ] = useReducer(reducer, {
     loading: true,
@@ -54,12 +72,30 @@ export default function OrderList() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Simulate delay for 1.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       try {
         dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/orders`, {
+        const { data: ordersData } = await axios.get(`/api/orders`, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+
+        // Extract user IDs from the orders
+        const userIds = ordersData.map((order) => order.user._id);
+
+        // Fetch user data for the extracted user IDs
+        const { data: usersData } = await axios.post(`/api/users/usersByIds`, {
+          userIds,
+        });
+
+        // Update orders with user information
+        const ordersWithUsers = ordersData.map((order) => {
+          const user = usersData.find((user) => user._id === order.user._id);
+          return { ...order, user };
+        });
+
+        dispatch({ type: 'FETCH_SUCCESS', payload: ordersWithUsers });
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
@@ -70,13 +106,10 @@ export default function OrderList() {
 
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
-      setTimeout(() => {
-        dispatch({ type: 'DELETE_SUCCESS_RESET' });
-      }, state.autoClose || 1000); // Use state.autoClose or default to 1000ms (1 seconds)
     } else {
       fetchData();
     }
-  }, [userInfo, successDelete, state.autoClose]);
+  }, [userInfo, successDelete]);
 
   const deleteHandler = async (order) => {
     if (window.confirm('Are you sure to delete?')) {
@@ -102,6 +135,16 @@ export default function OrderList() {
     }
   };
 
+  // MM-DD-YYYY
+  function formatDate(dateString) {
+    const dateObject = new Date(dateString);
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    const year = dateObject.getFullYear();
+
+    return `${month}-${day}-${year}`;
+  }
+
   // Pagination
   const getFilterUrl = (filter) => {
     const filterPage = filter.page || page;
@@ -114,23 +157,33 @@ export default function OrderList() {
         <title>Orders List</title>
       </Helmet>
       <br />
-      <h1 className='box'>Orders List</h1>
+      <h4 className='box'>Orders List</h4>
       <div className='box'>
-        {loadingDelete && <LoadingBox></LoadingBox>}
+        {loadingDelete && <LoadingBox />}
         {loading ? (
-          <LoadingBox></LoadingBox>
+          <div>
+            {[...Array(8).keys()].map((i) => (
+              <Col key={i} className='mb-1'>
+                <LoadingBox />
+              </Col>
+            ))}
+          </div>
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (
           <Table responsive striped bordered className='noWrap'>
             <thead className='thead'>
               <tr>
-                <th>ID</th>
+                <th>ID / PRODUCT</th>
                 <th>USER</th>
                 <th>DATE</th>
                 <th>TOTAL</th>
+                <th>QTY</th>
                 <th>PAID</th>
-                <th>DELIVERED</th>
+                <th>SHIPPED DATE</th>
+                <th>DELIVERY DAYS</th>
+                <th>CARRIER NAME</th>
+                <th>TRACKING NUMBER</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -150,15 +203,46 @@ export default function OrderList() {
                       </div>
                     ))}
                   </td>
-                  <td>{order.user ? order.user.name : 'DELETED USER'}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>{order.totalPrice.toFixed(2)}</td>
-                  <td>{order.isPaid ? order.paidAt.substring(0, 10) : 'No'}</td>
                   <td>
-                    {order.isDelivered
-                      ? order.deliveredAt.substring(0, 10)
-                      : 'No'}
+                    <div>
+                      <strong>Name:</strong>{' '}
+                      {order.user ? order.user.name : 'DELETED USER'}
+                    </div>
+                    {order.user && (
+                      <>
+                        <div>
+                          <strong>Email:</strong> {order.user.email}
+                        </div>
+                        <div>
+                          <strong>Address:</strong> <br />
+                          {order.shippingAddress.address} <br />
+                          {order.shippingAddress.city},{' '}
+                          {order.shippingAddress.states},{' '}
+                          {order.shippingAddress.postalCode} <br />
+                          {order.shippingAddress.country}
+                        </div>
+                      </>
+                    )}
                   </td>
+                  <td>{formatDate(order.createdAt)}</td>
+                  <td>{order.totalPrice.toFixed(2)}</td>
+                  <td>
+                    {order.orderItems.reduce(
+                      (total, item) => total + item.quantity,
+                      0
+                    )}
+                  </td>
+                  <td>
+                    {order.isPaid ? formatDate(order.paidAt) : 'No'}
+                    <br />
+                    {order.paymentMethod}
+                  </td>
+                  <td>
+                    <div>{formatDate(order.shippedAt)}</div>
+                  </td>
+                  <td>{order.deliveryDays}</td>
+                  <td>{order.carrierName}</td>
+                  <td>{order.trackingNumber}</td>
                   <td>
                     <Button
                       type='button'

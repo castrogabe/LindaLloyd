@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useReducer } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import LoadingBox from '../components/LoadingBox';
@@ -33,6 +33,9 @@ export default function OrderHistory() {
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
+      // Simulate delay for 1.5 seconds
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       try {
         const { data } = await axios.get(
           `/api/orders/mine`,
@@ -49,6 +52,17 @@ export default function OrderHistory() {
     };
     fetchData();
   }, [userInfo]);
+
+  // MM-DD-YYYY
+  function formatDate(dateString) {
+    const dateObject = new Date(dateString);
+    const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(dateObject.getDate()).padStart(2, '0');
+    const year = dateObject.getFullYear();
+
+    return `${month}-${day}-${year}`;
+  }
+
   return (
     <div className='content'>
       <Helmet>
@@ -56,28 +70,41 @@ export default function OrderHistory() {
       </Helmet>
       <br />
       <div className='box'>
-        <h1>Order History</h1>
+        <h4>{userInfo.name}'s Order History</h4>
         <p className='lead'>
           Your orders on one place, click details for more information.
         </p>
         <p className='text-muted'>
           If you have any questions, please feel free to{' '}
-          <Link to='/contact'>Contact Us.</Link>
+          <Link to='/contact'>
+            <strong>Contact Us.</strong>
+          </Link>
         </p>
         <hr />
         {loading ? (
-          <LoadingBox></LoadingBox>
+          <Row>
+            {[...Array(8).keys()].map((i) => (
+              <Col key={i} md={12} className='mb-3'>
+                <LoadingBox />
+              </Col>
+            ))}
+          </Row>
         ) : error ? (
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (
           <Table responsive striped bordered className='noWrap'>
             <thead className='thead'>
               <tr>
-                <th>ID</th>
+                <th>ID / PRODUCT</th>
                 <th>DATE</th>
                 <th>TOTAL</th>
+                <th>QTY</th>
                 <th>PAID</th>
-                <th>DELIVERED</th>
+                <th>SHIPPED DATE</th>
+                <th>SHIPPED ADDRESS</th>
+                <th>DELIVERY DAYS</th>
+                <th>CARRIER NAME</th>
+                <th>TRACKING NUMBER</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -97,14 +124,34 @@ export default function OrderHistory() {
                       </div>
                     ))}
                   </td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
+                  <td>{formatDate(order.createdAt)}</td>
                   <td>{order.totalPrice.toFixed(2)}</td>
-                  <td>{order.isPaid ? order.paidAt.substring(0, 10) : 'No'}</td>
                   <td>
-                    {order.isDelivered
-                      ? order.deliveredAt.substring(0, 10)
-                      : 'No'}
+                    {order.orderItems.reduce(
+                      (total, item) => total + item.quantity,
+                      0
+                    )}
                   </td>
+                  <td>
+                    {order.isPaid ? formatDate(order.paidAt) : 'No'}
+                    <br />
+                    {order.paymentMethod}
+                  </td>
+                  <td>
+                    <div>{formatDate(order.shippedAt)}</div>
+                  </td>
+                  <td>
+                    <div>
+                      {order.shippingAddress.address} <br />
+                      {order.shippingAddress.city},{' '}
+                      {order.shippingAddress.states},{' '}
+                      {order.shippingAddress.postalCode} <br />
+                      {order.shippingAddress.country}
+                    </div>
+                  </td>
+                  <td>{order.deliveryDays}</td>
+                  <td>{order.carrierName}</td>
+                  <td>{order.trackingNumber}</td>
                   <td>
                     <Button
                       type='button'

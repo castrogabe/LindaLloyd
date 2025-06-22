@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import config from './config.js';
 import seedRouter from './routes/seedRoutes.js';
 import stripeRouter from './routes/stripeRoutes.js';
@@ -10,9 +9,6 @@ import userRouter from './routes/userRoutes.js';
 import orderRouter from './routes/orderRoutes.js';
 import uploadRouter from './routes/uploadRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
-import cors from 'cors';
-
-dotenv.config();
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -31,13 +27,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/api/keys/paypal', (req, res) => {
   res.send(config.PAYPAL_CLIENT_ID || 'sb');
 });
-
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-  })
-);
 
 // routes
 app.use('/api/upload', uploadRouter);
