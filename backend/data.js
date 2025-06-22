@@ -22,10 +22,12 @@ const data = {
     {
       name: 'Ceramic Jar',
       slug: 'ceramic-jar',
-      category: 'Ceramic',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/1.png',
-      images: ['/images/1a.png', '/images/1b.png'], // Add additional images if available
+      images: ['/images/1.png', '/images/1a.png', '/images/1b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 10,
       from: 'Europe',
       rating: 5,
@@ -34,7 +36,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Ceramic',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Handmade rustic clay pot with a wide mouth and a rounded body, showing signs of aging and use. The surface of the pot has a textured, weathered appearance with various shades of brown, indicating its age and possibly some hand-made elements. There are several horizontal ridges around the body.',
@@ -42,10 +44,12 @@ const data = {
     {
       name: 'Murano Glass Red Goblet',
       slug: 'murano-glass-red-goblet',
-      category: 'Glassware',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/2.png',
-      images: ['/images/2a.png', '/images/2b.png'], // Add additional images if available
+      images: ['/images/2.png', '/images/2a.png', '/images/2b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -62,10 +66,12 @@ const data = {
     {
       name: 'Delos Head Statue',
       slug: 'delos-head-statue',
-      category: 'Statue',
+      category: 'Accessories',
+      categoryImage: '/uploads/categories/accessories.png',
       image: '/images/3.png',
-      images: ['/images/3a.png', '/images/3b.png'], // Add additional images if available
+      images: ['/images/3.png', '/images/3a.png', '/images/3b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -82,16 +88,18 @@ const data = {
     {
       name: 'Woman Painting',
       slug: 'woman-painting',
-      category: 'Painting',
+      category: 'Wall',
+      categoryImage: '/uploads/categories/wall.png',
       image: '/images/4.png',
-      images: ['/images/4a.png', '/images/4b.png'], // Add additional images if available
+      images: ['/images/4.png', '/images/4a.png', '/images/4b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
       condition: 'New',
       from: 'USA',
-      dimensions: 'Height: 36in, Wide: 24in', // Example dimensions
+      dimensions: 'Height: 36in, Width: 24in', // Example dimensions
       materials: 'Oil on Canvas',
       period: 'Contemporary', // Example period
       maker: 'Renesgg Nukers',
@@ -102,10 +110,12 @@ const data = {
     {
       name: 'Apollo Bust',
       slug: 'apollo-bust',
-      category: 'Statue',
+      category: 'Accessories',
+      categoryImage: '/uploads/categories/accessories.png',
       image: '/images/5.png',
-      images: ['/images/5a.png', '/images/5b.png'], // Add additional images if available
+      images: ['/images/5.png', '/images/5a.png', '/images/5b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -114,17 +124,19 @@ const data = {
       dimensions: 'Height: 30in, Diameter: 16in', // Example dimensions
       materials: 'Marble',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description: 'Glorious God Apollo Bust, Ancient Greek Sculpture.',
     },
     {
       name: 'Murano Glass Bowl',
       slug: 'murano-glass-bowl',
-      category: 'Glassware',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/6.png',
-      images: ['/images/6a.png', '/images/6b.png'], // Add additional images if available
+      images: ['/images/6.png', '/images/6a.png', '/images/6b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -141,10 +153,12 @@ const data = {
     {
       name: 'Qwan Yin',
       slug: 'qwan-yin',
-      category: 'Statue',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/7.png',
-      images: ['/images/7a.png', '/images/7b.png'], // Add additional images if available
+      images: ['/images/7.png', '/images/7a.png', '/images/7b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -153,7 +167,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Wood',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -162,9 +176,11 @@ const data = {
       name: 'Lights',
       slug: 'lights',
       category: 'Lighting',
+      categoryImage: '/uploads/categories/lighting.png',
       image: '/images/8.png',
-      images: ['/images/8a.png', '/images/8b.png'], // Add additional images if available
+      images: ['/images/8.png', '/images/8a.png', '/images/8b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -173,7 +189,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Metal and Glass',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -181,10 +197,12 @@ const data = {
     {
       name: 'Painting',
       slug: 'painting',
-      category: 'Painting',
+      category: 'Wall',
+      categoryImage: '/uploads/categories/wall.png',
       image: '/images/9.png',
-      images: ['/images/9a.png', '/images/9b.png'], // Add additional images if available
+      images: ['/images/9.png', '/images/9a.png', '/images/9b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -193,7 +211,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Oil on Canvas',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -201,10 +219,12 @@ const data = {
     {
       name: 'Vases',
       slug: 'vases',
-      category: 'Statue',
+      category: 'New Arrivals',
+      categoryImage: '/uploads/categories/newArrivals.png',
       image: '/images/10.png',
-      images: ['/images/10a.png', '/images/10b.png'], // Add additional images if available
+      images: ['/images/10.png', '/images/10a.png', '/images/10b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 0,
       rating: 5,
       numReviews: 1,
@@ -213,7 +233,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Ceramic',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -221,10 +241,12 @@ const data = {
     {
       name: 'Roman Carving',
       slug: 'roman-carving',
-      category: 'Statue',
+      category: 'Accessories',
+      categoryImage: '/uploads/categories/accessories.png',
       image: '/images/11.png',
-      images: ['/images/11a.png', '/images/11b.png'], // Add additional images if available
+      images: ['/images/11.png', '/images/11a.png', '/images/11b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -233,7 +255,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Stone',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -241,10 +263,12 @@ const data = {
     {
       name: 'Stone Bowl',
       slug: 'stone-bowl',
-      category: 'Statue',
+      category: 'New Arrivals',
+      categoryImage: '/uploads/categories/newArrivals.png',
       image: '/images/12.png',
-      images: ['/images/12a.png', '/images/12b.png'], // Add additional images if available
+      images: ['/images/12.png', '/images/12a.png', '/images/12b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -253,7 +277,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Stone',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -261,10 +285,12 @@ const data = {
     {
       name: 'Ceramic Deer Vase',
       slug: 'ceramic-deer-vase',
-      category: 'Ceramic',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/13.png',
-      images: ['/images/13a.png', '/images/13b.png'], // Add additional images if available
+      images: ['/images/13.png', '/images/13a.png', '/images/13b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 2,
       rating: 5,
       numReviews: 1,
@@ -273,7 +299,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Ceramic',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -281,10 +307,12 @@ const data = {
     {
       name: 'Blue Ceramic',
       slug: 'blue-ceramic',
-      category: 'Ceramic',
+      category: 'Accessories',
+      categoryImage: '/uploads/categories/accessories.png',
       image: '/images/14.png',
-      images: ['/images/14a.png', '/images/14b.png'], // Add additional images if available
+      images: ['/images/14.png', '/images/14a.png', '/images/14b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -293,7 +321,7 @@ const data = {
       dimensions: 'Height: 9in, Diameter: 4in', // Example dimensions
       materials: 'Ceramic',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -301,10 +329,12 @@ const data = {
     {
       name: 'Wire Wall Piece',
       slug: 'wire-wall-piece',
-      category: 'Art',
+      category: 'Wall',
+      categoryImage: '/uploads/categories/wall.png',
       image: '/images/15.png',
-      images: ['/images/15a.png', '/images/15b.png'], // Add additional images if available
+      images: ['/images/15.png', '/images/15a.png', '/images/15b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -313,7 +343,7 @@ const data = {
       dimensions: 'Height: 30in, Width: 40in', // Example dimensions
       materials: 'Wire',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: true, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -322,9 +352,11 @@ const data = {
       name: 'Cabinets',
       slug: 'cabinets',
       category: 'Furniture',
+      categoryImage: '/uploads/categories/furniture.png',
       image: '/images/16.png',
-      images: ['/images/16a.png', '/images/16b.png'], // Add additional images if available
+      images: ['/images/16.png', '/images/16a.png', '/images/16b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -333,7 +365,7 @@ const data = {
       dimensions: 'Height: 40in, Diameter: 24in', // Example dimensions
       materials: 'Wood',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -341,10 +373,12 @@ const data = {
     {
       name: 'Greek Key Pot',
       slug: 'greek-key-pot',
-      category: 'Concrete',
+      category: 'New Arrivals',
+      categoryImage: '/uploads/categories/newArrivals.png',
       image: '/images/17.png',
-      images: ['/images/17a.png', '/images/17b.png'], // Add additional images if available
+      images: ['/images/17.png', '/images/17a.png', '/images/17b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -353,7 +387,7 @@ const data = {
       dimensions: 'Height: 16in, Diameter: 10in', // Example dimensions
       materials: 'Concrete',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -361,10 +395,12 @@ const data = {
     {
       name: 'Foo Dog',
       slug: 'foo-dog',
-      category: 'Asian',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/18.png',
-      images: ['/images/18a.png', '/images/18b.png'], // Add additional images if available
+      images: ['/images/18.png', '/images/18a.png', '/images/18b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -373,7 +409,7 @@ const data = {
       dimensions: 'Height: 6in, Diameter: 4in', // Example dimensions
       materials: 'Ceramic',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -381,10 +417,12 @@ const data = {
     {
       name: 'Wood Vase',
       slug: 'wood-vase',
-      category: 'Wood',
+      category: 'Table Top',
+      categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/19.png',
-      images: ['/images/19a.png', '/images/19b.png'], // Add additional images if available
+      images: ['/images/19.png', '/images/19a.png', '/images/19b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -393,7 +431,7 @@ const data = {
       dimensions: 'Height: 10in, Diameter: 15in', // Example dimensions
       materials: 'Segmented Wood',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
@@ -401,10 +439,12 @@ const data = {
     {
       name: 'Copper Pot',
       slug: 'copper-pot',
-      category: 'Metal',
+      category: 'Accessories',
+      categoryImage: '/uploads/categories/accessories.png',
       image: '/images/20.png',
-      images: ['/images/20a.png', '/images/20b.png'], // Add additional images if available
+      images: ['/images/20.png', '/images/20a.png', '/images/20b.png'], // Add additional images if available
       price: 50,
+      salePrice: null,
       countInStock: 5,
       rating: 5,
       numReviews: 1,
@@ -413,7 +453,7 @@ const data = {
       dimensions: 'Height: 12in, Diameter: 8in', // Example dimensions
       materials: 'Copper',
       period: 'Contemporary', // Example period
-      maker: 'N/A',
+      maker: 'Unknown',
       provenance: false, // Assuming it has documentation
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',

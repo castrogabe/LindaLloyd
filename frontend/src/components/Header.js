@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Badge, Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Badge, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useContext, useEffect, useState } from 'react';
 import { Store } from '../Store';
@@ -12,6 +12,14 @@ import SearchBox from '../components/SearchBox';
 function Header() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
+  const [showSearch, setShowSearch] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 992);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const signoutHandler = () => {
     ctxDispatch({ type: 'USER_SIGNOUT' });
@@ -20,30 +28,16 @@ function Header() {
     localStorage.removeItem('paymentMethod');
     window.location.href = '/signin';
   };
-  const [categories, setCategories] = useState([]);
+
   const [messagesCount, setMessagesCount] = useState(0);
   const [summaryData, setSummaryData] = useState(0);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const { data } = await axios.get(`/api/products/categories`);
-        setCategories(data);
-      } catch (err) {
-        toast.error(getError(err));
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (userInfo && userInfo.token) {
           const config = {
-            headers: {
-              Authorization: `Bearer ${userInfo.token}`,
-            },
+            headers: { Authorization: `Bearer ${userInfo.token}` },
           };
           const messagesResponse = await axios.get('/api/messages', config);
           setMessagesCount(messagesResponse.data.length);
@@ -65,46 +59,87 @@ function Header() {
   return (
     <>
       <header>
-        <Navbar className='header' variant='light' expand='lg'>
+        <Navbar className='header py-3' expand='lg'>
           <ToastContainer position='bottom-center' limit={1} />
-          <LinkContainer to='/'>
-            <Navbar.Brand className='me-auto'>
-              {/* fix logo from breaking by removing . */}
-              <img src='/images/logo.png' alt='logo'></img>
-            </Navbar.Brand>
-          </LinkContainer>
+
+          {/* Left-Aligned Search Icon (Desktop) */}
+          <div className='d-none d-lg-block search-icon-desktop'>
+            <button
+              className='icon-button'
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              <i className={showSearch ? 'fas fa-times' : 'fas fa-search'}></i>
+            </button>
+          </div>
+
+          {/* Show SearchBox when opened */}
+          {showSearch && (
+            <div className='search-box-container d-lg-block'>
+              <SearchBox
+                showSearch={showSearch}
+                setShowSearch={setShowSearch}
+              />
+            </div>
+          )}
+
+          {/* Centered Logo */}
+          <div className='w-100 text-center'>
+            <LinkContainer to='/'>
+              <Navbar.Brand>
+                <img
+                  src='/images/logo.png'
+                  alt='Linda Lloyd'
+                  className='logo-img'
+                />
+              </Navbar.Brand>
+            </LinkContainer>
+          </div>
+
+          {/* Mobile Search Icon */}
+          <div className='mobile-search-container d-lg-none text-center'>
+            <Button
+              className='search-icon'
+              variant='outline-primary'
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              <i className={showSearch ? 'fas fa-times' : 'fas fa-search'}></i>
+            </Button>
+          </div>
+
+          {/* Ensure search is only rendered once */}
+          {showSearch && (
+            <div
+              className={`search-box-container ${
+                isMobile ? 'd-lg-none' : 'd-lg-block'
+              }`}
+            >
+              <SearchBox
+                showSearch={showSearch}
+                setShowSearch={setShowSearch}
+              />
+            </div>
+          )}
+
           <Navbar.Toggle aria-controls='basic-navbar-nav' />
           <Navbar.Collapse id='basic-navbar-nav'>
-            <Nav className='mr-auto  w-100  justify-content-end'>
-              {/* Center items - Search Box */}
-              <div className='mx-auto'>
-                <SearchBox />
-              </div>
-
-              <NavDropdown title='About Us' id='basic-nav-dropdown'>
-                <NavDropdown.Item href='/about'>About Us</NavDropdown.Item>
-                <NavDropdown.Item href='/contact'>Contact Us</NavDropdown.Item>
-                <NavDropdown.Item href='/design'>Design</NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href='/askedQuestions'>FAQ</NavDropdown.Item>
-              </NavDropdown>
-
-              {/* Categories on mobile */}
-              <NavDropdown
-                className='nav-categories'
-                title='Categories'
-                id='basic-nav-dropdown'
-              >
-                <Nav className='flex-column p-2'>
-                  {categories.map((category) => (
-                    <Nav.Item key={category}>
-                      <LinkContainer to={`/search?category=${category}`}>
-                        <Nav.Link className='text-dark'>{category}</Nav.Link>
-                      </LinkContainer>
-                    </Nav.Item>
-                  ))}
-                </Nav>
-              </NavDropdown>
+            <Nav className='ms-auto align-items-center'>
+              {/* Conditional Navigation */}
+              {isMobile ? (
+                <>
+                  <LinkContainer to='/about'>
+                    <Nav.Link>About Us</Nav.Link>
+                  </LinkContainer>
+                  <LinkContainer to='/collections'>
+                    <Nav.Link>Collections</Nav.Link>
+                  </LinkContainer>
+                  <LinkContainer to='/contact'>
+                    <Nav.Link>Contact</Nav.Link>
+                  </LinkContainer>
+                  <LinkContainer to='/soldGallery'>
+                    <Nav.Link>Sold Gallery</Nav.Link>
+                  </LinkContainer>
+                </>
+              ) : null}
 
               {userInfo ? (
                 <NavDropdown title={userInfo.name} id='basic-nav-dropdown'>
@@ -125,7 +160,7 @@ function Header() {
                 </NavDropdown>
               ) : (
                 <Link className='nav-link' to='/signin'>
-                  <i class='fas fa-sign-in-alt'></i> Sign In
+                  <i className='fas fa-sign-in-alt'></i> Sign In
                 </Link>
               )}
 
@@ -140,7 +175,6 @@ function Header() {
                   <LinkContainer to='/admin/users'>
                     <NavDropdown.Item>Users</NavDropdown.Item>
                   </LinkContainer>
-
                   <LinkContainer to='/admin/orders'>
                     <NavDropdown.Item>
                       Orders{' '}
@@ -151,7 +185,6 @@ function Header() {
                       )}
                     </NavDropdown.Item>
                   </LinkContainer>
-
                   <LinkContainer to='/admin/messages'>
                     <NavDropdown.Item>
                       Messages{' '}
@@ -188,12 +221,12 @@ function Header() {
                 </NavDropdown>
               )}
 
-              <Link to='/cart' className='nav-link'>
-                <i className='fa fa-shopping-cart'></i> Cart
+              <Link to='/cart' className='nav-link cart'>
+                <i className='fa fa-shopping-cart'></i>
                 {cart.cartItems.length > 0 && (
-                  <Badge pill bg='danger'>
+                  <span className='cart-badge'>
                     {cart.cartItems.reduce((a, c) => a + c.quantity, 0)}
-                  </Badge>
+                  </span>
                 )}
               </Link>
             </Nav>

@@ -1,0 +1,50 @@
+import express from 'express';
+import Subscriber from '../models/subscribeModel.js';
+import axios from 'axios';
+
+const subscribeRouter = express.Router();
+
+const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
+const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
+const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX;
+
+subscribeRouter.post('/', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    // Check if email already exists in MongoDB
+    const existingSubscriber = await Subscriber.findOne({ email });
+    if (existingSubscriber) {
+      return res.status(400).json({ message: 'Email already subscribed' });
+    }
+
+    // Save email in MongoDB
+    const newSubscriber = new Subscriber({ email });
+    await newSubscriber.save();
+
+    // Sync with MailChimp
+    await axios.post(
+      `https://${MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}/members`,
+      { email_address: email, status: 'subscribed' },
+      {
+        headers: {
+          Authorization: `apikey ${MAILCHIMP_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.status(201).json({ message: 'Subscription successful' });
+  } catch (error) {
+    if (error.response && error.response.data.title === 'Member Exists') {
+      return res.status(400).json({ message: 'Email already subscribed' });
+    }
+    res.status(500).json({ message: 'Server error. Try again later.' });
+  }
+});
+
+export default subscribeRouter;

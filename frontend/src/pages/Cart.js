@@ -65,47 +65,69 @@ export default function Cart() {
               ) : (
                 <ListGroup>
                   {cartItems.map((item) => (
-                    <ListGroup.Item key={item._id}>
-                      <Row className='align-items-center'>
-                        <Col md={4}>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className='img-fluid rounded img-thumbnail'
-                          ></img>{' '}
-                          <Link to={`/product/${item.slug}`}>{item.name}</Link>
-                        </Col>
-                        <Col md={3}>
-                          <Button
-                            onClick={() =>
-                              updateCartHandler(item, item.quantity - 1)
-                            }
-                            variant='light'
-                            disabled={item.quantity === 1}
-                          >
-                            <i className='fas fa-minus-circle'></i>
-                          </Button>{' '}
-                          <span>{item.quantity}</span>{' '}
-                          <Button
-                            variant='light'
-                            onClick={() =>
-                              updateCartHandler(item, item.quantity + 1)
-                            }
-                            disabled={item.quantity === item.countInStock}
-                          >
-                            <i className='fas fa-plus-circle'></i>
-                          </Button>
-                        </Col>
-                        <Col md={3}>${item.price}</Col>
-                        <Col md={2}>
-                          <Button
-                            onClick={() => removeItemHandler(item)}
-                            variant='light'
-                          >
-                            <i className='fas fa-trash'></i>
-                          </Button>
-                        </Col>
-                      </Row>
+                    <ListGroup.Item
+                      key={item._id}
+                      className='cart-item d-flex align-items-center'
+                    >
+                      {/* Product Image */}
+                      <Col xs={2} md={2}>
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className='img-fluid rounded img-thumbnail'
+                        />
+                      </Col>
+
+                      {/* Product Name */}
+                      <Col xs={4} md={4} className='cart-item-name'>
+                        <Link to={`/product/${item.slug}`}>{item.name}</Link>
+                      </Col>
+
+                      {/* Quantity Selector */}
+                      <Col
+                        xs={3}
+                        md={3}
+                        className='d-flex align-items-center justify-content-center'
+                      >
+                        <Button
+                          onClick={() =>
+                            updateCartHandler(item, item.quantity - 1)
+                          }
+                          variant='light'
+                          disabled={item.quantity === 1}
+                        >
+                          <i className='fas fa-minus-circle'></i>
+                        </Button>
+                        <span className='mx-2'>{item.quantity}</span>
+                        <Button
+                          variant='light'
+                          onClick={() =>
+                            updateCartHandler(item, item.quantity + 1)
+                          }
+                          disabled={item.quantity === item.countInStock}
+                        >
+                          <i className='fas fa-plus-circle'></i>
+                        </Button>
+                      </Col>
+
+                      {/* Product Price */}
+                      <Col
+                        xs={2}
+                        md={2}
+                        className='cart-item-price text-center'
+                      >
+                        ${item.price}
+                      </Col>
+
+                      {/* Remove Button */}
+                      <Col xs={1} md={1} className='text-end'>
+                        <Button
+                          onClick={() => removeItemHandler(item)}
+                          variant='light'
+                        >
+                          <i className='fas fa-trash'></i>
+                        </Button>
+                      </Col>
                     </ListGroup.Item>
                   ))}
                 </ListGroup>

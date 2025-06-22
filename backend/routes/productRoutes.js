@@ -1,9 +1,24 @@
 import express from 'express';
 import expressAsyncHandler from 'express-async-handler';
 import fs from 'fs';
+import multer from 'multer';
 import path from 'path';
 import Product from '../models/productModel.js';
 import { isAuth, isAdmin } from '../utils.js';
+
+const categoryUploadPath = path.join(process.cwd(), 'uploads/categories'); // ✅ Define the path
+
+// Configure storage for category images
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, categoryUploadPath); // ✅ Now uses the correct path
+  },
+  filename(req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
 
 const productRouter = express.Router();
 
@@ -22,11 +37,10 @@ productRouter.post(
       slug: 'name' + Date.now(),
       image: '/images/p1.jpg',
       price: 0,
+      salePrice: 0, // Add salePrice field
       category: 'category',
       from: 'from',
       countInStock: 0,
-      rating: 0,
-      numReviews: 0,
       description: 'description',
       condition: 'condition',
       dimensions: 'dimensions',
@@ -54,7 +68,9 @@ productRouter.put(
       product.image = req.body.image || product.image;
       product.images = req.body.images || product.images;
       product.price = req.body.price || product.price;
+      product.salePrice = req.body.salePrice; // Add salePrice update
       product.category = req.body.category || product.category;
+      product.categoryImage = req.body.categoryImage || product.categoryImage;
       product.from = req.body.from || product.from;
       product.countInStock = req.body.countInStock || product.countInStock;
       product.description = req.body.description || product.description;
@@ -99,42 +115,6 @@ productRouter.delete(
   })
 );
 
-productRouter.post(
-  '/:id/reviews',
-  isAuth,
-  expressAsyncHandler(async (req, res) => {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
-    if (product) {
-      if (product.reviews.find((x) => x.name === req.user.name)) {
-        return res
-          .status(400)
-          .send({ message: 'You already submitted a review' });
-      }
-
-      const review = {
-        name: req.user.name,
-        rating: Number(req.body.rating),
-        comment: req.body.comment,
-      };
-      product.reviews.push(review);
-      product.numReviews = product.reviews.length;
-      product.rating =
-        product.reviews.reduce((a, c) => c.rating + a, 0) /
-        product.reviews.length;
-      const updatedProduct = await product.save();
-      res.status(201).send({
-        message: 'Review Created',
-        review: updatedProduct.reviews.at(-1),
-        numReviews: product.numReviews,
-        rating: product.rating,
-      });
-    } else {
-      res.status(404).send({ message: 'Product Not Found' });
-    }
-  })
-);
-
 const PAGE_SIZE = 12;
 
 productRouter.get(
@@ -166,15 +146,16 @@ productRouter.get(
       pageSize = PAGE_SIZE,
       category,
       price,
-      rating,
       order,
     } = req.query;
 
     const filters = {
       ...(query &&
         query !== 'all' && { name: { $regex: query, $options: 'i' } }),
-      ...(category && category !== 'all' && { category }),
-      ...(rating && rating !== 'all' && { rating: { $gte: Number(rating) } }),
+      ...(category &&
+        category !== 'all' && {
+          category: { $regex: `^${category}$`, $options: 'i' },
+        }), // Ensures proper category filtering
       ...(price &&
         price !== 'all' && {
           price: {
@@ -185,10 +166,8 @@ productRouter.get(
     };
 
     const sortOptions = {
-      featured: { featured: -1 },
       lowest: { price: 1 },
       highest: { price: -1 },
-      toprated: { rating: -1 },
       newest: { createdAt: -1 },
       default: { _id: -1 },
     };
@@ -211,8 +190,46 @@ productRouter.get(
 productRouter.get(
   '/categories',
   expressAsyncHandler(async (req, res) => {
-    const categories = await Product.find().distinct('category');
+    const categories = await Product.aggregate([
+      {
+        $group: {
+          _id: '$category',
+          categoryImage: { $first: '$categoryImage' }, // ✅ Ensure categoryImage is included
+        },
+      },
+    ]);
+
     res.send(categories);
+  })
+);
+
+productRouter.put(
+  '/category/:categoryName/image',
+  isAuth,
+  isAdmin,
+  upload.single('image'),
+  expressAsyncHandler(async (req, res) => {
+    const { categoryName } = req.params;
+
+    if (!req.file) {
+      return res.status(400).send({ message: 'No image uploaded' });
+    }
+
+    const productsInCategory = await Product.find({ category: categoryName });
+
+    if (productsInCategory.length > 0) {
+      await Product.updateMany(
+        { category: categoryName },
+        { $set: { categoryImage: `/uploads/categories/${req.file.filename}` } }
+      );
+
+      res.send({
+        message: 'Category Image Updated',
+        image: `/uploads/categories/${req.file.filename}`,
+      });
+    } else {
+      res.status(404).send({ message: 'No products found in this category' });
+    }
   })
 );
 
@@ -221,6 +238,16 @@ productRouter.get('/slug/:slug', async (req, res) => {
   product
     ? res.send(product)
     : res.status(404).send({ message: 'Product Not Found' });
+});
+
+// Get only sold products
+productRouter.get('/sold', async (req, res) => {
+  try {
+    const soldProducts = await Product.find({ sold: true });
+    res.json(soldProducts);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching sold products' });
+  }
 });
 
 productRouter.get('/:id', async (req, res) => {

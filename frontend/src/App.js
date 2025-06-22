@@ -17,6 +17,7 @@ import ProductEdit from './pages/ProductEdit';
 import ProductList from './pages/ProductList';
 import UserEdit from './pages/UserEdit';
 import UserList from './pages/UserList';
+
 // admin edit pages
 import AboutUsEdit from './pages/AboutUsEdit';
 import DesignEdit from './pages/DesignEdit';
@@ -29,9 +30,9 @@ import AboutUs from './pages/AboutUs';
 import AskedQuestions from './pages/AskedQuestions';
 import Cart from './pages/Cart'; // step 1
 import Contact from './pages/Contact';
+import Collections from './pages/Collections';
 import Design from './pages/Design';
 import ForgetPassword from './pages/ForgetPassword';
-import Gallery from './pages/Gallery';
 import Home from './pages/Home';
 import PaymentMethod from './pages/PaymentMethod'; // step 3
 import PlaceOrder from './pages/PlaceOrder'; // step 4
@@ -41,6 +42,7 @@ import Search from './pages/Search';
 import ShippingAddress from './pages/ShippingAddress'; // step 2
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
+import SoldGallery from './pages/SoldGallery';
 
 // user protected pages
 import OrderDetails from './pages/OrderDetails';
@@ -50,17 +52,20 @@ import Profile from './pages/Profile';
 function App() {
   return (
     <BrowserRouter>
+      <br />
       <Header />
-      <BottomHeader />
+      <br />
+      {/* <BottomHeader /> */}
       <main className='mt-0'>
+        <BottomHeader />
         <Routes>
           <Route path='/about' element={<AboutUs />} />
           <Route path='/askedQuestions' element={<AskedQuestions />} />
           <Route path='/cart' element={<Cart />} />
-          <Route path='/contact' element={<Contact />} /> {/* lesson 11 */}
+          <Route path='/contact' element={<Contact />} />
           <Route path='/design' element={<Design />} />
           <Route path='/' element={<Home />} />
-          <Route path='/gallery' element={<Gallery />} />
+          <Route path='/collections' element={<Collections />} />
           <Route path='/payment' element={<PaymentMethod />} />
           <Route path='/placeorder' element={<PlaceOrder />} />
           <Route path='/product/:slug' element={<ProductMag />} />
@@ -68,6 +73,7 @@ function App() {
           <Route path='/shipping' element={<ShippingAddress />} />
           <Route path='/signin' element={<Signin />} />
           <Route path='/signup' element={<Signup />} />
+          <Route path='/soldGallery' element={<SoldGallery />} />
           <Route path='/forget-password' element={<ForgetPassword />} />
           <Route path='/reset-password/:token' element={<ResetPassword />} />
           {/* Protected Routes */}

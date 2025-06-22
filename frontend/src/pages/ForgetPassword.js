@@ -77,11 +77,7 @@ export default function ForgetPassword() {
               </div>
             </Col>
             <Col xs={12} md={6} className='mt-3'>
-              <img
-                src='/images/forget.jpg'
-                alt='signin'
-                className='img-fluid'
-              />
+              <img src='/images/logo.jpg' alt='signin' className='img-fluid' />
             </Col>
           </Row>
         </>

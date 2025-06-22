@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { Store } from '../Store';
 import { getError } from '../utils';
-import { Container, Form, Button, ListGroup } from 'react-bootstrap';
+import { Container, Form, Button, Image, Row, Col } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import MessageBox from '../components/MessageBox';
 import SkeletonProductEdit from '../components/skeletons/SkeletonProductEdit';
@@ -50,11 +50,12 @@ export default function ProductEdit() {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [price, setPrice] = useState('');
+  const [salePrice, setSalePrice] = useState('');
   const [image, setImage] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
   const [images, setImages] = useState([]);
-  const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
   const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [categoryImage, setCategoryImage] = useState('');
   const [countInStock, setCountInStock] = useState('');
   const [from, setFrom] = useState('');
   const [condition, setCondition] = useState('');
@@ -75,10 +76,10 @@ export default function ProductEdit() {
         setName(data.name);
         setSlug(data.slug);
         setPrice(data.price);
+        setSalePrice(data.salePrice || '');
         setImage(data.image);
-        setImages(data.images);
-        setAdditionalImagePreviews(data.images || []);
-        setCategory(data.category);
+        setImages(data.images || []);
+        setCategory(data.category?._id || data.category);
         setCountInStock(data.countInStock);
         setFrom(data.from);
         setCondition(data.condition);
@@ -87,7 +88,6 @@ export default function ProductEdit() {
         setPeriod(data.period);
         setMaker(data.maker);
         setProvenance(data.provenance || false);
-        setCountInStock(data.countInStock);
         setDescription(data.description);
         setIsCharish(data.charishLink ? true : false);
         setCharishLink(data.charishLink || '');
@@ -104,8 +104,26 @@ export default function ProductEdit() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    if (!category) {
+      toast.error('Please select a category before updating.', {
+        autoClose: 1000, // Display success message for 1 second
+      });
+      return;
+    }
+
+    // Add this console.log before making the API request
+    console.log('Submitting Product Update:', {
+      categoryImage, // Log categoryImage before sending request
+      category,
+      name,
+      image,
+      images,
+    });
+
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
+
       await axios.put(
         `/api/products/${productId}`,
         {
@@ -113,9 +131,11 @@ export default function ProductEdit() {
           name,
           slug,
           price,
+          salePrice: salePrice !== '' ? salePrice : undefined,
           image,
           images,
           category,
+          categoryImage, // ✅ Ensure categoryImage is sent
           from,
           condition,
           dimensions,
@@ -131,25 +151,28 @@ export default function ProductEdit() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
       );
-      dispatch({
-        type: 'UPDATE_SUCCESS',
-      });
+
+      dispatch({ type: 'UPDATE_SUCCESS' });
       toast.success('Product updated successfully', {
         autoClose: 1000, // Display success message for 1 second
       });
-      setTimeout(() => {
-        navigate('/admin/products');
-      }, 1000);
+      navigate('/admin/products');
     } catch (err) {
       toast.error(getError(err));
       dispatch({ type: 'UPDATE_FAIL' });
     }
   };
 
-  const uploadFileHandler = async (e, forImages) => {
-    const file = e.target.files[0];
+  const uploadMultipleFilesHandler = async (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      toast.error('No files selected for upload.');
+      return;
+    }
+
+    const files = Array.from(e.target.files);
     const bodyFormData = new FormData();
-    bodyFormData.append('file', file);
+    files.forEach((file) => bodyFormData.append('files', file));
+
     try {
       dispatch({ type: 'UPLOAD_REQUEST' });
       const { data } = await axios.post('/api/upload', bodyFormData, {
@@ -158,17 +181,16 @@ export default function ProductEdit() {
           authorization: `Bearer ${userInfo.token}`,
         },
       });
+
       dispatch({ type: 'UPLOAD_SUCCESS' });
 
-      if (forImages) {
-        setImages([...images, data.url]); // Store only the string URL
-        setAdditionalImagePreviews([...additionalImagePreviews, data.url]);
-      } else {
-        setImage(data.url); // Store only the string URL
-        setImagePreview(data.url);
+      if (data.urls.length > 0) {
+        setImages([...data.urls]);
+        setImage(data.urls[0]); // ✅ always set main image
       }
-      toast.success('Image uploaded successfully. Click Update to apply it', {
-        autoClose: 1000,
+
+      toast.success('Images uploaded successfully', {
+        autoClose: 1000, // Display success message for 1 second
       });
     } catch (err) {
       toast.error(getError(err));
@@ -176,24 +198,110 @@ export default function ProductEdit() {
     }
   };
 
-  const deleteFileHandler = (fileUrl) => {
-    setImages((prevImages) => prevImages.filter((img) => img !== fileUrl));
-    setAdditionalImagePreviews((prevPreviews) =>
-      prevPreviews.filter((preview) => preview !== fileUrl)
-    );
-    toast.success('Image removed successfully. Click Update to apply it');
+  const deleteImageHandler = (fileUrl) => {
+    const updatedImages = images.filter((img) => img !== fileUrl);
+    setImages(updatedImages);
+    if (image === fileUrl && updatedImages.length > 0) {
+      setImage(updatedImages.length > 0 ? updatedImages[0] : '');
+    } else if (updatedImages.length === 0) {
+      setImage('');
+    }
+    toast.success('Image removed successfully', {
+      autoClose: 1000, // Display success message for 1 second
+    });
   };
+
+  const uploadCategoryImageHandler = async (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      toast.error('No file selected for upload.');
+      return;
+    }
+
+    const file = e.target.files[0];
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('categoryId', category); // ✅ important
+
+    try {
+      const { data } = await axios.post('/api/upload/category', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      });
+
+      setCategoryImage(data.image);
+      toast.success('Category image uploaded', {
+        autoClose: 1000, // Display success message for 1 second
+      });
+    } catch (err) {
+      toast.error(getError(err));
+    }
+  };
+
+  const deleteCategoryImageHandler = async () => {
+    try {
+      await axios.put(
+        `/api/upload/category/${category}/remove-image`,
+        {}, // empty payload
+        {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        }
+      );
+
+      setCategoryImage('');
+      toast.success('Category image removed', {
+        autoClose: 1000, // Display success message for 1 second
+      });
+    } catch (err) {
+      toast.error('Error removing category image');
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get('/api/products/categories');
+        console.log('Fetched Categories:', data); // ✅ Debugging
+
+        if (isMounted) {
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false; // Cleanup to prevent state update on unmounted component
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!Array.isArray(categories) || categories.length === 0 || !category)
+      return;
+
+    const selectedCategory = categories.find((cat) => cat._id === category);
+    if (selectedCategory) {
+      setCategoryImage(selectedCategory.categoryImage);
+    }
+  }, [category, categories]);
 
   return (
     <Container className='small-screen'>
       <Helmet>
-        <title>Edit Product ${productId}</title>
+        <title>Edit Product {productId}</title>
       </Helmet>
       <br />
       <h4 className='box'>Edit Product {productId}</h4>
 
       {loading ? (
-        <SkeletonProductEdit delay={1000} />
+        <SkeletonProductEdit />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
@@ -207,7 +315,7 @@ export default function ProductEdit() {
             />
           </Form.Group>
 
-          <Form.Group className='mb-3' controlId='name'>
+          <Form.Group className='mb-3' controlId='price'>
             <Form.Label>Price</Form.Label>
             <Form.Control
               value={price}
@@ -216,73 +324,152 @@ export default function ProductEdit() {
             />
           </Form.Group>
 
-          <Form.Group className='mb-3' controlId='image'>
-            <Form.Label>Main Image File</Form.Label>
+          <Form.Group className='mb-3' controlId='salePrice'>
+            <Form.Label>Sale Price (Optional)</Form.Label>
             <Form.Control
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              required
+              value={salePrice}
+              onChange={(e) => setSalePrice(e.target.value)}
             />
           </Form.Group>
-
-          <Form.Group className='mb-3' controlId='imageFile'>
-            <Form.Label>Upload Image</Form.Label>
+          <Form.Group className='mb-3' controlId='imageUpload'>
+            <Form.Label>Upload Product Images</Form.Label>
             <Form.Control
               type='file'
-              onChange={(e) => uploadFileHandler(e, false)}
+              multiple
+              accept='image/*'
+              onChange={uploadMultipleFilesHandler}
             />
-            {loadingUpload && <SkeletonProductEdit delay={1000} />}
-            {imagePreview && (
-              <img
-                src={imagePreview}
-                alt='Main Preview'
-                style={{ width: '100px', height: '100px', marginTop: '10px' }}
-              />
-            )}
           </Form.Group>
 
-          <Form.Group className='mb-3' controlId='additionalImage'>
-            <Form.Label>Additional Images</Form.Label>
-            {additionalImagePreviews.length === 0 && (
-              <MessageBox>No image</MessageBox>
-            )}
-            <ListGroup variant='flush'>
-              {additionalImagePreviews.map((x, index) => (
-                <ListGroup.Item key={index}>
+          {/* Display Uploaded Images */}
+          {images.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {images.map((img, index) => (
+                <div
+                  key={index}
+                  style={{
+                    position: 'relative',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: index === 0 ? '2px solid gold' : '1px solid #ddd',
+                  }}
+                >
                   <img
-                    src={x}
-                    alt={`Additional Preview ${index}`}
+                    src={img}
+                    alt={`Preview ${index}`}
                     style={{
-                      width: '100px',
-                      height: '100px',
-                      marginRight: '10px',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
                     }}
                   />
-                  <Button variant='light' onClick={() => deleteFileHandler(x)}>
-                    <i className='fa fa-times-circle'></i>
-                  </Button>
-                </ListGroup.Item>
+                  <button
+                    onClick={() => deleteImageHandler(img)}
+                    style={{
+                      position: 'absolute',
+                      top: '5px',
+                      right: '5px',
+                      color: 'red',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
-            </ListGroup>
-          </Form.Group>
+            </div>
+          )}
 
-          <Form.Group className='mb-3' controlId='additionalImageFile'>
-            <Form.Label>Upload Additional Image</Form.Label>
-            <Form.Control
-              type='file'
-              onChange={(e) => uploadFileHandler(e, true)}
-            />
-            {loadingUpload && <SkeletonProductEdit delay={1000} />}
-          </Form.Group>
-
+          {/* Category Dropdown & Image Preview */}
           <Form.Group className='mb-3' controlId='category'>
             <Form.Label>Category</Form.Label>
+            <Row>
+              <Col md={8}>
+                <Form.Select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value=''>Select a category</option>
+                  {categories.length > 0 ? (
+                    categories.map((cat, index) => (
+                      <option key={cat._id || index} value={cat._id}>
+                        {cat._id}{' '}
+                        {/* ✅ Debugging: Ensure category name appears */}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No categories found</option>
+                  )}
+                </Form.Select>
+              </Col>
+              <Col md={4} className='text-center'>
+                {categoryImage && (
+                  <Image
+                    src={categoryImage}
+                    alt='Category Preview'
+                    rounded
+                    fluid
+                    style={{ maxWidth: '100px', border: '1px solid #ddd' }}
+                  />
+                )}
+              </Col>
+            </Row>
+          </Form.Group>
+
+          <Form.Group className='mb-3' controlId='categoryImageUpload'>
+            <Form.Label>Upload Category Image</Form.Label>
             <Form.Control
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
+              type='file'
+              accept='image/*'
+              onChange={uploadCategoryImageHandler}
             />
           </Form.Group>
+
+          {categoryImage && (
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                marginBottom: '10px',
+              }}
+            >
+              <Image
+                src={categoryImage}
+                alt='Category'
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                }}
+              />
+              <Button
+                variant='danger'
+                size='sm'
+                style={{
+                  position: 'absolute',
+                  top: '5px',
+                  right: '5px',
+                  borderRadius: '50%',
+                  padding: '3px 6px',
+                  fontSize: '12px',
+                }}
+                onClick={deleteCategoryImageHandler}
+              >
+                ✕
+              </Button>
+            </div>
+          )}
 
           <Form.Group className='mb-3' controlId='from'>
             <Form.Label>From</Form.Label>
@@ -390,10 +577,10 @@ export default function ProductEdit() {
           )}
 
           <div className='mb-3'>
-            <Button disabled={loadingUpdate} type='submit'>
-              Update
+            <Button disabled={loadingUpdate || loadingUpload} type='submit'>
+              {loadingUpdate ? 'Updating...' : 'Update'}
             </Button>
-            {loadingUpdate && <SkeletonProductEdit delay={1000} />}
+            {loadingUpdate && <SkeletonProductEdit />}
           </div>
         </Form>
       )}

@@ -186,16 +186,21 @@ export default function UserList() {
     formData.append('emailList', emailList);
     formData.append('emailSubject', emailSubject);
     formData.append('emailMessage', emailMessage);
+
     if (logoFile) {
       formData.append('logoFile', logoFile);
     }
-    products.forEach((product) => {
+
+    products.forEach((product, index) => {
       if (product.file) {
         formData.append('emailFiles', product.file);
-        formData.append('descriptions', product.description);
-        formData.append('prices', product.price);
+        formData.append('descriptions', product.description || '');
+        formData.append('prices', product.price || '0.00');
       }
     });
+
+    console.log('Sending formData:', [...formData.entries()]); // Debugging
+
     try {
       const { data } = await axios.post('/api/emails/mass-email', formData, {
         headers: {
@@ -208,7 +213,6 @@ export default function UserList() {
       toast.error(getError(error), { autoClose: 1000 });
     }
   };
-
   const addUserHandler = async (e) => {
     e.preventDefault();
     try {
@@ -256,7 +260,6 @@ export default function UserList() {
                     type='text'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    required
                   />
                 </Form.Group>
                 <Form.Group className='mb-3' controlId='email'>
@@ -265,7 +268,6 @@ export default function UserList() {
                     type='email'
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                   />
                 </Form.Group>
                 <Form.Group className='mb-3' controlId='phone'>

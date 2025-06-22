@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
 const homeContentSchema = new mongoose.Schema({
-  jumbotronText: { type: [String], required: true },
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  h4Text: { type: [String], required: true },
+  title: { type: String, required: false },
+  description: { type: String, required: false },
+  h4Text: { type: [String], required: false },
+  jumbotronImages: { type: [String], required: false }, // Array for multiple images
 });
 
 const HomeContent = mongoose.model('HomeContent', homeContentSchema);

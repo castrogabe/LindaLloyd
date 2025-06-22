@@ -18,6 +18,52 @@ aboutRouter.get(
   })
 );
 
+// Update Jumbotron Image
+aboutRouter.put(
+  '/jumbotron',
+  isAuth,
+  isAdmin,
+  upload.single('jumbotronImage'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    let content = await AboutContent.findOne({});
+
+    if (!content) {
+      // Create a new document if none exists
+      content = new AboutContent({
+        sections: [],
+        jumbotronImage: { url: imageUrl, name: req.file.originalname },
+      });
+    } else {
+      // Update existing document's jumbotron image
+      content.jumbotronImage = { url: imageUrl, name: req.file.originalname };
+    }
+
+    await content.save();
+    res.json({ jumbotronImage: content.jumbotronImage });
+  })
+);
+
+aboutRouter.delete(
+  '/jumbotron',
+  isAuth,
+  isAdmin,
+  asyncHandler(async (req, res) => {
+    const content = await AboutContent.findOne({});
+    if (content) {
+      content.jumbotronImage = null;
+      await content.save();
+      res.json({ message: 'Jumbotron image deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'About content not found' });
+    }
+  })
+);
+
 // Update about content (with multiple image upload)
 aboutRouter.put(
   '/',

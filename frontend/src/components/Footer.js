@@ -53,11 +53,31 @@ const Footer = () => {
                   About Us
                 </Link>
               </li>
+
               <li>
-                <Link to='/gallery' className='email'>
-                  Antique Gallery
+                <Link to='/collections' className='email'>
+                  Collections
                 </Link>
               </li>
+
+              <li>
+                <Link to='/soldGallery' className='email1'>
+                  Sold Antiques
+                </Link>
+              </li>
+
+              <li>
+                <Link to='/soldGallery' className='email1'>
+                  Sold Gallery
+                </Link>
+              </li>
+
+              <li>
+                <Link to='/soldGallery' className='email1'>
+                  Gallery
+                </Link>
+              </li>
+
               <li>
                 <Link to='/design' className='email'>
                   Design Philosophy
@@ -76,12 +96,14 @@ const Footer = () => {
           Questions
           <div className='socialIcon'>
             <ul className='list-unstyled'>
-              <Link to='/contact' className='email'>
-                <i className='fa fa-envelope'></i> Contact Us
-              </Link>
+              <li>
+                <Link to='/contact' className='email'>
+                  <i className='fa fa-envelope'></i> Contact Us
+                </Link>
+              </li>
               <li>
                 <a href='mailto:sweetwatertc@yahoo.com' className='email'>
-                  <i className='fa fa-envelope'></i> Email Me via gmail
+                  <i className='fa fa-envelope'></i> Email Me
                 </a>
               </li>
             </ul>
@@ -93,12 +115,12 @@ const Footer = () => {
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <li>Monday: Closed</li>
-              <li>Tuesday: Closed</li>
+              <li>Tuesday: 11-5</li>
               <li>Wednesday: 11-5</li>
               <li>Thursday: 11-5</li>
               <li>Friday: 11-5</li>
               <li>Saturday: 11-5</li>
-              <li>Sunday: Closed</li>
+              <li>Sunday: 11-5</li>
             </ul>
           </div>
         </Col>

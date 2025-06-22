@@ -108,27 +108,37 @@ emailRouter.post(
   async (req, res) => {
     const { emailList, emailSubject, emailMessage, descriptions, prices } =
       req.body;
-    console.log('Descriptions:', descriptions); // Debugging
-    console.log('Prices:', prices); // Debugging
-    const emailFiles = req.files['emailFiles'];
-    const logoFile = req.files['logoFile'] ? req.files['logoFile'][0] : null;
+
+    console.log('Received Body:', req.body);
+    console.log('Received Files:', req.files);
+
+    const emailFiles = req.files ? req.files['emailFiles'] : [];
+    const logoFile =
+      req.files && req.files['logoFile'] ? req.files['logoFile'][0] : null;
 
     // Ensure descriptions and prices are arrays
     const descriptionsArray = Array.isArray(descriptions)
       ? descriptions
-      : [descriptions];
-    const pricesArray = Array.isArray(prices) ? prices : [prices];
+      : descriptions
+      ? [descriptions]
+      : [];
+    const pricesArray = Array.isArray(prices) ? prices : prices ? [prices] : [];
+
+    if (!emailFiles || emailFiles.length === 0) {
+      console.error('No email files received.');
+      return res.status(400).json({ message: 'No email files uploaded.' });
+    }
 
     const items = emailFiles.map((file, index) => ({
       cid: `item${index}@example.com`,
-      description: descriptionsArray[index],
-      price: pricesArray[index],
+      description: descriptionsArray[index] || 'No description',
+      price: pricesArray[index] || '0.00',
     }));
 
     const attachments = emailFiles.map((file, index) => ({
       filename: file.originalname,
       content: file.buffer,
-      cid: `item${index}@example.com`, // same cid value as in the html img src
+      cid: `item${index}@example.com`,
     }));
 
     let logoCid = '';

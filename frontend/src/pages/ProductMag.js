@@ -1,23 +1,12 @@
 import axios from 'axios';
 import { useContext, useEffect, useReducer, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import {
-  Card,
-  Col,
-  Row,
-  ListGroup,
-  Form,
-  Badge,
-  Button,
-  FloatingLabel,
-} from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Card, Col, Row, ListGroup, Badge, Button } from 'react-bootstrap';
 import ReactImageMagnify from 'react-image-magnify';
-import Rating from '../components/Rating';
 import { Helmet } from 'react-helmet-async';
 import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
 import { Store } from '../Store';
-import { toast } from 'react-toastify';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 import { Carousel } from 'react-responsive-carousel';
@@ -27,14 +16,6 @@ import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'REFRESH_PRODUCT':
-      return { ...state, product: action.payload };
-    case 'CREATE_REQUEST':
-      return { ...state, loadingCreateReview: true };
-    case 'CREATE_SUCCESS':
-      return { ...state, loadingCreateReview: false };
-    case 'CREATE_FAIL':
-      return { ...state, loadingCreateReview: false };
     case 'FETCH_REQUEST':
       return { ...state, loading: true };
     case 'FETCH_SUCCESS':
@@ -53,10 +34,6 @@ const reducer = (state, action) => {
 };
 
 function ProductMag() {
-  let reviewsRef = useRef();
-
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -65,15 +42,7 @@ function ProductMag() {
   const { slug } = params;
 
   const [
-    {
-      loading,
-      error,
-      product,
-      loadingCreateReview,
-      loadingContent,
-      content = [],
-      errorContent,
-    },
+    { loading, error, product, loadingContent, content = [], errorContent },
     dispatch,
   ] = useReducer(reducer, {
     product: { images: [] },
@@ -115,7 +84,7 @@ function ProductMag() {
   }, []);
 
   const { state, dispatch: ctxDispatch } = useContext(Store);
-  const { cart, userInfo } = state;
+  const { cart } = state;
 
   const addToCartHandler = async () => {
     const existItem = cart.cartItems.find((x) => x._id === product._id);
@@ -138,39 +107,6 @@ function ProductMag() {
   const openLightbox = (index) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
-  };
-
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    if (!comment || !rating) {
-      toast.error('Please enter comment and rating');
-      return;
-    }
-    try {
-      const { data } = await axios.post(
-        `/api/products/${product._id}/reviews`,
-        { rating, comment, name: userInfo.name },
-        {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        }
-      );
-
-      dispatch({
-        type: 'CREATE_SUCCESS',
-      });
-      toast.success('Review submitted successfully');
-      product.reviews.unshift(data.review);
-      product.numReviews = data.numReviews;
-      product.rating = data.rating;
-      dispatch({ type: 'REFRESH_PRODUCT', payload: product });
-      window.scrollTo({
-        behavior: 'smooth',
-        top: reviewsRef.current.offsetTop,
-      });
-    } catch (error) {
-      toast.error(getError(error));
-      dispatch({ type: 'CREATE_FAIL' });
-    }
   };
 
   // zoom magnifier
@@ -328,11 +264,7 @@ function ProductMag() {
           <div className='box'>
             <ListGroup variant='flush'>
               <ListGroup.Item>
-                <h4>{product.name}</h4>
-                <Rating
-                  rating={product.rating}
-                  numReviews={product.numReviews}
-                />
+                <h4 className='details-list'>{product.name}</h4>
               </ListGroup.Item>
               <ListGroup.Item>
                 <a href='/contact' className='contact-button'>
@@ -340,17 +272,31 @@ function ProductMag() {
                 </a>
               </ListGroup.Item>
               <ListGroup.Item>
-                <h5 className='details-header'>Details</h5>
                 <ul className='details-list'>
-                  <li>Condition: {product.condition}</li>
-                  <li>Dimensions: {product.dimensions}</li>
-                  <li>From: {product.from}</li>
-                  <li>Materials: {product.materials}</li>
-                  <li>Period: {product.period}</li>
-                  <li>Maker: {product.maker}</li>
-                  <li>Provenance: {product.provenance ? 'Yes' : 'No'}</li>
                   <li>
-                    Details:
+                    <strong>Condition:</strong> {product.condition}
+                  </li>
+                  <li>
+                    <strong>Dimensions:</strong> {product.dimensions}
+                  </li>
+                  <li>
+                    <strong>From:</strong> {product.from}
+                  </li>
+                  <li>
+                    <strong>Materials:</strong> {product.materials}
+                  </li>
+                  <li>
+                    <strong>Period:</strong> {product.period}
+                  </li>
+                  <li>
+                    <strong>Maker:</strong> {product.maker}
+                  </li>
+                  <li>
+                    <strong>Provenance:</strong>{' '}
+                    {product.provenance ? 'Yes' : 'No'}
+                  </li>
+                  <li>
+                    <strong>Details:</strong>
                     <p className='product-details'>{product.description}</p>
                   </li>
                 </ul>
@@ -366,7 +312,29 @@ function ProductMag() {
                 <Row>
                   <Col>Price:</Col>
                   <Col>
-                    <strong>${product.price}</strong>
+                    {product.salePrice ? (
+                      <>
+                        <span
+                          style={{
+                            textDecoration: 'line-through',
+                            color: 'gray',
+                          }}
+                        >
+                          ${product.price.toFixed(2)}
+                        </span>
+                        <br />
+                        <span
+                          style={{
+                            color: 'red',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          ${product.salePrice}
+                        </span>
+                      </>
+                    ) : (
+                      <strong>${product.price}</strong>
+                    )}
                   </Col>
                 </Row>
               </ListGroup.Item>
@@ -423,74 +391,6 @@ function ProductMag() {
 
       <br />
 
-      <div className='box'>
-        <h4 ref={reviewsRef}>Reviews</h4>
-        <div className='mb-3'>
-          {product.reviews.length === 0 && (
-            <MessageBox>There is no review</MessageBox>
-          )}
-        </div>
-        <ListGroup>
-          {product.reviews.map((review) => (
-            <ListGroup.Item key={review._id}>
-              <strong>{review.name}</strong>
-              <Rating rating={review.rating} caption=' '></Rating>
-              <p>{review.createdAt.substring(0, 10)}</p>
-              <p>{review.comment}</p>
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-        <div className='my-3'>
-          {userInfo ? (
-            <Form onSubmit={submitHandler}>
-              <h2>Write a customer review</h2>
-              <Form.Group className='mb-3' controlId='rating'>
-                <Form.Label>Rating</Form.Label>
-                <Form.Select
-                  aria-label='Rating'
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                >
-                  <option value=''>Select...</option>
-                  <option value='1'>1- Poor</option>
-                  <option value='2'>2- Fair</option>
-                  <option value='3'>3- Good</option>
-                  <option value='4'>4- Very good</option>
-                  <option value='5'>5- Excellent</option>
-                </Form.Select>
-              </Form.Group>
-              <FloatingLabel
-                controlId='floatingTextarea'
-                label='Write your comment'
-                className='mb-3'
-              >
-                <Form.Control
-                  as='textarea'
-                  placeholder='Leave a comment here'
-                  style={{ height: '100px' }}
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                />
-              </FloatingLabel>
-
-              <div className='mb-3'>
-                <Button disabled={loadingCreateReview} type='submit'>
-                  Submit
-                </Button>
-                {loadingCreateReview && <SkeletonProductMag />}
-              </div>
-            </Form>
-          ) : (
-            <MessageBox>
-              Please{' '}
-              <Link to={`/signin?redirect=/product/${product.slug}`}>
-                Sign In
-              </Link>{' '}
-              to write a review
-            </MessageBox>
-          )}
-        </div>
-      </div>
       {/* Lightbox */}
       <div className='lightbox'>
         {lightboxOpen && (

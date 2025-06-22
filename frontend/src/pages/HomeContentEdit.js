@@ -8,8 +8,8 @@ import { toast } from 'react-toastify';
 export default function HomeContentEdit() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [jumbotronText, setJumbotronText] = useState([]);
   const [h4Text, setH4Text] = useState([]);
+  const [jumbotronImages, setJumbotronImages] = useState([]);
   const { state } = useContext(Store);
   const { userInfo } = state;
 
@@ -21,8 +21,8 @@ export default function HomeContentEdit() {
         });
         setTitle(data.title);
         setDescription(data.description);
-        setJumbotronText(data.jumbotronText || []);
         setH4Text(data.h4Text || []);
+        setJumbotronImages(data.jumbotronImages || []);
       } catch (error) {
         console.error(error);
         toast.error('Failed to fetch content');
@@ -31,36 +31,30 @@ export default function HomeContentEdit() {
     fetchContent();
   }, [userInfo]);
 
-  const handleJumbotronTextChange = (index, e) => {
-    const newText = [...jumbotronText];
-    newText[index] = e.target.value;
-    setJumbotronText(newText);
-  };
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-  const handleAddJumbotronText = () => {
-    setJumbotronText([...jumbotronText, '']);
-  };
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file); // Append multiple files
+    });
 
-  const handleDeleteJumbotronText = (index) => {
-    const newText = [...jumbotronText];
-    newText.splice(index, 1);
-    setJumbotronText(newText);
-  };
+    try {
+      const { data } = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      });
 
-  const handleH4TextChange = (index, e) => {
-    const newText = [...h4Text];
-    newText[index] = e.target.value;
-    setH4Text(newText);
-  };
-
-  const handleAddH4Text = () => {
-    setH4Text([...h4Text, '']);
-  };
-
-  const handleDeleteH4Text = (index) => {
-    const newText = [...h4Text];
-    newText.splice(index, 1);
-    setH4Text(newText);
+      setJumbotronImages([...jumbotronImages, ...data.urls]); // Append new images
+      toast.success('Images uploaded successfully', {
+        autoClose: 1000, // Display success message for 1 second
+      });
+    } catch (error) {
+      toast.error('Failed to upload images');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -68,22 +62,23 @@ export default function HomeContentEdit() {
     try {
       const { data } = await axios.put(
         '/api/homecontent',
-        { title, description, jumbotronText, h4Text },
-        {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        }
+        { title, description, h4Text, jumbotronImages },
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
       );
       setTitle(data.title);
       setDescription(data.description);
-      setJumbotronText(data.jumbotronText);
       setH4Text(data.h4Text);
+      setJumbotronImages(data.jumbotronImages);
       toast.success('Content updated successfully', {
-        autoClose: 1000,
+        autoClose: 1000, // Display success message for 1 second
       });
     } catch (error) {
-      console.error(error);
       toast.error('Failed to update content');
     }
+  };
+
+  const handleRemoveImage = (index) => {
+    setJumbotronImages(jumbotronImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -100,7 +95,6 @@ export default function HomeContentEdit() {
             type='text'
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required
           />
         </Form.Group>
         <Form.Group controlId='formDescription'>
@@ -110,62 +104,42 @@ export default function HomeContentEdit() {
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            required
           />
         </Form.Group>
         <hr />
-        {h4Text.map((text, index) => (
-          <Form.Group controlId={`formH4Text${index}`} key={index}>
-            <Form.Label>Subtitle Text {index + 1}</Form.Label>
-            <Form.Control
-              type='text'
-              value={text}
-              onChange={(e) => handleH4TextChange(index, e)}
-              required
-            />
-            <Button
-              variant='danger'
-              onClick={() => handleDeleteH4Text(index)}
-              className='mt-2'
-            >
-              Delete
-            </Button>
-          </Form.Group>
-        ))}
-        <Button
-          variant='success'
-          onClick={handleAddH4Text}
-          className='mt-2 mr-2'
-        >
-          Add Subtitle Text
-        </Button>
-        <hr />
-        {jumbotronText.map((text, index) => (
-          <Form.Group controlId={`formJumbotronText${index}`} key={index}>
-            <Form.Label>Typewriter Effect Text {index + 1}</Form.Label>
-            <Form.Control
-              type='text'
-              value={text}
-              onChange={(e) => handleJumbotronTextChange(index, e)}
-              required
-            />
-            <Button
-              variant='danger'
-              onClick={() => handleDeleteJumbotronText(index)}
-              className='mt-2'
-            >
-              Delete
-            </Button>
-          </Form.Group>
-        ))}
-        <Button
-          variant='success'
-          onClick={handleAddJumbotronText}
-          className='mt-2 mr-2'
-        >
-          Add Typewriter Effect Text
-        </Button>
-        &nbsp;
+        <Form.Group>
+          <Form.Label>Jumbotron Images</Form.Label>
+          <Form.Control type='file' multiple onChange={handleImageUpload} />
+
+          <div className='uploaded-images'>
+            {jumbotronImages.map((image, index) => (
+              <div
+                key={index}
+                style={{ display: 'inline-block', margin: '10px' }}
+              >
+                <img
+                  src={image}
+                  alt={`Jumbotron ${index}`}
+                  style={{
+                    width: '200px', // Increase this value for a larger preview
+                    height: 'auto',
+                    objectFit: 'cover',
+                    borderRadius: '5px',
+                  }}
+                />
+                &nbsp;
+                <Button
+                  variant='danger'
+                  onClick={() => handleRemoveImage(index)}
+                  className='mt-2'
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Form.Group>
+
         <Button variant='primary' type='submit' className='mt-2'>
           Save Changes
         </Button>

@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/castrogabe/lindalloyd"
+    "url": "git+https://github.com/castrogabe/LindaLloyd"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/castrogabe/lindalloyd/deployment"
+    "url": "https://github.com/castrogabe/LindaLloyd/deployment"
   },
-  "homepage": "https://github.com/castrogabe/lindalloyd#readme"
+  "homepage": "https://github.com/castrogabe/LindaLloyd#readme"
 }
