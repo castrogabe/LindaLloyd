@@ -47,14 +47,6 @@ function Product() {
   ) : (
     <div className='content'>
       <br />
-      <div className='box'>
-        <Row>
-          <p className='mt-3'>
-            ~ All of the products are hand picked over many years. ~
-          </p>
-        </Row>
-      </div>
-      <br />
       <Row>
         <Col md={6}>
           <img
@@ -64,27 +56,31 @@ function Product() {
           ></img>
         </Col>
         <Col md={6}>
-          <ListGroup variant='flush'>
-            <ListGroup.Item>
-              <Helmet>
-                <title>{product.name}</title>
-              </Helmet>
-              <h1>{product.name}</h1>
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <Rating
-                rating={product.rating}
-                numReviews={product.numReviews}
-              ></Rating>
-            </ListGroup.Item>
-            <ListGroup.Item>Price : ${product.price}</ListGroup.Item>
-            <ListGroup.Item>Made In : {product.MadeIn}</ListGroup.Item>
-            <ListGroup.Item>Finish : {product.finish}</ListGroup.Item>
-            <ListGroup.Item>
-              Description:
-              <p>{product.description}</p>
-            </ListGroup.Item>
-          </ListGroup>
+          <Card>
+            <Card.Body>
+              <ListGroup variant='flush'>
+                <ListGroup.Item>
+                  <Helmet>
+                    <title>{product.name}</title>
+                  </Helmet>
+                  <h1>{product.name}</h1>
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <Rating
+                    rating={product.rating}
+                    numReviews={product.numReviews}
+                  ></Rating>
+                </ListGroup.Item>
+                <ListGroup.Item>Price : ${product.price}</ListGroup.Item>
+                <ListGroup.Item>From : {product.from}</ListGroup.Item>
+                <ListGroup.Item>Finish : {product.finish}</ListGroup.Item>
+                <ListGroup.Item>
+                  Description:
+                  <p>{product.description}</p>
+                </ListGroup.Item>
+              </ListGroup>
+            </Card.Body>
+          </Card>
 
           <br />
 

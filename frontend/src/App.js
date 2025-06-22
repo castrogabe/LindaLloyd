@@ -11,6 +11,13 @@ import Cart from './pages/Cart';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Signin from './pages/Signin';
+import ShippingAddress from './pages/ShippingAddress';
+import Signup from './pages/Signup';
+import OrderScreen from './pages/Order';
+import PlaceOrder from './pages/PlaceOrder';
+import PaymentMethod from './pages/PaymentMethod';
+import OrderHistory from './pages/OrderHistory';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -26,6 +33,13 @@ function App() {
           <Route path='/about' element={<AboutUs />} />
           <Route path='/gallery' element={<Gallery />} />
           <Route path='/signin' element={<Signin />} />
+          <Route path='/signup' element={<Signup />} />
+          <Route path='/profile' element={<Profile />} />
+          <Route path='/placeorder' element={<PlaceOrder />} />
+          <Route path='/order/:id' element={<OrderScreen />} />
+          <Route path='/shipping' element={<ShippingAddress />} />
+          <Route path='/payment' element={<PaymentMethod />} />
+          <Route path='/orderhistory' element={<OrderHistory />} />
         </Routes>
       </main>
       <Footer />
