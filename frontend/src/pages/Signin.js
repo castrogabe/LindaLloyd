@@ -42,10 +42,10 @@ export default function Signin() {
   return (
     <div className='content'>
       <Helmet>
-        <title>Sign In</title>
+        <title>Sign Up</title>
       </Helmet>
       <Row>
-        <Col mg={6}>
+        <Col md={6}>
           <h1 className='my-3'>Sign In</h1>
           <Form onSubmit={submitHandler}>
             <Form.Group className='mb-3' controlId='email'>

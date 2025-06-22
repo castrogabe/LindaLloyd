@@ -289,3 +289,44 @@ Signup.js > added
 components/Header.js without searchBar or sideBar
 components/Header1.js with searchBar and sideBar (optional)
 . Update App.js
+
+# 9th Commit-Admin
+
+BACKEND
+folder: models
+orderModel > updated
+productModel > updated
+
+folder: routes
+orderRoutes > updated
+productRoutes > updated
+userRoutes > updated
+uploadRoutes > added
+
+server.js > updated
+utils.js > updated
+index.js > updated
+
+FRONTEND
+folder: components
+AdminRoute.js > added
+protectedRoute.js > added
+Header.js > updated
+Header1.js > updated
+Product.js > updated
+
+folder: pages
+Cart.js > updated
+Dashboard.js > added
+Order.js > updated
+OrderList.js > added
+Product.js > updated
+ProductEdit.js > added
+ProductList.js > added
+Search.js > added
+Signin.js > updated
+Signup.js > updated
+UserEdit.js > added
+UserList.js > added
+
+Modify > App.js, index.js, package.json
