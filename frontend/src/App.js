@@ -7,6 +7,7 @@ import BottomHeader from './components/BottomHeader';
 import BottomFooter from './components/BottomFooter';
 import Footer from './components/Footer';
 import Product from './pages/Product';
+import Cart from './pages/Cart';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/product/:slug' element={<Product />} />
+          <Route path='/cart' element={<Cart />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/gallery' element={<Gallery />} />
         </Routes>

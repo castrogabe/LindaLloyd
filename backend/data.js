@@ -20,6 +20,7 @@ const data = {
   ],
   products: [
     {
+      _id: '1',
       name: 'Ceramic Jar',
       slug: 'ceramic-jar',
       category: 'Ceramic',
@@ -40,6 +41,7 @@ const data = {
         'Handmade rustic clay pot with a wide mouth and a rounded body, showing signs of aging and use. The surface of the pot has a textured, weathered appearance with various shades of brown, indicating its age and possibly some hand-made elements. There are several horizontal ridges around the body.',
     },
     {
+      _id: '2',
       name: 'Murano Glass Red Goblet',
       slug: 'murano-glass-red-goblet',
       category: 'Glassware',
@@ -60,6 +62,7 @@ const data = {
         'Made in Italy, The piece in the image is a delicate red glass bowl or goblet, with a clear, intricately detailed stem that resembles a fish or a mythical creature.',
     },
     {
+      _id: '3',
       name: 'Delos Head Statue',
       slug: 'delos-head-statue',
       category: 'Statue',
@@ -80,6 +83,7 @@ const data = {
         'Inspired by 5000-year-old Cycladic art from the Greek Islands, this exquisite piece demands attention with its majestic presence.',
     },
     {
+      _id: '4',
       name: 'Woman Painting',
       slug: 'woman-painting',
       category: 'Painting',
@@ -100,6 +104,7 @@ const data = {
         'Stunning and eye-catching, this large exquisite oil on canvas is a fantastic display of artistry, Inspired by the likes of Diego Rivera and Paul Gauguin, with hints of Van Gogh’s influence, this masterpiece bursts with vibrant colors and intricate details. The women adorned in colorful attire, alongside the lush depiction of vegetables, leaves, and fruit-laden trees, make this painting truly mesmerising.',
     },
     {
+      _id: '5',
       name: 'Apollo Bust',
       slug: 'apollo-bust',
       category: 'Statue',
@@ -119,6 +124,7 @@ const data = {
       description: 'Glorious God Apollo Bust, Ancient Greek Sculpture.',
     },
     {
+      _id: '6',
       name: 'Murano Glass Bowl',
       slug: 'murano-glass-bowl',
       category: 'Glassware',
@@ -139,6 +145,7 @@ const data = {
         'This is a decorative glass bowl, likely a piece of art glass. It has a round, shallow design with a thick rim. The bowl features an intricate pattern of small raised dots evenly distributed on its interior and exterior surfaces, adding texture and visual interest. The glass itself has a slightly iridescent quality with a warm, amber hue, creating a shimmering effect as it catches the light.',
     },
     {
+      _id: '7',
       name: 'Qwan Yin',
       slug: 'qwan-yin',
       category: 'Statue',
@@ -159,6 +166,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '7',
       name: 'Lights',
       slug: 'lights',
       category: 'Lighting',
@@ -179,6 +187,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '8',
       name: 'Painting',
       slug: 'painting',
       category: 'Painting',
@@ -199,6 +208,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '9',
       name: 'Vases',
       slug: 'vases',
       category: 'Statue',
@@ -219,6 +229,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '10',
       name: 'Roman Carving',
       slug: 'roman-carving',
       category: 'Statue',
@@ -239,6 +250,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '11',
       name: 'Stone Bowl',
       slug: 'stone-bowl',
       category: 'Statue',
@@ -259,6 +271,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '12',
       name: 'Ceramic Deer Vase',
       slug: 'ceramic-deer-vase',
       category: 'Ceramic',
@@ -279,6 +292,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '13',
       name: 'Blue Ceramic',
       slug: 'blue-ceramic',
       category: 'Ceramic',
@@ -299,6 +313,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '14',
       name: 'Wire Wall Piece',
       slug: 'wire-wall-piece',
       category: 'Art',
@@ -319,6 +334,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '15',
       name: 'Cabinets',
       slug: 'cabinets',
       category: 'Furniture',
@@ -339,6 +355,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '16',
       name: 'Greek Key Pot',
       slug: 'greek-key-pot',
       category: 'Concrete',
@@ -359,6 +376,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '17',
       name: 'Foo Dog',
       slug: 'foo-dog',
       category: 'Asian',
@@ -379,6 +397,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '18',
       name: 'Wood Vase',
       slug: 'wood-vase',
       category: 'Wood',
@@ -399,6 +418,7 @@ const data = {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     },
     {
+      _id: '19',
       name: 'Copper Pot',
       slug: 'copper-pot',
       category: 'Metal',
