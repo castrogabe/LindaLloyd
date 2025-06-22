@@ -10,16 +10,16 @@ const SkeletonUserEdit = () => {
       <br />
       {isMobile ? (
         <Card className='mobile-image-card'>
-          <Skeleton classes='title width-100 skeleton-title' />
-          <Skeleton classes='title width-100 skeleton-title' />
+          <Skeleton classes='title width-25 skeleton-title' />
+          <Skeleton classes='title width-25 skeleton-title' />
           <Skeleton classes='title width-25 skeleton-title' />
           <Skeleton classes='title width-25 skeleton-title' />
         </Card>
       ) : (
         <Col className='box'>
           <br />
-          <Skeleton classes='title width-100 skeleton-title' />
-          <Skeleton classes='title width-100 skeleton-title' />
+          <Skeleton classes='title width-25 skeleton-title' />
+          <Skeleton classes='title width-25 skeleton-title' />
           <Skeleton classes='title width-25 skeleton-title' />
           <Skeleton classes='title width-25 skeleton-title' />
         </Col>

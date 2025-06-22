@@ -3,9 +3,9 @@ import Chart from 'react-google-charts';
 import axios from 'axios';
 import { Store } from '../Store';
 import { getError } from '../utils';
-import SkeletonDashboard from '../components/skeletons/SkeletonDashboard';
 import MessageBox from '../components/MessageBox';
 import { Row, Col, Card } from 'react-bootstrap';
+import SkeletonDashboard from '../components/skeletons/SkeletonDashboard';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -34,11 +34,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Simulate delay for 1.5 seconds to show Skeleton
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       try {
-        const { data } = await axios.get('/api/orders/summary', {
+        const { data: summaryData } = await axios.get('/api/orders/summary', {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+
+        const { data: messagesData } = await axios.get('/api/messages'); // Fetch messages
+
+        dispatch({
+          type: 'FETCH_SUCCESS',
+          payload: {
+            ...summaryData, // Existing summary data
+            messages: messagesData, // Add messages to payload
+          },
+        });
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
@@ -60,7 +72,7 @@ export default function Dashboard() {
       ) : (
         <>
           <Row className='mt-3'>
-            <Col md={4}>
+            <Col md={3}>
               <Card>
                 <Card.Body>
                   <Card.Title>
@@ -73,7 +85,7 @@ export default function Dashboard() {
               </Card>
             </Col>
 
-            <Col md={4}>
+            <Col md={3}>
               <Card>
                 <Card.Body>
                   <Card.Title>
@@ -81,12 +93,12 @@ export default function Dashboard() {
                       ? summary.orders[0].numOrders
                       : 0}
                   </Card.Title>
-                  <Card.Text> Orders</Card.Text>
+                  <Card.Text> New Orders</Card.Text>
                 </Card.Body>
               </Card>
             </Col>
 
-            <Col md={4}>
+            <Col md={3}>
               <Card>
                 <Card.Body>
                   <Card.Title>
@@ -95,11 +107,23 @@ export default function Dashboard() {
                       ? summary.orders[0].totalSales.toFixed(2)
                       : 0}
                   </Card.Title>
-                  <Card.Text> Orders</Card.Text>
+                  <Card.Text> Order Value</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col md={3}>
+              <Card>
+                <Card.Body>
+                  <Card.Title>
+                    {summary.messages ? summary.messages.length : 0}
+                  </Card.Title>
+                  <Card.Text> Messages</Card.Text>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
+
           <div className='my-3'>
             <h2>Sales</h2>
             {summary.dailyOrders.length === 0 ? (

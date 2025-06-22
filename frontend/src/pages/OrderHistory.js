@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useReducer } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Table, Button, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import SkeletonOrderHistory from '../components/skeletons/SkeletonOrderHistory';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
+import { Button, Table, Row, Col } from 'react-bootstrap/esm'; // lesson 12
+import SkeletonOrderHistory from '../components/skeletons/SkeletonOrderHistory'; // lesson 12
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -25,23 +25,18 @@ export default function OrderHistory() {
   const { state } = useContext(Store);
   const { userInfo } = state;
   const navigate = useNavigate();
-
   const [{ loading, error, orders }, dispatch] = useReducer(reducer, {
     loading: true,
     error: '',
   });
+
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
-      // Simulate delay for 1.5 seconds
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       try {
-        const { data } = await axios.get(
-          `/api/orders/mine`,
-
-          { headers: { Authorization: `Bearer ${userInfo.token}` } }
-        );
+        const { data } = await axios.get(`/api/orders/mine`, {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (error) {
         dispatch({
@@ -59,7 +54,6 @@ export default function OrderHistory() {
     const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const day = String(dateObject.getDate()).padStart(2, '0');
     const year = dateObject.getFullYear();
-
     return `${month}-${day}-${year}`;
   }
 
@@ -69,18 +63,15 @@ export default function OrderHistory() {
         <title>Order History</title>
       </Helmet>
       <br />
+      <h4 className='box'>{userInfo.name}'s Order History</h4>
       <div className='box'>
-        <h4>{userInfo.name}'s Order History</h4>
-        <p className='lead'>
-          Your orders on one place, click details for more information.
-        </p>
         <p className='text-muted'>
-          If you have any questions, please feel free to{' '}
-          <Link to='/contact'>
+          Click <strong>Details</strong> below for more information, if you have
+          any questions, please feel free to{' '}
+          <Link to='/contact' className='productEmail'>
             <strong>Contact Us.</strong>
           </Link>
         </p>
-        <hr />
         {loading ? (
           <Row>
             {[...Array(8).keys()].map((i) => (

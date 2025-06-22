@@ -14,6 +14,13 @@ const SkeletonUserList = () => {
       ) : (
         <Row className='box'>
           <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
+          <Skeleton classes='title width-100 skeleton-title mb-3' />
         </Row>
       )}
       <br />

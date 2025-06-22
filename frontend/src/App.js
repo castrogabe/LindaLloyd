@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
-// COMPONENTS
+// components
 import Header from './components/Header';
 import BottomHeader from './components/BottomHeader';
 import Footer from './components/Footer';
@@ -9,7 +9,7 @@ import BottomFooter from './components/BottomFooter';
 import AdminRoute from './components/AdminRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// ADMIN PAGES
+// admin pages
 import Dashboard from './pages/Dashboard';
 import Messages from './pages/Messages';
 import OrderList from './pages/OrderList';
@@ -17,25 +17,35 @@ import ProductEdit from './pages/ProductEdit';
 import ProductList from './pages/ProductList';
 import UserEdit from './pages/UserEdit';
 import UserList from './pages/UserList';
+// admin edit pages
+import AboutUsEdit from './pages/AboutUsEdit';
+import DesignEdit from './pages/DesignEdit';
+import AskedQuestionsEdit from './pages/AskedQuestionsEdit';
+import HomeContentEdit from './pages/HomeContentEdit';
+import ProductMagEdit from './pages/ProductMagEdit';
 
-// PAGES
+// pages
 import AboutUs from './pages/AboutUs';
-import Gallery from './pages/Gallery';
+import AskedQuestions from './pages/AskedQuestions';
 import Cart from './pages/Cart'; // step 1
 import Contact from './pages/Contact';
+import Design from './pages/Design';
 import ForgetPassword from './pages/ForgetPassword';
+import Gallery from './pages/Gallery';
 import Home from './pages/Home';
-import Order from './pages/Order';
-import OrderHistory from './pages/OrderHistory';
 import PaymentMethod from './pages/PaymentMethod'; // step 3
 import PlaceOrder from './pages/PlaceOrder'; // step 4
 import ProductMag from './pages/ProductMag';
-import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 import Search from './pages/Search';
 import ShippingAddress from './pages/ShippingAddress'; // step 2
 import Signin from './pages/Signin';
 import Signup from './pages/Signup';
+
+// user protected pages
+import OrderDetails from './pages/OrderDetails';
+import OrderHistory from './pages/OrderHistory';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -45,15 +55,22 @@ function App() {
       <main className='mt-0'>
         <Routes>
           <Route path='/about' element={<AboutUs />} />
-          <Route path='/gallery' element={<Gallery />} />
-          <Route path='/product/:slug' element={<ProductMag />} />
+          <Route path='/askedQuestions' element={<AskedQuestions />} />
           <Route path='/cart' element={<Cart />} />
-          <Route path='/contact' element={<Contact />} />
+          <Route path='/contact' element={<Contact />} /> {/* lesson 11 */}
+          <Route path='/design' element={<Design />} />
+          <Route path='/' element={<Home />} />
+          <Route path='/gallery' element={<Gallery />} />
+          <Route path='/payment' element={<PaymentMethod />} />
+          <Route path='/placeorder' element={<PlaceOrder />} />
+          <Route path='/product/:slug' element={<ProductMag />} />
           <Route path='/search' element={<Search />} />
+          <Route path='/shipping' element={<ShippingAddress />} />
           <Route path='/signin' element={<Signin />} />
           <Route path='/signup' element={<Signup />} />
           <Route path='/forget-password' element={<ForgetPassword />} />
           <Route path='/reset-password/:token' element={<ResetPassword />} />
+          {/* Protected Routes */}
           <Route
             path='/profile'
             element={
@@ -62,15 +79,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path='/placeorder' element={<PlaceOrder />} />
           <Route
             path='/order/:id'
             element={
               <ProtectedRoute>
-                <Order />
+                <OrderDetails />
               </ProtectedRoute>
             }
-          ></Route>
+          />
           <Route
             path='/orderhistory'
             element={
@@ -78,9 +94,7 @@ function App() {
                 <OrderHistory />
               </ProtectedRoute>
             }
-          ></Route>
-          <Route path='/shipping' element={<ShippingAddress />}></Route>
-          <Route path='/payment' element={<PaymentMethod />}></Route>
+          />
           {/* Admin Routes */}
           <Route
             path='/admin/dashboard'
@@ -89,23 +103,7 @@ function App() {
                 <Dashboard />
               </AdminRoute>
             }
-          ></Route>
-          <Route
-            path='/admin/orders'
-            element={
-              <AdminRoute>
-                <OrderList />
-              </AdminRoute>
-            }
-          ></Route>
-          <Route
-            path='/admin/users'
-            element={
-              <AdminRoute>
-                <UserList />
-              </AdminRoute>
-            }
-          ></Route>
+          />
           <Route
             path='/admin/products'
             element={
@@ -113,15 +111,23 @@ function App() {
                 <ProductList />
               </AdminRoute>
             }
-          ></Route>
+          />
           <Route
-            path='/admin/messages'
+            path='/admin/orders'
             element={
               <AdminRoute>
-                <Messages />
+                <OrderList />
               </AdminRoute>
             }
-          ></Route>
+          />
+          <Route
+            path='/admin/users'
+            element={
+              <AdminRoute>
+                <UserList />
+              </AdminRoute>
+            }
+          />
           <Route
             path='/admin/product/:id'
             element={
@@ -129,7 +135,7 @@ function App() {
                 <ProductEdit />
               </AdminRoute>
             }
-          ></Route>
+          />
           <Route
             path='/admin/user/:id'
             element={
@@ -137,9 +143,56 @@ function App() {
                 <UserEdit />
               </AdminRoute>
             }
-          ></Route>
-
-          <Route path='/' element={<Home />} />
+          />
+          <Route
+            path='/admin/messages'
+            element={
+              <AdminRoute>
+                <Messages />
+              </AdminRoute>
+            }
+          />
+          {/* Content Edit Pages */}
+          <Route
+            path='/admin/aboutusedit'
+            element={
+              <AdminRoute>
+                <AboutUsEdit />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/designedit'
+            element={
+              <AdminRoute>
+                <DesignEdit />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/askedquestionsedit'
+            element={
+              <AdminRoute>
+                <AskedQuestionsEdit />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/homecontent'
+            element={
+              <AdminRoute>
+                <HomeContentEdit />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/admin/productmagedit'
+            element={
+              <AdminRoute>
+                <ProductMagEdit />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </main>
       <Footer />

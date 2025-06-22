@@ -1,9 +1,7 @@
-import Stripe from 'stripe';
-import express from 'express';
-import config from '../config.js';
-import Order from '../models/orderModel.js';
-import Product from '../models/productModel.js';
-import { transporter, payOrderEmailTemplate } from '../utils.js';
+const Stripe = require('stripe');
+const express = require('express');
+const config = require('../config.js');
+const Order = require('../models/orderModel.js');
 
 const stripe = Stripe(config.STRIPE_SECRET_KEY);
 
@@ -15,18 +13,16 @@ stripeRouter.get('/secret/:id', async (req, res) => {
       'user',
       '_id name email'
     );
-
     if (!order) {
       return res.status(404).send({ error: 'Order not found' });
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: order.totalPrice * 100,
-      currency: 'usd',
-      metadata: { integration_check: 'accept_a_payment' },
+      amount: order.totalPrice * 100, // Amount in cents
+      currency: 'usd', // Currency type (USD in this case)
+      metadata: { integration_check: 'accept_a_payment' }, // Metadata for integration check
     });
 
-    // Update order to mark it as paid
     order.isPaid = true;
     order.paidAt = Date.now();
     order.paymentResult = {
@@ -35,38 +31,6 @@ stripeRouter.get('/secret/:id', async (req, res) => {
       update_time: paymentIntent.created,
       email_address: order.user.email,
     };
-
-    // Update count in stock
-    for (const index in order.orderItems) {
-      const item = order.orderItems[index];
-      const product = await Product.findById(item.product);
-      product.countInStock -= 1;
-      product.sold += item.quantity;
-      await product.save();
-    }
-    // end count in stock
-
-    // Send email to the customer
-    const customerEmail = order.user.email;
-    const purchaseDetails = payOrderEmailTemplate(order);
-
-    // Create email content
-    const emailContent = {
-      from: 'gabudemy@gmail.com', // your email
-      to: customerEmail,
-      subject: 'Stripe Purchase Receipt from antiquepox.com',
-      html: purchaseDetails,
-    };
-
-    try {
-      // Send the email using the `transporter`
-      const info = await transporter.sendMail(emailContent);
-
-      console.log('Email sent:', info.messageId);
-    } catch (error) {
-      console.error('Error sending email:', error);
-    }
-
     await order.save();
 
     res.send({ order, client_secret: paymentIntent.client_secret });
@@ -79,4 +43,4 @@ stripeRouter.get('/key', (req, res) => {
   res.send(config.STRIPE_PUBLISHABLE_KEY);
 });
 
-export default stripeRouter;
+module.exports = stripeRouter;

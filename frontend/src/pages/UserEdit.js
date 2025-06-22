@@ -4,10 +4,10 @@ import { Container, Form, Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import SkeletonUserEdit from '../components/skeletons/SkeletonUserEdit';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
+import SkeletonUserEdit from '../components/skeletons/SkeletonUserEdit';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -33,17 +33,15 @@ export default function UserEdit() {
     loading: true,
     error: '',
   });
-
   const { state } = useContext(Store);
   const { userInfo } = state;
-
   const params = useParams();
   const { id: userId } = params;
   const navigate = useNavigate();
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingDelay, setLoadingDelay] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +53,9 @@ export default function UserEdit() {
         setName(data.name);
         setEmail(data.email);
         setIsAdmin(data.isAdmin);
+        setTimeout(() => {
+          setLoadingDelay(false); // Set loadingDelay to false after the delay
+        }, 2000); // Set the delay time here
         dispatch({ type: 'FETCH_SUCCESS' });
       } catch (err) {
         dispatch({
@@ -87,53 +88,58 @@ export default function UserEdit() {
       dispatch({ type: 'UPDATE_FAIL' });
     }
   };
+
   return (
     <Container className='small-container'>
       <Helmet>
         <title>Edit User ${userId}</title>
       </Helmet>
-      <h1>Edit User {userId}</h1>
+      <br />
+      <h4 className='box'>Edit User {userId}</h4>
+      {(loadingDelay && <SkeletonUserEdit delay={1000} />) || (
+        <>
+          {loading ? (
+            <SkeletonUserEdit delay={0} />
+          ) : error ? (
+            <MessageBox variant='danger'>{error}</MessageBox>
+          ) : (
+            <Form onSubmit={submitHandler}>
+              <Form.Group className='mb-3' controlId='name'>
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              <Form.Group className='mb-3' controlId='email'>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  value={email}
+                  type='email'
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Form.Group>
 
-      {loading ? (
-        <SkeletonUserEdit />
-      ) : error ? (
-        <MessageBox variant='danger'>{error}</MessageBox>
-      ) : (
-        <Form onSubmit={submitHandler}>
-          <Form.Group className='mb-3' controlId='name'>
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='email'>
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              value={email}
-              type='email'
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </Form.Group>
+              <Form.Check
+                className='mb-3'
+                type='checkbox'
+                id='isAdmin'
+                label='isAdmin'
+                checked={isAdmin}
+                onChange={(e) => setIsAdmin(e.target.checked)}
+              />
 
-          <Form.Check
-            className='mb-3'
-            type='checkbox'
-            id='isAdmin'
-            label='isAdmin'
-            checked={isAdmin}
-            onChange={(e) => setIsAdmin(e.target.checked)}
-          />
-
-          <div className='mb-3'>
-            <Button disabled={loadingUpdate} type='submit'>
-              Update
-            </Button>
-            {loadingUpdate && <SkeletonUserEdit />}
-          </div>
-        </Form>
+              <div className='mb-3'>
+                <Button disabled={loadingUpdate} type='submit'>
+                  Update
+                </Button>
+                {loadingUpdate && <SkeletonUserEdit delay={1000} />}
+              </div>
+            </Form>
+          )}
+        </>
       )}
     </Container>
   );

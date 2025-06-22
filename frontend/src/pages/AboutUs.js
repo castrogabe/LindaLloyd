@@ -1,33 +1,60 @@
-import React from 'react';
-import { Row, Col } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Row, Col, Card, Image } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
+import SkeletonAbout from '../components/skeletons/SkeletonAboutUs';
+import axios from 'axios';
 
-export default function AboutUs() {
+export default function About() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [content, setContent] = useState({ sections: [] });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const { data } = await axios.get('/api/about');
+        setContent(data || { sections: [] }); // Ensure data is an object with sections
+        setIsLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchContent();
+  }, []);
+
   return (
     <>
       <div className='content'>
-        <Helmet>
-          <title>About Us</title>
-        </Helmet>
-        <Row>
-          <Col className='mt-3'>
-            <h2>About Us</h2>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-              dignissim purus at libero hendrerit dapibus. Vestibulum vel felis
-              quis lectus sollicitudin eleifend. Sed vitae orci id mi accumsan
-              luctus.
-            </p>
-            <p>
-              Proin interdum bibendum augue, id aliquet nibh fringilla in. Morbi
-              ac justo eu augue tincidunt eleifend. Vivamus vehicula ultricies
-              quam, nec egestas erat auctor id.
-            </p>
-          </Col>
-          <div className='col-lg-6 mt-3'>
-            <img src='/images/antiques.png' alt='antiques' class='img-fluid' />
-          </div>
-        </Row>
+        {isLoading ? (
+          <SkeletonAbout />
+        ) : (
+          <>
+            <Helmet>
+              <title>About Linda Lloyd</title>
+            </Helmet>
+            <br />
+            <Row>
+              <Col md={12}>
+                <div className='box'>
+                  <Image src='/images/jumbotron2.png' alt='jumbotron' fluid />
+                </div>
+                {content.sections.map((section, sectionIndex) => (
+                  <div className='box' key={sectionIndex}>
+                    <h1>&#x269C; {section.title} &#x269C;</h1>
+                    {section.paragraphs.map((paragraph, paragraphIndex) => (
+                      <p key={paragraphIndex}>{paragraph}</p>
+                    ))}
+                  </div>
+                ))}
+              </Col>
+            </Row>
+            <div className='box'>
+              <Card>
+                <Image src='/images/shop.png' alt='antiques' />
+              </Card>
+            </div>
+            <br />
+          </>
+        )}
       </div>
     </>
   );

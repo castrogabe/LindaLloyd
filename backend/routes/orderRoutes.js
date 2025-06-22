@@ -1,18 +1,43 @@
-import express from 'express';
-import expressAsyncHandler from 'express-async-handler';
-import Order from '../models/orderModel.js';
-import User from '../models/userModel.js';
-import Product from '../models/productModel.js';
-import {
+const express = require('express');
+const expressAsyncHandler = require('express-async-handler');
+const Order = require('../models/orderModel.js');
+const User = require('../models/userModel.js');
+const Product = require('../models/productModel.js');
+const {
   isAuth,
   isAdmin,
   payOrderEmailTemplate,
   shipOrderEmailTemplate,
   sendShippingConfirmationEmail,
   transporter,
-} from '../utils.js';
+} = require('../utils.js');
 
 const orderRouter = express.Router();
+
+const PAGE_SIZE = 12; // 12 items per page
+
+orderRouter.get(
+  '/admin',
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const { query } = req;
+    const page = query.page || 1;
+    const pageSize = query.pageSize || PAGE_SIZE;
+
+    const orders = await Order.find()
+      .populate('user', 'name email') // Populate user with name and email
+      .skip(pageSize * (page - 1))
+      .limit(pageSize);
+    const countOrders = await Order.countDocuments();
+    res.send({
+      orders,
+      totalOrders: countOrders,
+      page,
+      pages: Math.ceil(countOrders / pageSize),
+    });
+  })
+);
 
 orderRouter.get(
   '/',
@@ -128,36 +153,47 @@ orderRouter.put(
         email_address: req.body.email_address,
       };
 
-      // Update count in stock
+      // Update count in stock for each item in the order
       const updatedOrder = await order.save();
       for (const index in updatedOrder.orderItems) {
         const item = updatedOrder.orderItems[index];
         const product = await Product.findById(item.product);
-        product.countInStock -= 1;
-        product.sold += item.qty;
+        product.countInStock -= item.quantity; // Subtract the value of item.quantity from countInStock
+        product.sold += item.quantity;
         await product.save();
       }
-      // end count in stock
 
+      // Send email notification based on payment method
       const customerEmail = order.user.email;
-      const purchaseDetails = payOrderEmailTemplate(order);
-
-      // ***************** send purchase receipt email ***********************
-      const emailContent = {
-        from: 'gabudemy@gmail.com', // your email
-        to: customerEmail,
-        subject: 'PayPal Purchase Receipt from antiquepox', // email subject
-        html: purchaseDetails,
-      };
-
+      let emailContent = {}; // Define emailContent variable
+      if (order.paymentMethod === 'PayPal') {
+        // Define purchaseDetails for PayPal
+        const purchaseDetails = payOrderEmailTemplate(order);
+        emailContent = {
+          from: 'lindalloydantantiques@gmail.com',
+          to: customerEmail,
+          subject: 'PayPal Purchase Receipt from lindalloyd.com', // email subject
+          html: purchaseDetails,
+        };
+      } else if (order.paymentMethod === 'Stripe') {
+        // Define purchaseDetails for Stripe
+        const purchaseDetails = payOrderEmailTemplate(order);
+        emailContent = {
+          from: 'lindalloydantantiques@gmail.com',
+          to: customerEmail,
+          subject: 'Stripe Purchase Receipt from lindalloyd.com', // email subject
+          html: purchaseDetails,
+        };
+      }
       try {
-        // Send the email using the `transporter`
+        // Send the email using the transporter
         const info = await transporter.sendMail(emailContent);
+        console.log('Email sent:', info.messageId);
+        res.send({ message: 'Order Paid', order: updatedOrder });
       } catch (error) {
         console.error('Error sending email:', error);
+        res.status(500).send({ message: 'Failed to send email' });
       }
-
-      res.send({ message: 'Order Paid', order: updatedOrder });
     } else {
       res.status(404).send({ message: 'Order Not Found' });
     }
@@ -189,9 +225,9 @@ orderRouter.put(
 
     // Create email content for the shipping confirmation
     const emailContent = {
-      from: 'gabudemy@gmail.com', // your email
+      from: 'lindalloydantantiques@gmail.com',
       to: customerEmail,
-      subject: 'Shipping notification from antiquepox', // email subject
+      subject: 'Shipping notification from lindalloyd.com', // email subject
       html: shippingDetails,
     };
 
@@ -234,4 +270,4 @@ orderRouter.delete(
   })
 );
 
-export default orderRouter;
+module.exports = orderRouter;

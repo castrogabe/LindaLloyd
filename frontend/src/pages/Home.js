@@ -5,13 +5,13 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import { getError } from '../utils';
 import { Helmet } from 'react-helmet-async';
-import { Row, Col, Button } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
-import SkeletonHome from '../components/skeletons/SkeletonHome';
+import { Row, Col } from 'react-bootstrap';
 import MessageBox from '../components/MessageBox';
-import Product from '../components/Product';
+import ProductCard from '../components/ProductCard';
 import Sidebar from '../components/Sidebar';
 import { useMediaQuery } from 'react-responsive';
+import SkeletonHome from '../components/skeletons/SkeletonHome';
+import Pagination from '../components/Pagination';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -37,6 +37,12 @@ const reducer = (state, action) => {
 export default function Home() {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [homeContent, setHomeContent] = useState({
+    title: '',
+    description: '',
+    jumbotronText: [],
+    h4Text: [],
+  });
 
   const handleSidebarOpen = () => {
     setIsSidebarOpen(true);
@@ -76,6 +82,20 @@ export default function Home() {
     fetchData();
   }, [page, error]);
 
+  useEffect(() => {
+    const fetchHomeContent = async () => {
+      try {
+        const { data } = await axios.get('/api/homecontent');
+        setHomeContent(
+          data || { title: '', description: '', jumbotronText: [], h4Text: [] }
+        );
+      } catch (err) {
+        toast.error(getError(err));
+      }
+    };
+    fetchHomeContent();
+  }, []);
+
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     const fetchCategories = async () => {
@@ -89,6 +109,7 @@ export default function Home() {
     fetchCategories();
   }, [dispatch]);
 
+  // Pagination
   const getFilterUrl = (filter) => {
     const filterPage = filter.page || page;
     return `/?&page=${filterPage}`;
@@ -97,16 +118,7 @@ export default function Home() {
   return (
     <>
       <div className='jumbotron1' alt='tools'>
-        <Jumbotron
-          text={[
-            'Antiques',
-            'Art',
-            'Collectibles',
-            'Vintage Items',
-            '@',
-            'lindalloyd.com',
-          ]}
-        />
+        <Jumbotron text={homeContent.jumbotronText} />
       </div>
 
       <div className='content'>
@@ -115,23 +127,49 @@ export default function Home() {
           <title>Linda Lloyd</title>
         </Helmet>
         <div className='box'>
-          <p>
-            ~ I hand picked all the items over years of collecting and
-            descriptions are given to the best of my knowledge. ~
-          </p>
+          {homeContent && (
+            <>
+              <h1>&#x269C; {homeContent.title} &#x269C;</h1>
+              <h4>
+                {homeContent.h4Text.map((text, index) => (
+                  <span key={index} className='item'>
+                    {text}
+                  </span>
+                ))}
+              </h4>
+              <p>
+                <span style={{ color: 'gold' }} className='outlined-tilde'>
+                  ~
+                </span>{' '}
+                {homeContent.description}{' '}
+                <span style={{ color: 'gold' }} className='outlined-tilde'>
+                  ~
+                </span>
+              </p>
+            </>
+          )}
         </div>
+        <div className='parallax'></div>
         <br />
         <Row>
           <Col>
-            {/* react skeleton for product card */}
             {loading ? (
-              <Row>
-                {[...Array(12).keys()].map((i) => (
-                  <Col key={i} sm={6} md={4} lg={3} className='mb-3'>
-                    <SkeletonHome />
-                  </Col>
-                ))}
-              </Row>
+              <>
+                <Row>
+                  {[...Array(6).keys()].map((i) => (
+                    <Col key={i} sm={6} md={4} lg={2} xl={2} className='mb-3'>
+                      <SkeletonHome />
+                    </Col>
+                  ))}
+                </Row>
+                <Row>
+                  {[...Array(6).keys()].map((i) => (
+                    <Col key={i} sm={6} md={4} lg={2} xl={2} className='mb-3'>
+                      <SkeletonHome />
+                    </Col>
+                  ))}
+                </Row>
+              </>
             ) : error ? (
               <MessageBox variant='danger'>{error}</MessageBox>
             ) : (
@@ -141,15 +179,17 @@ export default function Home() {
                 )}
                 <Row>
                   {products.map((product) => (
+                    // 6 columns
                     <Col
                       key={product.slug}
                       sm={6}
                       md={4}
-                      lg={3}
+                      lg={2}
+                      xl={2}
                       className='mb-3'
                     >
-                      {/* Product comes from components > Product.js */}
-                      <Product
+                      {/* ProductCard comes from components > ProductCard.js */}
+                      <ProductCard
                         key={product.id}
                         product={product}
                         handleSidebarOpen={handleSidebarOpen}
@@ -158,7 +198,7 @@ export default function Home() {
                   ))}
                 </Row>
 
-                {/* Desktop renders sidebar, if mobile do not show sidebar and get toast notifications */}
+                {/* Desktop renders sidebar, if mobile do not show sidebar and get toast notifications lesson 12*/}
                 {!isMobile ? (
                   isSidebarOpen && (
                     <div className='sidebar'>
@@ -169,23 +209,12 @@ export default function Home() {
                   <ToastContainer position='bottom-center' />
                 )}
 
-                {/* pagination */}
-                <div>
-                  {[...Array(pages).keys()].map((x) => (
-                    <LinkContainer
-                      key={x + 1}
-                      className='mx-1'
-                      to={getFilterUrl({ page: x + 1 })}
-                    >
-                      <Button
-                        className={Number(page) === x + 1 ? 'text-bold' : ''}
-                        variant='light'
-                      >
-                        {x + 1}
-                      </Button>
-                    </LinkContainer>
-                  ))}
-                </div>
+                {/* Pagination Component */}
+                <Pagination
+                  currentPage={page}
+                  totalPages={pages}
+                  getFilterUrl={getFilterUrl}
+                />
                 <br />
               </>
             )}

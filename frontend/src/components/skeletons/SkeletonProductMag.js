@@ -66,17 +66,21 @@ const SkeletonProductMag = () => {
           </Row>
           <br />
           <Row md={12}>
-            <Col className='container col-6'>
-              <Col className='left-col'>
-                <Skeleton classes='img-thumbnail' />
-                <Skeleton classes='img-thumbnail' />
-                <Skeleton classes='img-thumbnail' />
-                <Skeleton classes='img-thumbnail' />
-              </Col>
-              <Col className='right-col'>
-                <Skeleton classes='img-large' />
-                <Skeleton classes='text width-50 skeleton-text' />
-              </Col>
+            <Col md={6}>
+              <Row>
+                {/* Left Column */}
+                <Col className='left-col'>
+                  <Skeleton classes='img-thumbnail' />
+                  <Skeleton classes='img-thumbnail' />
+                  <Skeleton classes='img-thumbnail' />
+                  <Skeleton classes='img-thumbnail' />
+                </Col>
+                {/* Right Column */}
+                <Col className='right-col'>
+                  <Skeleton classes='img-large' />
+                  <Skeleton classes='text width-50 skeleton-text' />
+                </Col>
+              </Row>
             </Col>
 
             <Col>

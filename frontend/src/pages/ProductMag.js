@@ -14,7 +14,6 @@ import {
 import ReactImageMagnify from 'react-image-magnify';
 import Rating from '../components/Rating';
 import { Helmet } from 'react-helmet-async';
-import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
 import { Store } from '../Store';
@@ -24,6 +23,7 @@ import 'react-image-lightbox/style.css';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useMediaQuery } from 'react-responsive';
+import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -41,6 +41,12 @@ const reducer = (state, action) => {
       return { ...state, product: action.payload, loading: false };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
+    case 'FETCH_CONTENT_REQUEST':
+      return { ...state, loadingContent: true };
+    case 'FETCH_CONTENT_SUCCESS':
+      return { ...state, content: action.payload, loadingContent: false };
+    case 'FETCH_CONTENT_FAIL':
+      return { ...state, loadingContent: false, errorContent: action.payload };
     default:
       return state;
   }
@@ -58,12 +64,26 @@ function ProductMag() {
   const params = useParams();
   const { slug } = params;
 
-  const [{ loading, error, product, loadingCreateReview }, dispatch] =
-    useReducer(reducer, {
-      product: [],
-      loading: true,
-      error: '',
-    });
+  const [
+    {
+      loading,
+      error,
+      product,
+      loadingCreateReview,
+      loadingContent,
+      content = [],
+      errorContent,
+    },
+    dispatch,
+  ] = useReducer(reducer, {
+    product: { images: [] },
+    loading: true,
+    error: '',
+    loadingContent: true,
+    errorContent: '',
+    content: [],
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
@@ -77,8 +97,26 @@ function ProductMag() {
     fetchData();
   }, [slug]);
 
+  // Content Edit Screen
+  useEffect(() => {
+    const fetchContent = async () => {
+      dispatch({ type: 'FETCH_CONTENT_REQUEST' });
+      try {
+        const result = await axios.get('/api/productmagcontent');
+        dispatch({
+          type: 'FETCH_CONTENT_SUCCESS',
+          payload: result.data.sections,
+        });
+      } catch (err) {
+        dispatch({ type: 'FETCH_CONTENT_FAIL', payload: getError(err) });
+      }
+    };
+    fetchContent();
+  }, []);
+
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
+
   const addToCartHandler = async () => {
     const existItem = cart.cartItems.find((x) => x._id === product._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
@@ -136,7 +174,7 @@ function ProductMag() {
   };
 
   // zoom magnifier
-  const images = [product.image];
+  const images = [product.image, ...product.images];
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const hoverHandler = (image, i) => {
     setSelectedImage(image);
@@ -164,7 +202,18 @@ function ProductMag() {
   };
   // end zoom magnifier
 
-  const mobileView = useMediaQuery({ maxWidth: 768 });
+  const mobileView = useMediaQuery({ maxWidth: 992 });
+
+  const handleArrowClick = (direction) => {
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex =
+        (images.indexOf(selectedImage) - 1 + images.length) % images.length;
+    } else {
+      newIndex = (images.indexOf(selectedImage) + 1) % images.length;
+    }
+    setSelectedImage(images[newIndex]);
+  };
 
   return loading ? (
     <SkeletonProductMag />
@@ -172,20 +221,49 @@ function ProductMag() {
     <MessageBox variant='danger'>{error}</MessageBox>
   ) : (
     <div className='content'>
+      <Helmet>
+        <title>{product.name}</title>
+      </Helmet>
       <br />
-      <div className='box'>
-        <Row>
-          <p className='mt-3'>~ All of the items have been hand picked. ~</p>
-        </Row>
-      </div>
-      <br />
+      {loadingContent ? (
+        <SkeletonProductMag />
+      ) : errorContent ? (
+        <MessageBox variant='danger'>{errorContent}</MessageBox>
+      ) : (
+        content.map((section, index) => (
+          <Row key={index} className='box'>
+            <h1>{section.title}</h1>
+            {section.paragraphs.map((paragraph, pIndex) => (
+              <p key={pIndex}>&#x269C; {paragraph} &#x269C;</p>
+            ))}
+          </Row>
+        ))
+      )}
+
       <Row>
-        <Col md={6} className='container'>
+        <Col
+          md={1}
+          className='d-flex justify-content-center align-items-center'
+        >
+          <button
+            className='control-arrow control-prev'
+            onClick={() => handleArrowClick('prev')}
+          >
+            {/* left triangle */}
+            <span>&#9664;</span>
+          </button>
+        </Col>
+        <Col md={4} className='container'>
           {mobileView ? (
             <Carousel>
               {product.images.map((image, index) => (
                 <div key={index}>
-                  <img src={image} alt={product.name} className='img-large' />
+                  <img
+                    src={image}
+                    alt={product.name}
+                    className='img-large'
+                    loading='lazy'
+                  />
                 </div>
               ))}
             </Carousel>
@@ -202,7 +280,7 @@ function ProductMag() {
                     ref={addRefs}
                     onClick={() => openLightbox(i + 1)}
                   >
-                    <Card.Img src={image} alt='' />
+                    <Card.Img src={image} alt='' loading='lazy' />
                   </div>
                 ))}
               </div>
@@ -234,28 +312,48 @@ function ProductMag() {
             </div>
           )}
         </Col>
-
+        <Col
+          md={1}
+          className='d-flex justify-content-center align-items-center'
+        >
+          <button
+            className='control-arrow control-next'
+            onClick={() => handleArrowClick('next')}
+          >
+            {/* right triangle */}
+            <span>&#9654;</span>
+          </button>
+        </Col>
         <Col md={6}>
           <div className='box'>
             <ListGroup variant='flush'>
               <ListGroup.Item>
-                <Helmet>
-                  <title>{product.name}</title>
-                </Helmet>
                 <h4>{product.name}</h4>
-              </ListGroup.Item>
-              <ListGroup.Item>
                 <Rating
                   rating={product.rating}
                   numReviews={product.numReviews}
-                ></Rating>
+                />
               </ListGroup.Item>
-              <ListGroup.Item>Price : ${product.price}</ListGroup.Item>
-              <ListGroup.Item>From : {product.from}</ListGroup.Item>
-              <ListGroup.Item>Finish : {product.finish}</ListGroup.Item>
               <ListGroup.Item>
-                Description:
-                <p>{product.description}</p>
+                <a href='/contact' className='contact-button'>
+                  Contact Linda Lloyd
+                </a>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <h5 className='details-header'>Details</h5>
+                <ul className='details-list'>
+                  <li>Condition: {product.condition}</li>
+                  <li>Dimensions: {product.dimensions}</li>
+                  <li>From: {product.from}</li>
+                  <li>Materials: {product.materials}</li>
+                  <li>Period: {product.period}</li>
+                  <li>Maker: {product.maker}</li>
+                  <li>Provenance: {product.provenance ? 'Yes' : 'No'}</li>
+                  <li>
+                    Details:
+                    <p className='product-details'>{product.description}</p>
+                  </li>
+                </ul>
               </ListGroup.Item>
             </ListGroup>
           </div>
@@ -376,7 +474,6 @@ function ProductMag() {
           )}
         </div>
       </div>
-
       {/* Lightbox */}
       <div className='lightbox'>
         {lightboxOpen && (
@@ -400,6 +497,7 @@ function ProductMag() {
           />
         )}
       </div>
+
       <br />
     </div>
   );

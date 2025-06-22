@@ -2,20 +2,20 @@ import { Card, Button, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import Rating from './Rating';
 import axios from 'axios';
+import LazyLoad from 'react-lazyload';
 import { useContext, useState } from 'react';
 import { Store } from '../Store';
 import { toast } from 'react-toastify';
 import { useMediaQuery } from 'react-responsive';
 
-function Product(props) {
+function ProductCard(props) {
   const isMobile = useMediaQuery({ maxWidth: 767 });
-  const { product } = props;
+  const { product, handleSidebarOpen } = props; // Added handleSidebarOpen here
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
     cart: { cartItems },
   } = state;
   const [sidebarIsOpen, setSidebarIsOpen] = useState(false);
-  const { handleSidebarOpen } = props;
 
   const addToCartHandler = async (item) => {
     setSidebarIsOpen(!sidebarIsOpen);
@@ -41,11 +41,14 @@ function Product(props) {
     if (isMobile) {
       toast.success(
         <div>
-          <img
-            src={product.image}
-            alt={product.name}
-            style={{ width: '50px', height: '50px', marginRight: '10px' }}
-          />
+          <LazyLoad>
+            <img
+              src={product.image}
+              alt={product.name}
+              style={{ width: '50px', height: '50px', marginRight: '10px' }}
+              loading='lazy'
+            />
+          </LazyLoad>
           <span>{product.name} added to cart</span>
         </div>,
         {
@@ -59,13 +62,22 @@ function Product(props) {
   return (
     <Card className='home-card'>
       <Link to={`/product/${product.slug}`}>
-        <img src={product.image} className='card-img-top' alt={product.name} />
+        <LazyLoad height={200} offset={100}>
+          <img
+            src={product.image}
+            className='card-img-top'
+            alt={product.name}
+            loading='lazy'
+          />
+        </LazyLoad>
       </Link>
       <Card.Body>
-        <Link to={`/product/${product.slug}`}>
+        <Link
+          to={`/product/${product.slug}`}
+          style={{ textDecoration: 'none' }}
+        >
           <Card.Title>{product.name}</Card.Title>
           <Card.Title>From: {product.from}</Card.Title>
-          <Card.Title>Finish: {product.finish}</Card.Title>
         </Link>
         <Rating rating={product.rating} numReviews={product.numReviews} />
         <Card.Text>${product.price}</Card.Text>
@@ -76,7 +88,6 @@ function Product(props) {
         ) : (
           <Row>
             <Col xs={8}>
-              {/* count in stock 5 or less */}
               {product.countInStock <= 5 && (
                 <p style={{ color: 'red' }}>
                   Only {product.countInStock} Left, buy Now!
@@ -84,6 +95,7 @@ function Product(props) {
               )}
             </Col>
             <Col xs={4}>
+              {/* add to cart button */}
               <Button
                 className='btn btn-primary btn-sm'
                 onClick={() => addToCartHandler(product)}
@@ -99,4 +111,4 @@ function Product(props) {
   );
 }
 
-export default Product;
+export default ProductCard;

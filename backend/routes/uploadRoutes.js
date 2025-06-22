@@ -1,38 +1,44 @@
-import express from 'express';
-import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import streamifier from 'streamifier';
-import { isAdmin, isAuth } from '../utils.js';
-
-const upload = multer();
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const { isAdmin, isAuth } = require('../utils.js');
 
 const uploadRouter = express.Router();
 
-uploadRouter.post(
-  '/',
-  isAuth,
-  isAdmin,
-  upload.single('file'),
-  async (req, res) => {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-    const streamUpload = (req) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream((error, result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(error);
-          }
-        });
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
-      });
-    };
-    const result = await streamUpload(req);
-    res.send(result);
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename(req, file, cb) {
+    cb(
+      null,
+      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
+    );
+  },
+});
+
+function checkFileType(file, cb) {
+  const filetypes = /jpg|jpeg|png/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb('Images only!');
   }
-);
-export default uploadRouter;
+}
+
+const upload = multer({
+  storage,
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+});
+
+uploadRouter.post('/', isAuth, isAdmin, upload.single('file'), (req, res) => {
+  // console.log('Uploaded file path:', req.file.path); // Add this line for debugging
+  res.send(`/${req.file.path}`);
+});
+
+module.exports = uploadRouter;

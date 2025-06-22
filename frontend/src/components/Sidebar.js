@@ -19,11 +19,11 @@ const Sidebar = ({ handleSidebarOpen }) => {
   useEffect(() => {
     handleSidebarOpen();
     const timer = setTimeout(() => {
-      handleSidebarOpen(); // Call the handleSidebarOpen function after the specified duration
-    }, 2000); // Duration in milliseconds (2 second)
+      handleSidebarOpen();
+    }, 2000);
 
     return () => {
-      clearTimeout(timer); // Clear the timer when the component unmounts or rerenders
+      clearTimeout(timer);
     };
   }, []);
 
@@ -34,25 +34,29 @@ const Sidebar = ({ handleSidebarOpen }) => {
         <Col>
           {cartItems.length > 0 && (
             <ListGroup>
-              <h4 className='text-center'>Items In Cart</h4>
-              {cartItems.map((item) => (
-                <ListGroup.Item key={item._id}>
-                  <Col>
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className='img-fluid rounded img-thumbnail'
-                      style={imageStyle}
-                    ></img>{' '}
-                    <span>
-                      <strong>{item.name}</strong> <br />
-                      added to cart
-                    </span>
-                  </Col>
-                  <hr />
-                  <Col>Price: ${item.price}</Col>
-                </ListGroup.Item>
-              ))}
+              <h4 className='text-center'>Items In Cart</h4>{' '}
+              {cartItems.map(
+                (
+                  item // Mapping through cartItems array
+                ) => (
+                  <ListGroup.Item key={item._id}>
+                    <Col>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className='img-fluid rounded img-thumbnail'
+                        style={imageStyle}
+                      ></img>
+                      <span>
+                        <strong>{item.name}</strong> <br />
+                        added to cart
+                      </span>
+                    </Col>
+                    <hr />
+                    <Col>Price: ${item.price}</Col>
+                  </ListGroup.Item>
+                )
+              )}
             </ListGroup>
           )}
         </Col>

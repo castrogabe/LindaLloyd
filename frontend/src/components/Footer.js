@@ -5,66 +5,114 @@ import { Link } from 'react-router-dom';
 const Footer = () => {
   return (
     <footer>
-      <Row>
-        <Col md={4}>
+      <Row className='content justify-content-center'>
+        <Col md={2}>
           Connect with us
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <li>
-                <Link to='https://www.facebook.com/' className='facebookIcon'>
-                  <i className='fab fa-facebook'></i> Facebook
-                </Link>
-              </li>
-              <li>
-                <Link to='https://www.instagram.com/' className='instagramIcon'>
-                  <i className='fab fa-instagram'></i> Instagram
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to='https://www.youtube.com/channel/'
-                  className='youtubeIcon'
+                <a
+                  href='https://www.facebook.com/LindaLloydAntiques'
+                  className='email'
+                  target='_blank'
+                  rel='noopener noreferrer'
                 >
-                  <i className='fab fa-youtube'></i> YouTube
-                </Link>
+                  <i className='fab fa-facebook'></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href='https://www.instagram.com/lindalloydantiques/?hl=en'
+                  className='email'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <i className='fab fa-instagram'></i> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href='https://www.chairish.com/shop/vozivo?global=true&path_name=%2F'
+                  className='email'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  <i className='fas fa-store'></i> Chairish
+                </a>
               </li>
             </ul>
           </div>
         </Col>
 
-        <Col md={4}>
+        <Col md={2}>
           Get To Know Us
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <li>
                 <Link to='/about' className='email'>
-                  {' '}
-                  <i className='fa fa-info'></i> About Us
+                  About Us
                 </Link>
               </li>
               <li>
                 <Link to='/gallery' className='email'>
-                  {' '}
-                  <i className='fa fa-info'></i> Antique Gallery
+                  Antique Gallery
+                </Link>
+              </li>
+              <li>
+                <Link to='/design' className='email'>
+                  Design Philosophy
+                </Link>
+              </li>
+              <li>
+                <Link to='/askedQuestions' className='email'>
+                  FAQ Questions
                 </Link>
               </li>
             </ul>
           </div>
         </Col>
-        <Col md={4}>
-          Merchandise Questions
+
+        <Col md={2}>
+          Questions
           <div className='socialIcon'>
             <ul className='list-unstyled'>
               <Link to='/contact' className='email'>
-                {' '}
                 <i className='fa fa-envelope'></i> Contact Us
               </Link>
               <li>
-                <a href='mailto:email@gmail.com' className='email'>
+                <a
+                  href='mailto:lindalloydantantiques@gmail.com'
+                  className='email'
+                >
                   <i className='fa fa-envelope'></i> Email Me via gmail
                 </a>
               </li>
+            </ul>
+          </div>
+        </Col>
+
+        <Col md={2}>
+          Hours
+          <div className='socialIcon'>
+            <ul className='list-unstyled'>
+              <li>Monday: Closed</li>
+              <li>Tuesday: Closed</li>
+              <li>Wednesday: 11-5</li>
+              <li>Thursday: 11-5</li>
+              <li>Friday: 11-5</li>
+              <li>Saturday: 11-5</li>
+              <li>Sunday: Closed</li>
+            </ul>
+          </div>
+        </Col>
+
+        <Col md={2}>
+          Linda Lloyd Antiques & Interiors
+          <div className='socialIcon'>
+            <ul className='list-unstyled'>
+              <li>1276 N Yale Ave</li>
+              <li>Claremont, CA</li>
+              <li>91711</li>
             </ul>
           </div>
         </Col>
@@ -74,7 +122,7 @@ const Footer = () => {
 
       <Row>
         <Col className='text-center mt-3'>
-          ~ &copy;{new Date().getFullYear()} ANTIQUEPOX ~
+          &copy;{new Date().getFullYear()} ~ LINDA LLOYD ~
         </Col>
       </Row>
     </footer>

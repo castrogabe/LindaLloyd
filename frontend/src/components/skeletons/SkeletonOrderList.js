@@ -8,7 +8,7 @@ const SkeletonOrderList = () => {
   return (
     <Row>
       {isMobile ? (
-        <div className='mobile-image-card col-12'>
+        <Row className='box col-12'>
           {/* mobile view */}
           <Col className='left-col col-4'>
             <Skeleton classes='square' />
@@ -17,7 +17,7 @@ const SkeletonOrderList = () => {
             <Skeleton classes='title width-100 skeleton-title' />
             <Skeleton classes='text width-100 skeleton-text' />
           </Col>
-        </div>
+        </Row>
       ) : (
         <Row className='box col-12'>
           {/* desktop skeleton */}

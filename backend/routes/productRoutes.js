@@ -1,7 +1,9 @@
-import express from 'express';
-import expressAsyncHandler from 'express-async-handler';
-import Product from '../models/productModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+const express = require('express');
+const expressAsyncHandler = require('express-async-handler');
+const fs = require('fs');
+const path = require('path');
+const Product = require('../models/productModel.js');
+const { isAuth, isAdmin } = require('../utils.js');
 
 const productRouter = express.Router();
 
@@ -22,11 +24,16 @@ productRouter.post(
       price: 0,
       category: 'category',
       from: 'from',
-      finish: 'finish',
       countInStock: 0,
       rating: 0,
       numReviews: 0,
       description: 'description',
+      condition: 'condition',
+      dimensions: 'dimensions',
+      materials: 'materials',
+      period: 'period',
+      maker: 'maker',
+      provenance: false,
     });
     const product = await newProduct.save();
     res.send({ message: 'Product Created', product });
@@ -48,7 +55,15 @@ productRouter.put(
       product.images = req.body.images;
       product.category = req.body.category;
       product.from = req.body.from;
-      product.finish = req.body.finish;
+      product.condition = req.body.condition;
+      product.dimensions = req.body.dimensions;
+      product.materials = req.body.materials;
+      product.period = req.body.period;
+      product.maker = req.body.maker;
+      product.provenance =
+        req.body.provenance !== undefined
+          ? req.body.provenance
+          : product.provenance;
       product.countInStock = req.body.countInStock;
       product.description = req.body.description;
       await product.save();
@@ -66,6 +81,22 @@ productRouter.delete(
   expressAsyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (product) {
+      // Delete main image
+      if (product.image) {
+        const imagePath = path.join(__dirname, '..', product.image);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+      // Delete additional images
+      if (product.images && product.images.length > 0) {
+        product.images.forEach((img) => {
+          const imagePath = path.join(__dirname, '..', img);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        });
+      }
       await product.remove();
       res.send({ message: 'Product Deleted' });
     } else {
@@ -74,6 +105,7 @@ productRouter.delete(
   })
 );
 
+// Route to add a review to a product (requires authentication)
 productRouter.post(
   '/:id/reviews',
   isAuth,
@@ -81,23 +113,25 @@ productRouter.post(
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (product) {
+      // Check if the user has already submitted a review
       if (product.reviews.find((x) => x.name === req.user.name)) {
         return res
           .status(400)
           .send({ message: 'You already submitted a review' });
       }
 
+      // Create a new review object
       const review = {
         name: req.user.name,
         rating: Number(req.body.rating),
         comment: req.body.comment,
       };
-      product.reviews.push(review);
+      product.reviews.push(review); // Add the review to the product
       product.numReviews = product.reviews.length;
       product.rating =
         product.reviews.reduce((a, c) => c.rating + a, 0) /
         product.reviews.length;
-      const updatedProduct = await product.save();
+      const updatedProduct = await product.save(); // Save the updated product
       res.status(201).send({
         message: 'Review Created',
         review: updatedProduct.reviews[updatedProduct.reviews.length - 1],
@@ -127,7 +161,7 @@ productRouter.get(
     const countProducts = await Product.countDocuments();
     res.send({
       products,
-      countProducts,
+      totalProducts: countProducts, // Include totalProducts in the response
       page,
       pages: Math.ceil(countProducts / pageSize),
     });
@@ -237,4 +271,4 @@ productRouter.get('/:id', async (req, res) => {
   }
 });
 
-export default productRouter;
+module.exports = productRouter;
