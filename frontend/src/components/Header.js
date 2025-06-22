@@ -41,7 +41,7 @@ function Header() {
           <ToastContainer position='bottom-center' limit={1} />
           <LinkContainer to='/'>
             <Navbar.Brand className='me-auto'>
-              <img src='./images/logo1.png' alt='logo'></img>
+              <img src='/images/logo1.png' alt='logo'></img>
             </Navbar.Brand>
           </LinkContainer>
           <Navbar.Toggle aria-controls='basic-navbar-nav' />
@@ -57,7 +57,7 @@ function Header() {
 
               {/* Categories on mobile */}
               <NavDropdown
-                className='nav-categories'
+                // className='nav-categories'
                 title='Categories'
                 id='basic-nav-dropdown'
               >

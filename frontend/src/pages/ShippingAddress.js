@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Form, Button } from 'react-bootstrap';
+import { Col, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
 
-export default function ShippingAddress() {
+export default function ShippingAddressScreen() {
   const navigate = useNavigate();
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
@@ -58,64 +58,67 @@ export default function ShippingAddress() {
       </Helmet>
       <br />
       <CheckoutSteps step1 step2></CheckoutSteps>
+      <br />
       <div className='container small-container'>
-        <h1 className='my-3'>Shipping Address</h1>
-        <Form onSubmit={submitHandler}>
-          <Form.Group className='mb-3' controlId='fullName'>
-            <Form.Label>Full Name</Form.Label>
-            <Form.Control
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='address'>
-            <Form.Label>Address</Form.Label>
-            <Form.Control
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='city'>
-            <Form.Label>City</Form.Label>
-            <Form.Control
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='states'>
-            <Form.Label>State</Form.Label>
-            <Form.Control
-              value={states}
-              onChange={(e) => setStates(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='postalCode'>
-            <Form.Label>Postal Code</Form.Label>
-            <Form.Control
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className='mb-3' controlId='country'>
-            <Form.Label>Country</Form.Label>
-            <Form.Control
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              required
-            />
-          </Form.Group>
+        <Col>
+          <h4 className='box'>Shipping Address</h4>
+          <Form onSubmit={submitHandler}>
+            <Form.Group className='mb-3' controlId='fullName'>
+              <Form.Label>Full Name</Form.Label>
+              <Form.Control
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className='mb-3' controlId='address'>
+              <Form.Label>Full Address, Bld, Apt, Space</Form.Label>
+              <Form.Control
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className='mb-3' controlId='city'>
+              <Form.Label>City</Form.Label>
+              <Form.Control
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className='mb-3' controlId='states'>
+              <Form.Label>State</Form.Label>
+              <Form.Control
+                value={states}
+                onChange={(e) => setStates(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className='mb-3' controlId='postalCode'>
+              <Form.Label>Postal Code</Form.Label>
+              <Form.Control
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className='mb-3' controlId='country'>
+              <Form.Label>Country</Form.Label>
+              <Form.Control
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                required
+              />
+            </Form.Group>
 
-          <div className='mb-3'>
-            <Button variant='primary' type='submit'>
-              Continue
-            </Button>
-          </div>
-        </Form>
+            <div className='mb-3'>
+              <Button variant='primary' type='submit'>
+                Continue
+              </Button>
+            </div>
+          </Form>
+        </Col>
       </div>
     </div>
   );
@@ -125,4 +128,4 @@ export default function ShippingAddress() {
 // step 2 (ShippingAddress) <= CURRENT STEP
 // step 3 (PaymentMethod) select radial button for PayPal or Stripe
 // step 4 (PlaceOrder)
-// lands on (Order) 0r (StripeOrder) for payment
+// lands on (Order) for payment
