@@ -66,6 +66,7 @@ userRouter.delete(
     }
   })
 );
+
 userRouter.post(
   '/signin',
   expressAsyncHandler(async (req, res) => {
@@ -102,6 +103,15 @@ userRouter.post(
       isAdmin: user.isAdmin,
       token: generateToken(user),
     });
+  })
+);
+
+userRouter.post(
+  '/usersByIds',
+  expressAsyncHandler(async (req, res) => {
+    const userIds = req.body.userIds;
+    const users = await User.find({ _id: { $in: userIds } });
+    res.send(users);
   })
 );
 

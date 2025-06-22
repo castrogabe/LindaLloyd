@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useReducer } from 'react';
 import axios from 'axios';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Row, Col, Button } from 'react-bootstrap';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Row, Col, Button, Table } from 'react-bootstrap';
+import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
 import { Store } from '../Store';
 import LoadingBox from '../components/LoadingBox';
@@ -50,7 +51,7 @@ const reducer = (state, action) => {
   }
 };
 
-export default function ProductLis() {
+export default function ProductListScreen() {
   const [
     {
       loading,
@@ -104,7 +105,9 @@ export default function ProductLis() {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           }
         );
-        toast.success('product created successfully');
+        toast.success('product created successfully', {
+          autoClose: 1000, // Display success message for 1 second
+        });
         dispatch({ type: 'CREATE_SUCCESS' });
         navigate(`/admin/product/${data.product._id}`);
       } catch (err) {
@@ -135,81 +138,104 @@ export default function ProductLis() {
 
   return (
     <div className='content'>
-      <Row>
-        <Col>
-          <h1>Products</h1>
+      <br />
+      <Row className='box'>
+        <Col md={6}>
+          <h4>Product List Screen</h4>
         </Col>
-        <Col className='col text-end'>
-          <div>
-            <Button type='button' onClick={createHandler}>
-              Create Product
-            </Button>
-          </div>
+        <Col md={6} className='col text-end'>
+          <Button type='button' onClick={createHandler}>
+            Create Product
+          </Button>
         </Col>
       </Row>
 
-      {loadingCreate && <LoadingBox></LoadingBox>}
-      {loadingDelete && <LoadingBox></LoadingBox>}
+      {loadingCreate && <LoadingBox delay={1000} />}
+      {loadingDelete && <LoadingBox delay={1000} />}
 
       {loading ? (
-        <LoadingBox></LoadingBox>
+        <LoadingBox delay={1000} />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
         <>
-          <table className='table'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>NAME</th>
-                <th>PRICE</th>
-                <th>CATEGORY</th>
-                <th>FROM</th>
-                <th>Finish</th>
-                <th>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product._id}>
-                  <td>{product._id}</td>
-                  <td>{product.name}</td>
-                  <td>{product.price}</td>
-                  <td>{product.category}</td>
-                  <td>{product.from}</td>
-                  <td>{product.finish}</td>
-                  <td>
-                    <Button
-                      type='button'
-                      variant='light'
-                      onClick={() => navigate(`/admin/product/${product._id}`)}
-                    >
-                      Edit
-                    </Button>
-                    &nbsp;
-                    <Button
-                      type='button'
-                      variant='light'
-                      onClick={() => deleteHandler(product)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
+          <div className='box'>
+            <Table responsive striped bordered className='noWrap'>
+              <thead className='thead'>
+                <tr>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th>QTY</th>
+                  <th>PRICE</th>
+                  <th>CATEGORY</th>
+                  <th>FROM</th>
+                  <th>FINISH</th>
+                  <th>ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product._id}>
+                    <td>
+                      {product._id}
+                      <div key={product._id}>
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className='img-fluid rounded img-thumbnail'
+                        />
+                        <Link to={`/product/${product.slug}`}></Link>
+                      </div>
+                    </td>
+                    <td>{product.name}</td>
+                    <td>{product.countInStock}</td>
+                    <td>{product.price}</td>
+                    <td>{product.category}</td>
+                    <td>{product.from}</td>
+                    <td>{product.finish}</td>
+                    <td>
+                      <Button
+                        type='button'
+                        variant='primary'
+                        onClick={() =>
+                          navigate(`/admin/product/${product._id}`)
+                        }
+                      >
+                        Edit
+                      </Button>
+                      &nbsp;
+                      <Button
+                        type='button'
+                        variant='primary'
+                        onClick={() => deleteHandler(product)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
           <div>
             {[...Array(pages).keys()].map((x) => (
-              <Link
-                className={x + 1 === Number(page) ? 'btn text-bold' : 'btn'}
+              <LinkContainer
                 key={x + 1}
+                className='mx-1'
                 to={`/admin/products?page=${x + 1}`}
               >
-                {x + 1}
-              </Link>
+                <Button
+                  className={Number(page) === x + 1 ? 'text-bold' : ''}
+                  variant='light'
+                >
+                  {x + 1}
+                </Button>
+              </LinkContainer>
             ))}
           </div>
+          <br />
         </>
       )}
     </div>

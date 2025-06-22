@@ -1,12 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
+import { Form, Button } from 'react-bootstrap';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { Store } from '../Store';
 
-export default function PaymentMethod() {
+export default function PaymentMethodScreen() {
   const navigate = useNavigate();
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
@@ -24,18 +23,21 @@ export default function PaymentMethod() {
   }, [shippingAddress, navigate]);
   const submitHandler = (e) => {
     e.preventDefault();
-    ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
+    ctxDispatch({ type: 'SAVE_PAYMENT_METHOD ', payload: paymentMethodName });
     localStorage.setItem('paymentMethod', paymentMethodName);
     navigate('/placeorder');
   };
+
   return (
     <div className='content'>
+      <br />
       <CheckoutSteps step1 step2 step3></CheckoutSteps>
       <div className='container small-container'>
         <Helmet>
           <title>Payment Method</title>
         </Helmet>
-        <h1 className='my-3'>Payment Method</h1>
+        <br />
+        <h4 className='box'>Select Payment Method</h4>
         <Form onSubmit={submitHandler}>
           <div className='mb-3'>
             <Form.Check
@@ -51,7 +53,7 @@ export default function PaymentMethod() {
             <Form.Check
               type='radio'
               id='Stripe'
-              label='Stripe'
+              label='Credit Card' // shows credit card so customer understands Credit Card instead of Stripe
               value='Stripe'
               checked={paymentMethodName === 'Stripe'}
               onChange={(e) => setPaymentMethod(e.target.value)}
@@ -65,3 +67,9 @@ export default function PaymentMethod() {
     </div>
   );
 }
+
+// step 1 (Cart)
+// step 2 (ShippingAddress)
+// step 3 (PaymentMethod) <= CURRENT STEP
+// step 4 (PlaceOrder)
+// lands on OrderScreen for payment

@@ -1,19 +1,17 @@
-import axios from 'axios';
-import React, { useContext, useEffect, useReducer } from 'react';
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useParams } from 'react-router-dom';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import ListGroup from 'react-bootstrap/ListGroup';
-import Card from 'react-bootstrap/Card';
+import { Button, Col, Row, ListGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { loadStripe } from '@stripe/stripe-js/pure';
+import StripeCheckout from '../components/StripeCheckout';
 
 function reducer(state, action) {
   switch (action.type) {
@@ -48,9 +46,12 @@ function reducer(state, action) {
       return state;
   }
 }
+
 export default function Order() {
   const { state } = useContext(Store);
   const { userInfo } = state;
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [stripe, setStripe] = useState(null);
 
   const params = useParams();
   const { id: orderId } = params;
@@ -59,10 +60,10 @@ export default function Order() {
   const [
     {
       loading,
+      loadingPay,
       error,
       order,
       successPay,
-      loadingPay,
       loadingDeliver,
       successDeliver,
     },
@@ -77,7 +78,73 @@ export default function Order() {
 
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
-  function createOrder(data, actions) {
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        dispatch({ type: 'FETCH_REQUEST' });
+        const { data } = await axios.get(`/api/orders/${orderId}`, {
+          headers: { authorization: `Bearer ${userInfo.token}` },
+        });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+      }
+    };
+
+    const addStripeScript = async () => {
+      const { data: clientId } = await axios.get('/api/stripe/key', {
+        headers: { authorization: `Bearer ${userInfo.token}` },
+      });
+      const stripeObj = await loadStripe(clientId);
+      setStripe(stripeObj);
+    };
+
+    const loadPaypalScript = async () => {
+      const { data: clientId } = await axios.get('/api/keys/paypal', {
+        headers: { authorization: `Bearer ${userInfo.token}` },
+      });
+      paypalDispatch({
+        type: 'resetOptions',
+        value: {
+          'client-id': clientId,
+          currency: 'USD',
+        },
+      });
+      paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
+    };
+
+    if (!userInfo) {
+      return navigate('/login');
+    }
+    if (
+      !order._id ||
+      successPay ||
+      successDeliver ||
+      (order._id && order._id !== orderId)
+    ) {
+      fetchOrder();
+      if (successPay) {
+        dispatch({ type: 'PAY_RESET' });
+      }
+      if (successDeliver) {
+        dispatch({ type: 'DELIVER_RESET' });
+      }
+    } else {
+      loadPaypalScript();
+      addStripeScript();
+      setPaymentMethod(order.paymentMethod); // Set the paymentMethod based on order.paymentMethod
+    }
+  }, [
+    order,
+    userInfo,
+    orderId,
+    navigate,
+    paypalDispatch,
+    successPay,
+    successDeliver,
+  ]);
+
+  const createOrder = (data, actions) => {
     return actions.order
       .create({
         purchase_units: [
@@ -89,7 +156,7 @@ export default function Order() {
       .then((orderID) => {
         return orderID;
       });
-  }
+  };
 
   function onApprove(data, actions) {
     return actions.order.capture().then(async function (details) {
@@ -110,64 +177,27 @@ export default function Order() {
       }
     });
   }
-  function onError(err) {
+  const onError = (err) => {
     toast.error(getError(err));
-  }
+  };
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/orders/${orderId}`, {
+  const handleSuccessPayment = async (paymentResult) => {
+    try {
+      dispatch({ type: 'PAY_REQUEST' });
+      const { data } = await axios.put(
+        `/api/orders/${order._id}/pay`,
+        paymentResult,
+        {
           headers: { authorization: `Bearer ${userInfo.token}` },
-        });
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
-      } catch (err) {
-        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-      }
-    };
-
-    if (!userInfo) {
-      return navigate('/login');
+        }
+      );
+      dispatch({ type: 'PAY_SUCCESS', payload: data });
+      toast.success('Order is paid');
+    } catch (err) {
+      dispatch({ type: 'PAY_FAIL', payload: getError(err) });
+      toast.error(getError(err));
     }
-    if (
-      !order._id ||
-      successPay ||
-      successDeliver ||
-      (order._id && order._id !== orderId)
-    ) {
-      fetchOrder();
-      if (successPay) {
-        dispatch({ type: 'PAY_RESET' });
-      }
-      if (successDeliver) {
-        dispatch({ type: 'DELIVER_RESET' });
-      }
-    } else {
-      const loadPaypalScript = async () => {
-        const { data: clientId } = await axios.get('/api/keys/paypal', {
-          headers: { authorization: `Bearer ${userInfo.token}` },
-        });
-        paypalDispatch({
-          type: 'resetOptions',
-          value: {
-            'client-id': clientId,
-            currency: 'USD',
-          },
-        });
-        paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
-      };
-      loadPaypalScript();
-    }
-  }, [
-    order,
-    userInfo,
-    orderId,
-    navigate,
-    paypalDispatch,
-    successPay,
-    successDeliver,
-  ]);
+  };
 
   async function deliverOrderHandler() {
     try {
@@ -192,55 +222,19 @@ export default function Order() {
   ) : error ? (
     <MessageBox variant='danger'>{error}</MessageBox>
   ) : (
-    <div>
+    <div className='content'>
+      <br />
       <Helmet>
-        <title>Order {orderId}</title>
+        <title>{order.paymentMethod}</title> {/* displays PayPal or Stripe  */}
       </Helmet>
-      <h1 className='my-3'>Order {orderId}</h1>
+      <h4 className='box'>
+        {order.paymentMethod} Order: {orderId}
+      </h4>
       <Row>
-        <Col md={8}>
-          <Card className='mb-3'>
-            <Card.Body>
-              <Card.Title>Shipping</Card.Title>
-              <Card.Text>
-                <strong>Name:</strong> {order.shippingAddress.fullName} <br />
-                <strong>Address: </strong>
-                {order.shippingAddress.address},
-                <br />
-                {order.shippingAddress.city},{order.shippingAddress.states},
-                <br />
-                {order.shippingAddress.postalCode},
-                <br />
-                {order.shippingAddress.country}
-              </Card.Text>
-              {order.isDelivered ? (
-                <MessageBox variant='success'>
-                  Delivered at {order.deliveredAt}
-                </MessageBox>
-              ) : (
-                <MessageBox variant='danger'>Not Delivered</MessageBox>
-              )}
-            </Card.Body>
-          </Card>
-          <Card className='mb-3'>
-            <Card.Body>
-              <Card.Title>Payment</Card.Title>
-              <Card.Text>
-                <strong>Method:</strong> {order.paymentMethod}
-              </Card.Text>
-              {order.isPaid ? (
-                <MessageBox variant='success'>
-                  Paid at {order.paidAt}
-                </MessageBox>
-              ) : (
-                <MessageBox variant='danger'>Not Paid</MessageBox>
-              )}
-            </Card.Body>
-          </Card>
-
-          <Card className='mb-3'>
-            <Card.Body>
-              <Card.Title>Items</Card.Title>
+        <Col md={6}>
+          <div className='box'>
+            <div className='body'>
+              <title>Items</title>
               <ListGroup variant='flush'>
                 {order.orderItems.map((item) => (
                   <ListGroup.Item key={item._id}>
@@ -254,20 +248,61 @@ export default function Order() {
                         <Link to={`/product/${item.slug}`}>{item.name}</Link>
                       </Col>
                       <Col md={3}>
-                        <span>{item.quantity}</span>
+                        <span>Quantity: {item.quantity}</span>
                       </Col>
-                      <Col md={3}>${item.price}</Col>
+                      <Col md={3}>Price ${item.price}</Col>
                     </Row>
                   </ListGroup.Item>
                 ))}
               </ListGroup>
-            </Card.Body>
-          </Card>
+            </div>
+          </div>
+
+          <div className='box'>
+            <div className='body'>
+              <title>Shipping</title>
+              <text>
+                <strong>Name:</strong> {order.shippingAddress.fullName}
+                <br />
+                <strong>Address: </strong> {order.shippingAddress.address}
+                <br />
+                <strong>City:</strong> {order.shippingAddress.city} <br />
+                <strong>State:</strong> {order.shippingAddress.states} <br />
+                <strong>Postal Code:</strong> {order.shippingAddress.postalCode}
+                <br />
+                <strong>Country:</strong> {order.shippingAddress.country}
+              </text>
+              {order.isDelivered ? (
+                <MessageBox variant='success'>
+                  Delivered at {order.deliveredAt}
+                </MessageBox>
+              ) : (
+                <MessageBox variant='danger'>Not Delivered</MessageBox>
+              )}
+            </div>
+          </div>
+
+          <div className='box'>
+            <div className='body'>
+              <title>Payment</title>
+              <text>
+                <strong>Method:</strong> {order.paymentMethod}
+              </text>
+              {order.isPaid ? (
+                <MessageBox variant='success'>
+                  Paid at {order.paidAt}
+                </MessageBox>
+              ) : (
+                <MessageBox variant='danger'>Not Paid</MessageBox>
+              )}
+            </div>
+          </div>
         </Col>
-        <Col md={4}>
-          <Card className='mb-3'>
-            <Card.Body>
-              <Card.Title>Order Summary</Card.Title>
+
+        <Col md={6}>
+          <div className='box'>
+            <div className='body'>
+              <title>Order Summary</title>
               <ListGroup variant='flush'>
                 <ListGroup.Item>
                   <Row>
@@ -297,22 +332,37 @@ export default function Order() {
                     </Col>
                   </Row>
                 </ListGroup.Item>
+
                 {!order.isPaid && (
                   <ListGroup.Item>
-                    {isPending ? (
-                      <LoadingBox />
+                    {paymentMethod === 'PayPal' ? (
+                      isPending ? (
+                        <LoadingBox />
+                      ) : (
+                        <div>
+                          <PayPalButtons
+                            createOrder={createOrder}
+                            onApprove={onApprove}
+                            onError={onError}
+                          />
+                          {loadingPay && <LoadingBox></LoadingBox>}
+                        </div>
+                      )
                     ) : (
                       <div>
-                        <PayPalButtons
-                          createOrder={createOrder}
-                          onApprove={onApprove}
-                          onError={onError}
-                        ></PayPalButtons>
+                        {!order.isPaid && !stripe && <LoadingBox />}
+                        {!order.isPaid && stripe && (
+                          <StripeCheckout
+                            stripe={stripe}
+                            orderID={order._id}
+                            handleSuccessPayment={handleSuccessPayment}
+                          />
+                        )}
                       </div>
                     )}
-                    {loadingPay && <LoadingBox></LoadingBox>}
                   </ListGroup.Item>
                 )}
+
                 {userInfo.isAdmin && order.isPaid && !order.isDelivered && (
                   <ListGroup.Item>
                     {loadingDeliver && <LoadingBox></LoadingBox>}
@@ -324,10 +374,16 @@ export default function Order() {
                   </ListGroup.Item>
                 )}
               </ListGroup>
-            </Card.Body>
-          </Card>
+            </div>
+          </div>
         </Col>
       </Row>
     </div>
   );
 }
+
+// step 1 (Cart)
+// step 2 (ShippingAddress)
+// step 3 (PaymentMethod)
+// step 4 (PlaceOrder)
+// lands on OrderScreen for payment <= CURRENT STEP

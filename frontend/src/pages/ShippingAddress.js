@@ -15,6 +15,7 @@ export default function ShippingAddress() {
   const [fullName, setFullName] = useState(shippingAddress.fullName || '');
   const [address, setAddress] = useState(shippingAddress.address || '');
   const [city, setCity] = useState(shippingAddress.city || '');
+  const [states, setStates] = useState(shippingAddress.states || '');
   const [postalCode, setPostalCode] = useState(
     shippingAddress.postalCode || ''
   );
@@ -32,6 +33,7 @@ export default function ShippingAddress() {
         fullName,
         address,
         city,
+        states,
         postalCode,
         country,
       },
@@ -42,6 +44,7 @@ export default function ShippingAddress() {
         fullName,
         address,
         city,
+        states,
         postalCode,
         country,
       })
@@ -53,7 +56,7 @@ export default function ShippingAddress() {
       <Helmet>
         <title>Shipping Address</title>
       </Helmet>
-
+      <br />
       <CheckoutSteps step1 step2></CheckoutSteps>
       <div className='container small-container'>
         <h1 className='my-3'>Shipping Address</h1>
@@ -82,6 +85,14 @@ export default function ShippingAddress() {
               required
             />
           </Form.Group>
+          <Form.Group className='mb-3' controlId='states'>
+            <Form.Label>State</Form.Label>
+            <Form.Control
+              value={states}
+              onChange={(e) => setStates(e.target.value)}
+              required
+            />
+          </Form.Group>
           <Form.Group className='mb-3' controlId='postalCode'>
             <Form.Label>Postal Code</Form.Label>
             <Form.Control
@@ -98,6 +109,7 @@ export default function ShippingAddress() {
               required
             />
           </Form.Group>
+
           <div className='mb-3'>
             <Button variant='primary' type='submit'>
               Continue
@@ -108,3 +120,9 @@ export default function ShippingAddress() {
     </div>
   );
 }
+
+// step 1 (Cart)
+// step 2 (ShippingAddress) <= CURRENT STEP
+// step 3 (PaymentMethod) select radial button for PayPal or Stripe
+// step 4 (PlaceOrder)
+// lands on (Order) 0r (StripeOrder) for payment

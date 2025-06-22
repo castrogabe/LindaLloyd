@@ -330,3 +330,65 @@ UserEdit.js > added
 UserList.js > added
 
 Modify > App.js, index.js, package.json
+
+# 10th Commit-Contact Page, Stripe, PayPal, Multiple Images, Cloudinary
+
+. Create Cloudinary Account, update .env
+. Create PayPal Account (sandbox)
+. Create Stripe Account (test account), npm i stripe
+. Create ContactPage update App.js
+. Rate and review products
+. Pagination on HomeScreen
+. Multiple Images on Product Page and Image Magnifier
+. Rename Product.js to ProductMag.js so it is less confusing with components: product.js
+
+BACKEND
+folder: models
+messageModel.js > added
+productModel.js > updated (multiple images)
+
+folder: routes
+messageRoutes > added
+productRoutes > updated
+stripeRoutes > added
+userRoutes > updated
+
+config.js > added
+server.js > updated
+.env.example > update
+utils.js > updated
+
+FRONTEND
+npm i stripe, paypal
+
+folder: components  
+StripeCheckout.js > added
+Header.js > updated
+Header1.js > updated
+BottomHeader.js > updated
+Footer.js > updated
+BottomFooter.js > updated
+LoadingBox.js > updated
+Product.js > updated
+
+App.js > updated (divided so it is easier to read)
+index.css > updated
+
+folder: pages
+Cart.js > updated
+Contact.js > added
+Dashboard.js > updated
+Home.js > updated
+Messages.js > added
+Order.js > updated
+OrderHistory.js > updated
+OrderList.js > updated
+PaymentMethod.js > updated
+PlaceOrder.js > updated
+ProductEdit.js > updated
+ProductList.js > updated
+Product.js to ProductMag > updated multiple images carousel & react-image-magnify
+Profile.js > updated
+Search.js > updated
+ShippingAddress.js > updated
+UserList.js > updated

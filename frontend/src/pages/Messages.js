@@ -1,13 +1,11 @@
-import axios from 'axios';
-import React, { useContext, useEffect, useReducer } from 'react';
-import { Button, Table } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import React, { useEffect, useState, useReducer } from 'react';
+import { Table, Button } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { LinkContainer } from 'react-router-bootstrap';
 import { toast } from 'react-toastify';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
-import { Store } from '../Store';
+import axios from 'axios';
 import { getError } from '../utils';
 
 const reducer = (state, action) => {
@@ -17,7 +15,7 @@ const reducer = (state, action) => {
     case 'FETCH_SUCCESS':
       return {
         ...state,
-        users: action.payload,
+        orders: action.payload,
         loading: false,
       };
     case 'FETCH_FAIL':
@@ -39,27 +37,41 @@ const reducer = (state, action) => {
   }
 };
 
-export default function UserList() {
-  const navigate = useNavigate();
+export default function Messages() {
+  const [messages, setMessages] = useState([
+    {
+      update_time: '',
+      fullName: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  ]);
   const [
-    { loading, error, users, loadingDelete, successDelete, page, pages },
+    { loading, error, loadingDelete, successDelete, page, pages },
     dispatch,
   ] = useReducer(reducer, {
     loading: true,
     error: '',
   });
 
-  const { state } = useContext(Store);
-  const { userInfo } = state;
+  useEffect(() => {
+    fetch('/messages')
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+      })
+      .then((jsonRes) => setMessages(jsonRes));
+  }, []);
 
+  // delete messages
   useEffect(() => {
     const fetchData = async () => {
       try {
         dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/users`, {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
-        });
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+        const message = await axios.get(`/messages`);
+        dispatch({ type: 'FETCH_SUCCESS', payload: message });
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
@@ -72,18 +84,24 @@ export default function UserList() {
     } else {
       fetchData();
     }
-  }, [userInfo, successDelete]);
+  }, [messages, successDelete]);
 
-  const deleteHandler = async (user) => {
+  const deleteHandler = async (message) => {
     if (window.confirm('Are you sure to delete?')) {
       try {
         dispatch({ type: 'DELETE_REQUEST' });
-        await axios.delete(`/api/users/${user._id}`, {
-          headers: { Authorization: `Bearer ${userInfo.token}` },
+        await axios.delete('/messages', {
+          data: {
+            update_time: message.update_time,
+            fullName: message.fullName,
+            email: message.email,
+            subject: message.subject,
+            message: message.message,
+          },
         });
-        toast.success('user deleted successfully');
+        toast.success('Message deleted successfully');
         dispatch({ type: 'DELETE_SUCCESS' });
-      } catch (error) {
+      } catch (err) {
         toast.error(getError(error));
         dispatch({
           type: 'DELETE_FAIL',
@@ -101,10 +119,10 @@ export default function UserList() {
   return (
     <div className='content'>
       <Helmet>
-        <title>Users</title>
+        <title>Messages</title>
       </Helmet>
       <br />
-      <h1 className='box'>Users</h1>
+      <h1 className='box'>Your Messages</h1>
       <div className='box'>
         {loadingDelete && <LoadingBox></LoadingBox>}
         {loading ? (
@@ -113,41 +131,38 @@ export default function UserList() {
           <MessageBox variant='danger'>{error}</MessageBox>
         ) : (
           <Table responsive striped bordered className='noWrap'>
-            <thead className='thead'>
+            <thead>
               <tr>
-                <th>ID</th>
                 <th>NAME</th>
                 <th>EMAIL</th>
-                <th>IS ADMIN</th>
-                <th>ACTIONS</th>
+                <th>SUBJECT</th>
+                <th>Message</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user._id}>
-                  <td>{user._id}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.isAdmin ? 'YES' : 'NO'}</td>
-                  <td>
-                    <Button
-                      type='button'
-                      variant='primary'
-                      onClick={() => navigate(`/admin/user/${user._id}`)}
-                    >
-                      Edit
-                    </Button>
-                    &nbsp;
-                    <Button
-                      type='button'
-                      variant='primary'
-                      onClick={() => deleteHandler(user)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {messages &&
+                messages.map((message) => (
+                  <tr key={message}>
+                    <td>
+                      {message.createdAt
+                        ? message.createdAt.substring(0, 10)
+                        : ''}
+                    </td>
+                    <td>{message.fullName}</td>
+                    <td>{message.email}</td>
+                    <td>{message.subject}</td>
+                    <td>{message.message}</td>
+                    <td>
+                      <Button
+                        type='button'
+                        variant='primary'
+                        onClick={() => deleteHandler(message)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         )}

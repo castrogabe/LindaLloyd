@@ -1,20 +1,24 @@
 import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 
-function BottomFooter() {
+const BottomFooter = () => {
   return (
     <div className='bottom-footer'>
       <Row>
         <Col className='text-center'>
-          Powered by{' '}
-          <a href='https://gabewd.com' id='linked'>
-            {' '}
+          MERN stack app developed by{' '}
+          <a
+            href='https://www.gabewd.com/'
+            target='_blank'
+            results='noreferrer'
+            id='linked'
+          >
             &copy; gabewd.com
           </a>
         </Col>
       </Row>
     </div>
   );
-}
+};
 
 export default BottomFooter;

@@ -23,6 +23,7 @@ const reducer = (state, action) => {
       return state;
   }
 };
+
 export default function Dashboard() {
   const [{ loading, summary, error }, dispatch] = useReducer(reducer, {
     loading: true,
@@ -50,14 +51,15 @@ export default function Dashboard() {
 
   return (
     <div className='content'>
-      <h1>Dashboard</h1>
+      <br />
+      <h1 className='box'>Dashboard</h1>
       {loading ? (
         <LoadingBox />
       ) : error ? (
         <MessageBox variant='danger'>{error}</MessageBox>
       ) : (
         <>
-          <Row>
+          <Row className='mt-3'>
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -70,6 +72,7 @@ export default function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
+
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -82,6 +85,7 @@ export default function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
+
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -130,6 +134,7 @@ export default function Dashboard() {
               ></Chart>
             )}
           </div>
+          <br />
         </>
       )}
     </div>
