@@ -1,14 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { Row, Col } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
+import logger from 'use-reducer-logger';
+import Product from '../components/Product';
+import LoadingBox from '../components/LoadingBox';
+import MessageBox from '../components/MessageBox';
 
-export default function HomeScreen() {
-  const [products, setProducts] = useState([]);
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'FETCH_REQUEST':
+      return { ...state, loading: true };
+    case 'FETCH_SUCCESS':
+      return { ...state, products: action.payload, loading: false };
+    case 'FETCH_FAIL':
+      return { ...state, loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
+function Home() {
+  const [{ loading, error, products }, dispatch] = useReducer(logger(reducer), {
+    products: [],
+    loading: true,
+    error: '',
+  });
+
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios.get('/api/products');
-      setProducts(result.data);
+      dispatch({ type: 'FETCH_REQUEST' });
+      try {
+        const result = await axios.get('/api/products');
+        dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: err.message });
+      }
     };
     fetchData();
   }, []);
@@ -16,37 +43,45 @@ export default function HomeScreen() {
   return (
     <>
       <div className='content'>
-        <h1>Featured Products</h1>
+        <Helmet>
+          <title>Linda Lloyd</title>
+        </Helmet>
+        <h1>Antiques, Art, Collectibles</h1>
         <div className='box'>
-          <p className='mt-3'>
-            ~ All Antiques, Art, and Collectibles are in good condition and sold
-            as is. ~
+          <p>
+            ~ I hand picked all the items over years of collecting and
+            descriptions are given to the best of my knowledge. ~
           </p>
         </div>
-        <br />
+        <Row>
+          <Col>
+            {' '}
+            <div className='products'>
+              {loading ? (
+                <LoadingBox />
+              ) : error ? (
+                <MessageBox variant='danger'>{error}</MessageBox>
+              ) : (
+                <Row>
+                  {products.map((product) => (
+                    <Col
+                      key={product.slug}
+                      sm={6}
+                      md={4}
+                      lg={3}
+                      className='mb-3'
+                    >
+                      <Product product={product}></Product>
+                    </Col>
+                  ))}
+                </Row>
+              )}
+            </div>
+          </Col>
+        </Row>
       </div>
-      <Row>
-        <Col>
-          <div className='products'>
-            {products.map((product) => (
-              <div className='product' key={product.slug}>
-                <Link to={`/product/${product.slug}`}>
-                  <img src={product.image} alt={product.name} />
-                </Link>
-                <div className='product-info'>
-                  <Link to={`/product/${product.slug}`}>
-                    <p>{product.name}</p>
-                  </Link>
-                  <p>
-                    <strong>${product.price}</strong>
-                  </p>
-                  <button>Add to cart</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Col>
-      </Row>
     </>
   );
 }
+
+export default Home;

@@ -154,3 +154,34 @@ FRONTEND
 Gallery.js > updated
 Home.js > updated
 Product.js > updated
+
+# 5th Commit by Reducer Hook, Helmet, Rating
+
+BACKEND
+server.js > update
+
+FRONTEND
+folder: components
+LoadingBox.js (spinner) > added
+MessageBox.js > added
+Product.js > added
+Rating.js > added
+
+folder: pages
+AboutUs.js > updated
+Home.js > updated
+Product.js > updated
+Rating.js > added
+
+. define reducer
+. update fetch data, get state from useReducer in Home
+. create product and rating components
+. Use rating in product component
+. Add Helmet to pages and index.js
+. Jumbotron with typewriter effect in Home and components add Jumbotron.js
+. Create Product details
+. Create loading component
+. Create message component
+. Add React spinner in LoadingBox
+. utils.js to define error function
+. update server.js in backend
