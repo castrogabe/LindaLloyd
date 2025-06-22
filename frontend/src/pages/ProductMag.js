@@ -14,7 +14,7 @@ import {
 import ReactImageMagnify from 'react-image-magnify';
 import Rating from '../components/Rating';
 import { Helmet } from 'react-helmet-async';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 import MessageBox from '../components/MessageBox';
 import { getError } from '../utils';
 import { Store } from '../Store';
@@ -167,7 +167,7 @@ function ProductMag() {
   const mobileView = useMediaQuery({ maxWidth: 768 });
 
   return loading ? (
-    <LoadingBox />
+    <SkeletonProductMag />
   ) : error ? (
     <MessageBox variant='danger'>{error}</MessageBox>
   ) : (
@@ -362,7 +362,7 @@ function ProductMag() {
                 <Button disabled={loadingCreateReview} type='submit'>
                   Submit
                 </Button>
-                {loadingCreateReview && <LoadingBox></LoadingBox>}
+                {loadingCreateReview && <SkeletonProductMag />}
               </div>
             </Form>
           ) : (

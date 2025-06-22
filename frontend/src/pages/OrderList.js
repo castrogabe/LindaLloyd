@@ -4,7 +4,7 @@ import { Button, Table, Col } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link } from 'react-router-dom';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonOrderList from '../components/skeletons/SkeletonOrderList';
 import MessageBox from '../components/MessageBox';
 import { Store } from '../Store';
 import { getError } from '../utils';
@@ -159,12 +159,12 @@ export default function OrderList() {
       <br />
       <h4 className='box'>Orders List</h4>
       <div className='box'>
-        {loadingDelete && <LoadingBox />}
+        {loadingDelete && <SkeletonOrderList />}
         {loading ? (
           <div>
             {[...Array(8).keys()].map((i) => (
               <Col key={i} className='mb-1'>
-                <LoadingBox />
+                <SkeletonOrderList />
               </Col>
             ))}
           </div>

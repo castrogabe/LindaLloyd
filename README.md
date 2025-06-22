@@ -455,3 +455,32 @@ OrderList.js > updated (added deliveryDays, carrierName, trackingNumber), add us
 Search.js > updated (added sidebar toast notification in desktop)
 
 index.css > updated
+
+# 13th Commit-Add Skeleton and replace LoadingBox component
+
+FRONTEND
+npm i react-loading-skeleton
+css > add css marked for Skeleton.css
+
+folder > components:
+Skeleton.js
+SkeletonDashboard.js
+SkeletonHome.js
+SkeletonMessage.js
+SkeletonOrderHistory.js
+SkeletonOrderList.js.js
+SkeletonProductList.js
+SkeletonProductMag.js
+SkeletonUseEdit.js
+SkeletonUserList.js
+
+folder > pages:
+Dashboard.js (Lines 8, 37-39, 60)
+Home.js (Lines 12, 49-50, 114-122)
+Messages.js (Lines 9, 71-73, 130-138)
+OrderHistory.js (Lines 3, 9, 36-38, 74-80)
+OrderList.js (Lines 3, 11, 57-59, 122-130)
+ProductList.js (Lines 10, 81-83, 160-170)
+ProductMag.js (Lines 26, 71-73, 173)
+UserEdit.js (Lines 10, 50-52, 101, 137)
+UserList.js (Lines 3, 11, 57-59, 112-120)

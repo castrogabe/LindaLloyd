@@ -7,7 +7,7 @@ import { getError } from '../utils';
 import { Helmet } from 'react-helmet-async';
 import { Row, Col, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
-import LoadingBox from '../components/LoadingBox';
+import SkeletonHome from '../components/skeletons/SkeletonHome';
 import MessageBox from '../components/MessageBox';
 import Product from '../components/Product';
 import Sidebar from '../components/Sidebar';
@@ -128,7 +128,7 @@ export default function Home() {
               <Row>
                 {[...Array(12).keys()].map((i) => (
                   <Col key={i} sm={6} md={4} lg={3} className='mb-3'>
-                    <LoadingBox />
+                    <SkeletonHome />
                   </Col>
                 ))}
               </Row>
