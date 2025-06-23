@@ -56,6 +56,8 @@ export default function ProductEdit() {
   const [category, setCategory] = useState('');
   const [categories, setCategories] = useState([]);
   const [categoryImage, setCategoryImage] = useState('');
+  const [isNewCategory, setIsNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [countInStock, setCountInStock] = useState('');
   const [from, setFrom] = useState('');
   const [condition, setCondition] = useState('');
@@ -105,8 +107,10 @@ export default function ProductEdit() {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!category) {
-      toast.error('Please select a category before updating.', {
+    const selectedCategory = isNewCategory ? newCategoryName.trim() : category;
+
+    if (!selectedCategory) {
+      toast.error('Please select or enter a category before updating.', {
         autoClose: 1000, // Display success message for 1 second
       });
       return;
@@ -134,7 +138,7 @@ export default function ProductEdit() {
           salePrice: salePrice !== '' ? salePrice : undefined,
           image,
           images,
-          category,
+          category: selectedCategory,
           categoryImage, // ✅ Ensure categoryImage is sent
           from,
           condition,
@@ -221,7 +225,10 @@ export default function ProductEdit() {
 
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('categoryId', category); // ✅ important
+    formData.append(
+      'categoryId',
+      isNewCategory ? newCategoryName.trim() : category
+    );
 
     try {
       const { data } = await axios.post('/api/upload/category', formData, {
@@ -243,8 +250,10 @@ export default function ProductEdit() {
   const deleteCategoryImageHandler = async () => {
     try {
       await axios.put(
-        `/api/upload/category/${category}/remove-image`,
-        {}, // empty payload
+        `/api/upload/category/${
+          isNewCategory ? newCategoryName.trim() : category
+        }/remove-image`,
+        {},
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
@@ -331,6 +340,7 @@ export default function ProductEdit() {
               onChange={(e) => setSalePrice(e.target.value)}
             />
           </Form.Group>
+
           <Form.Group className='mb-3' controlId='imageUpload'>
             <Form.Label>Upload Product Images</Form.Label>
             <Form.Control
@@ -389,28 +399,45 @@ export default function ProductEdit() {
             </div>
           )}
 
-          {/* Category Dropdown & Image Preview */}
           <Form.Group className='mb-3' controlId='category'>
             <Form.Label>Category</Form.Label>
             <Row>
               <Col md={8}>
-                <Form.Select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value=''>Select a category</option>
-                  {categories.length > 0 ? (
-                    categories.map((cat, index) => (
+                {!isNewCategory ? (
+                  <Form.Select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    required
+                  >
+                    <option value=''>Select a category</option>
+                    {categories.map((cat, index) => (
                       <option key={cat._id || index} value={cat._id}>
-                        {cat._id}{' '}
-                        {/* ✅ Debugging: Ensure category name appears */}
+                        {cat._id}
                       </option>
-                    ))
-                  ) : (
-                    <option disabled>No categories found</option>
-                  )}
-                </Form.Select>
+                    ))}
+                  </Form.Select>
+                ) : (
+                  <Form.Control
+                    type='text'
+                    placeholder='Enter new category name'
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    required
+                  />
+                )}
+                <Form.Check
+                  type='checkbox'
+                  label='Add a new category'
+                  checked={isNewCategory}
+                  onChange={(e) => {
+                    setIsNewCategory(e.target.checked);
+                    // Reset values when toggling
+                    setCategory('');
+                    setNewCategoryName('');
+                    setCategoryImage('');
+                  }}
+                  className='mt-2'
+                />
               </Col>
               <Col md={4} className='text-center'>
                 {categoryImage && (

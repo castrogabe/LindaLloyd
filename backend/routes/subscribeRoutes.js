@@ -10,6 +10,8 @@ const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX;
 
 subscribeRouter.post('/', async (req, res) => {
   const email = req.body.email?.toLowerCase();
+  // console.log('Received email:', email);
+  // console.log('Request body:', req.body);
 
   if (!email) {
     return res.status(400).json({ message: 'Email is required' });
@@ -37,6 +39,11 @@ subscribeRouter.post('/', async (req, res) => {
 
     res.status(201).json({ message: 'Subscription successful' });
   } catch (error) {
+    console.error(
+      'Mailchimp subscribe error:',
+      error.response?.data || error.message
+    );
+
     if (error.response && error.response.data.title === 'Member Exists') {
       return res.status(400).json({ message: 'Email already subscribed' });
     }

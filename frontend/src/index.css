@@ -551,6 +551,7 @@ a.email:hover {
   margin-right: 20px;
 }
 
+/***** Subscribe  *****/
 .subscribe-container {
   text-align: center;
   background-color: var(--light);

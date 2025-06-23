@@ -800,3 +800,24 @@ folder: pages
 Instructions.js > added
 
 App.js > added Instructions.js
+
+# 23rd Commit-fix backend image upload emails, Sold Gallery, add Spectrum to Admin text list
+
+BACKEND
+folder: routes
+orderRoutes.js > updated with sold
+subscribeRoutes.js > updated
+
+utils.js > updated
+.env > updated with BASE_URL=https://lloyd-tme8.onrender.com | app password updated
+
+folder: components
+ProductCard.js > updated
+Subscribe.js > updated, adds email to MailChimp
+ProductMag.js > updated for shipping times
+
+FRONTEND
+folder: pages
+ProductEdit.js > updated with new category option
+
+index.css > updated

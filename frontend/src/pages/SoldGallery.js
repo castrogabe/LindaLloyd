@@ -13,7 +13,8 @@ export default function SoldGallery() {
   useEffect(() => {
     const fetchSoldProducts = async () => {
       try {
-        const result = await axios.get('/api/products/sold'); // Fetch only sold products
+        const result = await axios.get('/api/orders/sold');
+        console.log('Fetched sold products:', result.data); // ✅ log here
         setSoldProducts(result.data);
         setLoading(false);
       } catch (error) {
@@ -63,7 +64,7 @@ export default function SoldGallery() {
                       className='category-card-img'
                       style={{
                         width: '100%',
-                        height: window.innerWidth < 768 ? '250px' : '400px',
+                        height: window.innerWidth < 768 ? '250px' : '550px',
                         objectFit: 'cover',
                         marginBottom: '10px',
                         borderRadius: '10px',

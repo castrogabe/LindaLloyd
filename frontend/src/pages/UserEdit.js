@@ -142,7 +142,12 @@ export default function UserEdit() {
                   onChange={(e) => setCarrier(e.target.value)}
                 >
                   <option value=''>Select Carrier</option>
-                  <option value='vtext.com'>Verizon</option>
+                  <option value='vtext.com'>
+                    Verizon / Spectrum Mobile (SMS)
+                  </option>
+                  <option value='vzwpix.com'>
+                    Verizon / Spectrum Mobile (MMS)
+                  </option>
                   <option value='txt.att.net'>AT&T</option>
                   <option value='tmomail.net'>T-Mobile</option>
                   <option value='messaging.sprintpcs.com'>Sprint</option>

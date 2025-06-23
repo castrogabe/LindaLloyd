@@ -77,6 +77,7 @@ function ProductCard({ product, handleSidebarOpen = () => {} }) {
           />
         </LazyLoad>
       </Link>
+
       <div className='card-body'>
         <Link
           to={`/product/${product.slug}`}

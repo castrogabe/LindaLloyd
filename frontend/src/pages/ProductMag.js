@@ -350,6 +350,16 @@ function ProductMag() {
                       <Button onClick={addToCartHandler} variant='primary'>
                         Add to Cart
                       </Button>
+                      <div style={{ marginTop: '10px' }}>
+                        <p style={{ fontStyle: 'italic' }}>
+                          <span style={{ color: 'blue' }}>(USA Only)</span>{' '}
+                          Orders shipped Mon-Fri, or Day after Major Holiday
+                        </p>
+                        <p style={{ fontStyle: 'italic' }}>
+                          <span style={{ color: 'blue' }}>(USA Only)</span> USPS
+                          PRIORITY: Estimated delivery: 3-5 business days.
+                        </p>
+                      </div>
                     </>
                   ) : (
                     <Button variant='light' disabled>
