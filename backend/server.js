@@ -109,9 +109,10 @@ app.use('/api/productmagcontent', productMagContentRouter);
 app.use('/api/subscribe', subscribeRouter);
 app.use('/api/square', squareRouter);
 
-app.use(express.static(path.join(__dirnameCustom, 'build')));
+// React app serving
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirnameCustom, 'build/index.html'))
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'))
 );
 
 // Error middleware

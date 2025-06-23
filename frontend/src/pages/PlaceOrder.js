@@ -41,6 +41,11 @@ export default function PlaceOrder() {
   cart.totalPrice = cart.itemsPrice + cart.shippingPrice;
 
   const placeOrderHandler = async () => {
+    if (!cart.paymentMethod) {
+      toast.error('Please select a payment method.');
+      navigate('/payment');
+      return;
+    }
     try {
       dispatch({ type: 'CREATE_REQUEST' });
 
@@ -77,6 +82,16 @@ export default function PlaceOrder() {
   };
 
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (localStorage.getItem('paymentMethod') !== 'Square') {
+      localStorage.setItem('paymentMethod', 'Square');
+    }
+    ctxDispatch({
+      type: 'SAVE_PAYMENT_METHOD',
+      payload: 'Square',
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -231,6 +246,12 @@ export default function PlaceOrder() {
                           <SkeletonPlaceOrder />
                         </>
                       )}
+                      <div className='box'>
+                        <Card.Title>Payment Method</Card.Title>
+                        <p>
+                          <strong>Method:</strong> Square
+                        </p>
+                      </div>
                     </ListGroup.Item>
                   </ListGroup>
                 </Card.Body>

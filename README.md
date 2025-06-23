@@ -778,3 +778,14 @@ folder: pages
 Home.js > Add comments
 ProductMag.js > add comments
 Search.js > updated, commented out categories, prices for mobile view, add comments
+
+# 23rd Commit-Modify UI Search for mobile view, add comments
+
+FRONTEND
+folder: components
+Footer.js > Checkout by Square
+
+folder: pages
+Home.js > Add comments
+ProductMag.js > add comments
+Search.js > updated, commented out categories, prices for mobile view, add comments

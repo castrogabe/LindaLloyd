@@ -519,6 +519,10 @@ a.email:hover {
   color: var(--hover);
 }
 
+.hrLine {
+  border-color: var(--medium);
+}
+
 /* product sidebar */
 .sidebar {
   position: fixed;
@@ -599,10 +603,6 @@ a.email:hover {
 
 .sidebar-open .bar:last-child {
   transform: rotate(-45deg);
-}
-
-.hrLine {
-  border-color: var(--primary);
 }
 
 /* Customer Notes */
