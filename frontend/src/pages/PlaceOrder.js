@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
+import MessageBox from '../components/MessageBox';
 import { toast } from 'react-toastify';
 import { getError } from '../utils';
 import { Store } from '../Store';
@@ -12,11 +13,11 @@ import SkeletonPlaceOrder from '../components/skeletons/SkeletonPlaceOrder';
 const reducer = (state, action) => {
   switch (action.type) {
     case 'CREATE_REQUEST':
-      return { ...state, loading: true };
+      return { ...state, loading: true, loadingStarted: true };
     case 'CREATE_SUCCESS':
-      return { ...state, loading: false };
+      return { ...state, loading: false, loadingStarted: false };
     case 'CREATE_FAIL':
-      return { ...state, loading: false };
+      return { ...state, loading: false, loadingStarted: false };
     default:
       return state;
   }
@@ -26,23 +27,23 @@ export default function PlaceOrder() {
   const navigate = useNavigate();
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
-  const [{ loading }, dispatch] = useReducer(reducer, {
+  const [{ loading, loadingStarted }, dispatch] = useReducer(reducer, {
     loading: false,
+    loadingStarted: false,
   });
   const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100;
 
   cart.itemsPrice = round2(
     cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
   );
-  // round2(10) => $10.00 SHIPPING PRICE IF LESS (>) THAN $100
-  // IF OVER $101 SHIPPING IS FREE
   cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
-  cart.taxPrice = round2(0.095 * cart.itemsPrice); // TAX PRICE 9.5%
-  cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
+  cart.taxPrice = 0; // Tax will be applied by Square later
+  cart.totalPrice = cart.itemsPrice + cart.shippingPrice;
 
   const placeOrderHandler = async () => {
     try {
       dispatch({ type: 'CREATE_REQUEST' });
+
       const { data } = await Axios.post(
         '/api/orders',
         {
@@ -60,21 +61,20 @@ export default function PlaceOrder() {
           },
         }
       );
+
       ctxDispatch({ type: 'CART_CLEAR' });
       dispatch({ type: 'CREATE_SUCCESS' });
       localStorage.removeItem('cartItems');
-      navigate(`/order/${data.order._id}`);
+
+      // ✅ Delay to allow message to render
+      setTimeout(() => {
+        navigate(`/order/${data.order._id}/payment`);
+      }, 800); // delay in ms
     } catch (err) {
       dispatch({ type: 'CREATE_FAIL' });
       toast.error(getError(err));
     }
   };
-
-  useEffect(() => {
-    if (!cart.paymentMethod) {
-      navigate('/payment');
-    }
-  }, [cart, navigate]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -93,13 +93,11 @@ export default function PlaceOrder() {
       ) : (
         <>
           <br />
-          <CheckoutSteps step1 step2 step3 step4></CheckoutSteps>
+          <CheckoutSteps step1 step2 step3></CheckoutSteps>
           <Helmet>
             <title>Place Order</title>
           </Helmet>
           <br />
-          {/* <h1 className='box'>Place Order</h1> */}
-
           <h1 className='box'>
             <i
               className='fas fa-lock'
@@ -107,9 +105,10 @@ export default function PlaceOrder() {
             ></i>
             Secure Checkout - Place Your Order
           </h1>
+
           <Row>
             <Col md={8}>
-              <Card className='box'>
+              <div className='box'>
                 <Card.Body>
                   <Card.Title>Items</Card.Title>
                   <ListGroup variant='flush'>
@@ -122,7 +121,7 @@ export default function PlaceOrder() {
                               alt={item.name}
                               className='img-fluid rounded img-thumbnail'
                             ></img>{' '}
-                            <Link to={`/product/${item.slug}`}>
+                            <Link className='link' to={`/product/${item.slug}`}>
                               {item.name}
                             </Link>
                           </Col>
@@ -134,48 +133,40 @@ export default function PlaceOrder() {
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
-                  <Link to='/cart'>Edit</Link>
+                  <Link className='link' to='/cart'>
+                    Edit
+                  </Link>
                 </Card.Body>
-              </Card>
+              </div>
 
-              <Card className='box'>
+              <div className='box'>
                 <Card.Body>
-                  <Card.Text>
-                    <text>
-                      <strong>Name:</strong> {cart.shippingAddress.fullName}{' '}
-                      <br />
-                      <strong>Address: </strong>
-                      {cart.shippingAddress.address}
-                      <br />
-                      <strong>Street: </strong> {cart.shippingAddress.city},
-                      {cart.shippingAddress.states},
-                      <br />
-                      <strong>Zip Code: </strong>{' '}
-                      {cart.shippingAddress.postalCode},
-                      <br />
-                      <strong>State: </strong> {cart.shippingAddress.states},
-                      <br />
-                      <strong>Country: </strong> {cart.shippingAddress.country}
-                    </text>
+                  <div>
+                    <strong>Name:</strong> {cart.shippingAddress.fullName}
                     <br />
-                  </Card.Text>
-                  <Link to='/shipping'>Edit</Link>
-                </Card.Body>
-              </Card>
+                    <strong>Address: </strong>
+                    {cart.shippingAddress.address}
+                    <br />
+                    <strong>Street: </strong> {cart.shippingAddress.city},
+                    {cart.shippingAddress.states},
+                    <br />
+                    <strong>Zip Code: </strong>{' '}
+                    {cart.shippingAddress.postalCode},
+                    <br />
+                    <strong>State: </strong> {cart.shippingAddress.states},
+                    <br />
+                    <strong>Country: </strong> {cart.shippingAddress.country}
+                  </div>
 
-              <Card className='box'>
-                <Card.Body>
-                  <Card.Title>Payment</Card.Title>
-                  <Card.Text>
-                    <strong>Method:</strong> {cart.paymentMethod}
-                  </Card.Text>
-                  <Link to='/payment'>Edit</Link>
+                  <Link className='link' to='/shipping'>
+                    Edit
+                  </Link>
                 </Card.Body>
-              </Card>
+              </div>
             </Col>
 
             <Col md={4}>
-              <Card>
+              <div className='box'>
                 <Card.Body>
                   <Card.Title>Order Summary</Card.Title>
                   <ListGroup variant='flush'>
@@ -183,7 +174,6 @@ export default function PlaceOrder() {
                       <Row>
                         <Col>Quantity</Col>
                         <Col>
-                          {/* Calculate and display the total quantity of all items */}
                           {cart.cartItems.reduce(
                             (acc, item) => acc + item.quantity,
                             0
@@ -197,16 +187,18 @@ export default function PlaceOrder() {
                         <Col>${cart.itemsPrice.toFixed(2)}</Col>
                       </Row>
                     </ListGroup.Item>
+
                     <ListGroup.Item>
-                      <Row>
-                        <Col>Shipping</Col>
-                        <Col>${cart.shippingPrice.toFixed(2)}</Col>
-                      </Row>
+                      <MessageBox variant='warning'>
+                        Shipping is not included. You will receive a separate
+                        invoice after your purchase based on item size, weight,
+                        and destination.
+                      </MessageBox>
                     </ListGroup.Item>
+
                     <ListGroup.Item>
                       <Row>
-                        <Col>Tax</Col>
-                        <Col>${cart.taxPrice.toFixed(2)}</Col>
+                        <Col>Estimated Tax</Col>
                       </Row>
                     </ListGroup.Item>
                     <ListGroup.Item>
@@ -230,11 +222,19 @@ export default function PlaceOrder() {
                           Place Order
                         </Button>
                       </div>
-                      {loading && <SkeletonPlaceOrder />}
+                      {loadingStarted && (
+                        <>
+                          <p className='text-center text-danger mt-3 fade-in'>
+                            <i className='fas fa-spinner fa-spin'></i>{' '}
+                            Processing order, please do not refresh the page...
+                          </p>
+                          <SkeletonPlaceOrder />
+                        </>
+                      )}
                     </ListGroup.Item>
                   </ListGroup>
                 </Card.Body>
-              </Card>
+              </div>
             </Col>
           </Row>
         </>
@@ -245,6 +245,6 @@ export default function PlaceOrder() {
 
 // step 1 (Cart)
 // step 2 (ShippingAddress)
-// step 3 (PaymentMethod) select radial button for PayPal or Stripe
-// step 4 (PlaceOrder) <= CURRENT STEP
+// step 3 (PlaceOrder) <= CURRENT STEP
+// step 4 (OrderPayment)
 // lands on OrderDetails for payment

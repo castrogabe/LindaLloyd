@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const productMagContentSchema = new mongoose.Schema({
   sections: [
@@ -14,4 +14,4 @@ const ProductMagContent = mongoose.model(
   productMagContentSchema
 );
 
-export default ProductMagContent;
+module.exports = ProductMagContent;

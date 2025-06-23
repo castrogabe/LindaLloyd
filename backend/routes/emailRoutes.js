@@ -1,6 +1,6 @@
-import express from 'express';
-import multer from 'multer';
-import { isAuth, isAdmin, transporter } from '../utils.js';
+const express = require('express');
+const multer = require('multer');
+const { isAuth, isAdmin, transporter } = require('../utils.js');
 
 const emailRouter = express.Router();
 
@@ -177,4 +177,4 @@ emailRouter.post(
   }
 );
 
-export default emailRouter;
+module.exports = emailRouter;

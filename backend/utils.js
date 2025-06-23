@@ -1,19 +1,26 @@
-import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const User = require('./models/userModel.js');
+
+const getImageUrl = (imgPath) => {
+  return imgPath.startsWith('http')
+    ? imgPath
+    : baseUrl() + (imgPath.startsWith('/') ? imgPath : '/' + imgPath);
+};
 
 // Function to calculate the total quantity of items in the order
 const calculateTotalQuantity = (order) => {
   return order.orderItems.reduce((total, item) => total + item.quantity, 0);
 };
 
-export const baseUrl = () =>
+const baseUrl = () =>
   process.env.BASE_URL
     ? process.env.BASE_URL
     : process.env.NODE_ENV !== 'production'
     ? 'http://localhost:3000'
-    : 'https://lindalloyd.onrender.com'; // example.com <= your website address
+    : 'https://lindalloyd.onrender.com';
 
-export const generateToken = (user) => {
+const generateToken = (user) => {
   return jwt.sign(
     {
       _id: user._id,
@@ -22,16 +29,14 @@ export const generateToken = (user) => {
       isAdmin: user.isAdmin,
     },
     process.env.JWT_SECRET,
-    {
-      expiresIn: '30d',
-    }
+    { expiresIn: '30d' }
   );
 };
 
-export const isAuth = (req, res, next) => {
+const isAuth = (req, res, next) => {
   const authorization = req.headers.authorization;
   if (authorization) {
-    const token = authorization.slice(7, authorization.length); // Bearer XXXXXX
+    const token = authorization.slice(7);
     jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
       if (err) {
         res.status(401).send({ message: 'Invalid Token' });
@@ -45,7 +50,7 @@ export const isAuth = (req, res, next) => {
   }
 };
 
-export const isAdmin = (req, res, next) => {
+const isAdmin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
@@ -53,22 +58,51 @@ export const isAdmin = (req, res, next) => {
   }
 };
 
-// Create a transporter object using SMTP transport
-export const transporter = nodemailer.createTransport({
-  service: 'Gmail', // e.g., 'smtp.gmail.com'
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
   port: 587,
-  secure: false, // set to true if using SSL/TLS
+  secure: false,
   auth: {
     user: process.env.NODE_USER,
     pass: process.env.NODE_PASSWORD,
   },
 });
 
-// Send email receipt
-export const payOrderEmailTemplate = (order) => {
-  // Calculate the total quantity
-  const totalQuantity = calculateTotalQuantity(order);
+const sendAdminSMS = async ({ subject, message, customerName, orderName }) => {
+  try {
+    const admins = await User.find({
+      isAdmin: true,
+      phone: { $ne: null },
+      carrier: { $ne: null },
+    });
+    const smsRecipients = admins.map(
+      (admin) => `${admin.phone}@${admin.carrier}`
+    );
 
+    const alertSubject = subject || 'New Order Placed';
+    const formattedMessage =
+      `${alertSubject}\n` +
+      (orderName ? `Order: ${orderName}\n` : '') +
+      (customerName ? `From: ${customerName}\n` : '') +
+      (message || '');
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: smsRecipients,
+      subject: '',
+      text: formattedMessage.trim(),
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Admin SMS alert sent to:', smsRecipients);
+  } catch (err) {
+    console.error('Failed to send admin SMS:', err);
+  }
+};
+
+// Send email receipt
+const payOrderEmailTemplate = (order) => {
+  const totalQuantity = calculateTotalQuantity(order);
   const formattedDate = `${(order.createdAt.getMonth() + 1)
     .toString()
     .padStart(2, '0')}-${order.createdAt
@@ -92,44 +126,33 @@ export const payOrderEmailTemplate = (order) => {
           .map(
             (item) => `
               <tr>
-                <td><img src="${item.image}" alt="${
+                <td><img src="${baseUrl()}${item.image}" alt="${
               item.name
             }" width="50" height="50" /></td>
                 <td>${item.name}</td>
                 <td align="center">Qty: ${item.quantity}</td>
                 <td align="right"> $${item.price.toFixed(2)}</td>
-              </tr>
-            `
+              </tr>`
           )
           .join('\n')}
       </tbody>
       <tfoot>
-        <tr>
-          <td colspan="2">Total Quantity:</td>
-          <td align="right"> ${totalQuantity}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Items Price:</td>
-          <td align="right"> $${order.itemsPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Tax Price:</td>
-          <td align="right"> $${order.taxPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Shipping Price:</td>
-          <td align="right"> $${order.shippingPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2"><strong>Total Price:</strong></td>
-          <td align="right"><strong> $${order.totalPrice.toFixed(
-            2
-          )}</strong></td>
-        </tr>
-        <tr>
-          <td colspan="2">Payment Method:</td>
-          <td align="right">${order.paymentMethod}</td>
-        </tr>
+        <tr><td colspan="2">Total Quantity:</td><td align="right">${totalQuantity}</td></tr>
+        <tr><td colspan="2">Items Price:</td><td align="right">$${order.itemsPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2">Tax Price:</td><td align="right">$${order.taxPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2">Shipping Price:</td><td align="right">$${order.shippingPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2"><strong>Total Price:</strong></td><td align="right"><strong>$${order.totalPrice.toFixed(
+          2
+        )}</strong></td></tr>
+        <tr><td colspan="2">Payment Method:</td><td align="right">${
+          order.paymentMethod
+        }</td></tr>
       </tfoot>
     </table>
     <h2>Shipping address</h2>
@@ -141,25 +164,14 @@ export const payOrderEmailTemplate = (order) => {
       ${order.shippingAddress.postalCode}<br/>
     </p>
     <hr/>
-    <p>
-      Thanks for shopping with us.
-    </p>
-  `;
+    <p>Thanks for shopping with us.</p>`;
 };
 // end email receipt
 
 // ************************* send confirmation email *************************
 
-export const shipOrderEmailTemplate = (order) => {
-  // console.log('Order:', order);
-
-  // Calculate the total quantity
+const shipOrderEmailTemplate = (order) => {
   const totalQuantity = calculateTotalQuantity(order);
-
-  const deliveryDays = order.orderItems[0]?.deliveryDays || 'N/A';
-  const carrierName = order.orderItems[0]?.carrierName || 'N/A';
-  const trackingNumber = order.orderItems[0]?.trackingNumber || 'N/A';
-
   const formattedDate = `${(order.createdAt.getMonth() + 1)
     .toString()
     .padStart(2, '0')}-${order.createdAt
@@ -168,66 +180,50 @@ export const shipOrderEmailTemplate = (order) => {
     .padStart(2, '0')}-${order.createdAt.getFullYear()}`;
 
   return `<h1>Your order is on the way!</h1>
-    <p>
-    Hi ${order.user.name}, thanks for shopping with lindalloyd.com</p>
+    <p>Hi ${order.user.name}, thanks for shopping with lindalloyd.com</p>
     <p>Great News, your order has been shipped, and will arrive within <strong>${
       order.deliveryDays
     }</strong> days.</p>
     <p>Your package shipped <strong>${order.carrierName}.</strong></p>
     <p>Your tracking number is: <strong>${order.trackingNumber}</strong></p>
-    <p>Please email me at exoticwoodpen@gmail.com if you have any questions.</p>
-    
-    <h2>Purchase Order ${order._id} (${formattedDate})</h2>
+    <p>Please email me at sweetwatertc@yahoo.com if you have any questions.</p>
     <h2>Shipped Order ${order._id} (${formattedDate})</h2>
     <table>
       <thead>
-        <tr>
-          <td><strong align="right">Item's and Price</strong></td>
-        </tr>
+        <tr><td><strong align="right">Item's and Price</strong></td></tr>
       </thead>
       <tbody>
         ${order.orderItems
           .map(
             (item) => `
               <tr>
-                <td><img src="${item.image}" alt="${
+                <td><img src="${getImageUrl(item.image)}" alt="${
               item.name
             }" width="50" height="50" /></td>
                 <td>${item.name}</td>
                 <td align="center">Qty: ${item.quantity}</td>
                 <td align="right"> $${item.price.toFixed(2)}</td>
-              </tr>
-            `
+              </tr>`
           )
           .join('\n')}
       </tbody>
       <tfoot>
-        <tr>
-          <td colspan="2">Total Quantity:</td>
-          <td align="right"> ${totalQuantity}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Items Price:</td>
-          <td align="right"> $${order.itemsPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Tax Price:</td>
-          <td align="right"> $${order.taxPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2">Shipping Price:</td>
-          <td align="right"> $${order.shippingPrice.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td colspan="2"><strong>Total Price:</strong></td>
-          <td align="right"><strong> $${order.totalPrice.toFixed(
-            2
-          )}</strong></td>
-        </tr>
-        <tr>
-          <td colspan="2">Payment Method:</td>
-          <td align="right">${order.paymentMethod}</td>
-        </tr>
+        <tr><td colspan="2">Total Quantity:</td><td align="right">${totalQuantity}</td></tr>
+        <tr><td colspan="2">Items Price:</td><td align="right">$${order.itemsPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2">Tax Price:</td><td align="right">$${order.taxPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2">Shipping Price:</td><td align="right">$${order.shippingPrice.toFixed(
+          2
+        )}</td></tr>
+        <tr><td colspan="2"><strong>Total Price:</strong></td><td align="right"><strong>$${order.totalPrice.toFixed(
+          2
+        )}</strong></td></tr>
+        <tr><td colspan="2">Payment Method:</td><td align="right">${
+          order.paymentMethod
+        }</td></tr>
       </tfoot>
     </table>
     <h2>Shipping address</h2>
@@ -239,31 +235,36 @@ export const shipOrderEmailTemplate = (order) => {
       ${order.shippingAddress.postalCode}<br/>
     </p>
     <hr/>
-    <p>
-      Thanks for shopping with us.
-    </p>
-  `;
+    <p>Thanks for shopping with us.</p>`;
 };
 
 // Shipping confirmation email thru nodemailer
-export const sendShippingConfirmationEmail = async (req, order) => {
+const sendShippingConfirmationEmail = async (req, order) => {
   const customerEmail = order.user.email;
   const shippingConfirmationDetails = shipOrderEmailTemplate(order);
 
-  // Create email content for shipping confirmation
   const emailContent = {
-    from: 'lindalloydantantiques@gmail.com', // Sender email address <= add your own email here
+    from: 'Linda Lloyd sweetwatertc@yahoo.com',
     to: customerEmail,
-    subject: 'Shipping Confirmation from lindalloyd.com', // Email subject <= add your own website here
+    subject: 'Shipping Confirmation from lindalloyd.com',
     html: shippingConfirmationDetails,
   };
 
   try {
-    // Send the shipping confirmation email using the `transporter`
-    const info = await transporter.sendMail(emailContent);
-
-    // console.log('Shipping confirmation email sent:', info.messageId);
+    await transporter.sendMail(emailContent);
   } catch (error) {
     console.error('Error sending shipping confirmation email:', error);
   }
+};
+
+module.exports = {
+  baseUrl,
+  generateToken,
+  isAuth,
+  isAdmin,
+  transporter,
+  sendAdminSMS,
+  payOrderEmailTemplate,
+  shipOrderEmailTemplate,
+  sendShippingConfirmationEmail,
 };

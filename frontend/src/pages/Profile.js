@@ -1,11 +1,11 @@
-import React, { useContext, useReducer, useState, useEffect } from 'react'; // lesson 12
+import React, { useContext, useReducer, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button, Form } from 'react-bootstrap';
 import { Store } from '../Store';
 import { toast } from 'react-toastify';
 import { getError } from '../utils';
 import axios from 'axios';
-import SkeletonProfile from '../components/skeletons/SkeletonProfile'; // lesson 12
+import SkeletonProfile from '../components/skeletons/SkeletonProfile';
 
 const reducer = (state, action) => {
   switch (action.type) {

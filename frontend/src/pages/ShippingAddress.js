@@ -5,7 +5,7 @@ import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
-import SkeletonShippingAddress from '../components/skeletons/SkeletonShippingAddress'; // lesson 12
+import SkeletonShippingAddress from '../components/skeletons/SkeletonShippingAddress';
 
 export default function ShippingAddress() {
   const navigate = useNavigate();
@@ -54,10 +54,9 @@ export default function ShippingAddress() {
         country,
       })
     );
-    navigate('/payment');
+    navigate('/placeorder');
   };
 
-  // lesson 12
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -145,6 +144,6 @@ export default function ShippingAddress() {
 }
 // step 1 (Cart)
 // step 2 (ShippingAddress) <= CURRENT STEP
-// step 3 (PaymentMethod) select radial button for PayPal or Stripe
-// step 4 (PlaceOrder)
-// lands on Order for payment
+// step 3 (PlaceOrder)
+// step 4 (OrderPayment)
+// lands on OrderDetails for payment

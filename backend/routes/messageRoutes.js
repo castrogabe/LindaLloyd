@@ -1,7 +1,7 @@
-import express from 'express';
-import expressAsyncHandler from 'express-async-handler';
-import Message from '../models/messageModel.js';
-import { isAuth, isAdmin, transporter } from '../utils.js';
+const express = require('express');
+const expressAsyncHandler = require('express-async-handler');
+const Message = require('../models/messageModel.js');
+const { isAuth, isAdmin, transporter } = require('../utils.js');
 
 const messageRouter = express.Router();
 
@@ -140,4 +140,4 @@ messageRouter.post(
   })
 );
 
-export default messageRouter;
+module.exports = messageRouter;

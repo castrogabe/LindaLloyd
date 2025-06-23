@@ -57,7 +57,7 @@ export default function Cart() {
           <br />
           <h4 className='box'>Shopping Cart</h4>
           <Row>
-            <Col md={8} className='box'>
+            <Col md={8}>
               {cartItems.length === 0 ? (
                 <MessageBox>
                   Cart is empty. <Link to='/'> Go Shopping</Link>
@@ -80,7 +80,9 @@ export default function Cart() {
 
                       {/* Product Name */}
                       <Col xs={4} md={4} className='cart-item-name'>
-                        <Link to={`/product/${item.slug}`}>{item.name}</Link>
+                        <Link className='link' to={`/product/${item.slug}`}>
+                          {item.name}
+                        </Link>
                       </Col>
 
                       {/* Quantity Selector */}
@@ -174,6 +176,6 @@ export default function Cart() {
 
 // step 1 (Cart) <= CURRENT STEP
 // step 2 (ShippingAddress)
-// step 3 (PaymentMethod) select radial button for PayPal or Stripe
-// step 4 (PlaceOrder)
+// step 3 (PlaceOrder)
+// step 4 (OrderPayment)
 // lands on OrderDetails for payment

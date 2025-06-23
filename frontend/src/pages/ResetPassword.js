@@ -1,3 +1,4 @@
+import React from 'react';
 import Axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { Container, Button, Form } from 'react-bootstrap';
@@ -6,7 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Store } from '../Store';
 import { getError } from '../utils';
-import SkeletonResetPassword from '../components/skeletons/SkeletonResetPassword'; // lesson 12
+import SkeletonResetPassword from '../components/skeletons/SkeletonResetPassword';
 
 export default function ResetPassword() {
   const navigate = useNavigate();

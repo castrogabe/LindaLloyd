@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getError } from '../utils';
@@ -41,18 +41,18 @@ const prices = [
 export default function Search() {
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const navigate = useNavigate();
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const category = queryParams.get('category') || '';
   const query = queryParams.get('query') || 'all';
   const price = queryParams.get('price') || 'all';
-  const rating = queryParams.get('rating') || 'all';
   const order = queryParams.get('order') || 'newest';
   const page = queryParams.get('page') || 1;
 
-  const [{ loading, error, products, pages, countProducts }, dispatch] =
-    useReducer(reducer, { loading: true, error: '' });
+  const [{ loading, error, products, pages }, dispatch] = useReducer(reducer, {
+    loading: true,
+    error: '',
+  });
 
   const [categories, setCategories] = useState([]);
 
@@ -77,25 +77,29 @@ export default function Search() {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
         const { data } = await axios.get(
-          `/api/products/search?page=${page}&query=${query}&category=${category}&price=${price}&rating=${rating}&order=${order}`
+          `/api/products/search?page=${page}&query=${query}&category=${category}&price=${price}&order=${order}`
         );
+
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
     };
     fetchData();
-  }, [category, order, page, price, query, rating]);
+  }, [category, order, page, price, query]);
 
   const getFilterUrl = (filter) => {
-    return `/search?category=${filter.category || category}&query=${
-      filter.query || query
-    }&price=${filter.price || price}&rating=${filter.rating || rating}&order=${
-      filter.order || order
-    }&page=${filter.page || page}`;
-  };
+    const filterPage = filter.page || page;
+    const filterCategory = filter.category || category;
+    const filterQuery = filter.query || query;
+    const filterPrice = filter.price || price;
+    const sortOrder = filter.order || order;
 
-  // Open Sidebar for desktop, show toast for mobile
+    return {
+      pathname: '/search',
+      search: `?category=${filterCategory}&query=${filterQuery}&price=${filterPrice}&order=${sortOrder}&page=${filterPage}`,
+    };
+  };
   const handleSidebarOpen = () => {
     if (!isMobile) {
       setIsSidebarOpen(true);
@@ -163,27 +167,31 @@ export default function Search() {
             <MessageBox variant='danger'>{error}</MessageBox>
           ) : (
             <>
-              <Row className='d-flex align-items-stretch'>
+              <Row>
                 {products.map((product) => (
                   <Col
-                    key={product.slug}
-                    xs={6} /* 2 per row on extra small screens */
-                    sm={12} /* Full width on small screens */
-                    md={6} /* 2 per row on medium screens */
-                    lg={4} /* 3 per row on large screens */
-                    className='mb-4 d-flex'
+                    key={product._id}
+                    xs={6}
+                    sm={12}
+                    md={6}
+                    lg={4}
+                    className={`mb-4 ${
+                      window.innerWidth < 768
+                        ? 'd-flex justify-content-center'
+                        : ''
+                    }`}
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      handleSidebarOpen={handleSidebarOpen}
+                    />
                   </Col>
                 ))}
               </Row>
 
-              {/* Render Sidebar if not mobile */}
               {!isMobile && isSidebarOpen && (
                 <Sidebar handleSidebarOpen={setIsSidebarOpen} />
               )}
-
-              {/* Pagination Component */}
 
               <div className='pagination-container'>
                 <Pagination

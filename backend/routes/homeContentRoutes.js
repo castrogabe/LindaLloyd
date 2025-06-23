@@ -1,12 +1,12 @@
-import express from 'express';
-import asyncHandler from 'express-async-handler';
-import HomeContent from '../models/homeContentModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+const express = require('express');
+const asyncHandler = require('express-async-handler');
+const HomeContent = require('../models/homeContentModel');
+const { isAuth, isAdmin } = require('../utils.js');
 
-const router = express.Router();
+const homeRouter = express.Router(); // ✅ corrected name
 
 // Fetch home content
-router.get(
+homeRouter.get(
   '/',
   asyncHandler(async (req, res) => {
     const content = await HomeContent.findOne({});
@@ -19,7 +19,7 @@ router.get(
 );
 
 // Update home content
-router.put(
+homeRouter.put(
   '/',
   isAuth,
   isAdmin,
@@ -34,4 +34,4 @@ router.put(
   })
 );
 
-export default router;
+module.exports = homeRouter; // ✅ export with correct name

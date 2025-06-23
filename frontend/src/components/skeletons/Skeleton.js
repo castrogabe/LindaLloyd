@@ -1,3 +1,4 @@
+import React from 'react';
 import './Skeleton.css';
 
 function Skeleton({ classes }) {

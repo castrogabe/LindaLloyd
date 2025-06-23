@@ -1,20 +1,20 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import expressAsyncHandler from 'express-async-handler';
-import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
-import {
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const expressAsyncHandler = require('express-async-handler');
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel.js');
+const {
   isAuth,
   isAdmin,
   generateToken,
   baseUrl,
   transporter,
-} from '../utils.js';
-import dns from 'dns';
+} = require('../utils.js');
+const dns = require('dns');
 
 const userRouter = express.Router();
 
-export const PAGE_SIZE = 12; // 12 items per page
+const PAGE_SIZE = 12;
 
 userRouter.get(
   '/admin',
@@ -25,7 +25,7 @@ userRouter.get(
     const page = query.page || 1;
     const pageSize = query.pageSize || PAGE_SIZE;
 
-    const users = await User.find({}, 'name email phone isAdmin notes') // Include 'notes'
+    const users = await User.find({}, 'name email phone carrier isAdmin notes')
       .skip(pageSize * (page - 1))
       .limit(pageSize);
     const countUsers = await User.countDocuments();
@@ -54,11 +54,7 @@ userRouter.get(
   isAdmin,
   expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
-    if (user) {
-      res.send(user);
-    } else {
-      res.status(404).send({ message: 'User Not Found' });
-    }
+    user ? res.send(user) : res.status(404).send({ message: 'User Not Found' });
   })
 );
 
@@ -71,6 +67,8 @@ userRouter.put(
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
+      user.phone = req.body.phone || user.phone;
+      user.carrier = req.body.carrier || user.carrier;
       user.isAdmin = Boolean(req.body.isAdmin);
       const updatedUser = await user.save();
       res.send({ message: 'User Updated', user: updatedUser });
@@ -102,19 +100,15 @@ userRouter.delete(
 userRouter.post('/add', isAuth, isAdmin, async (req, res) => {
   try {
     const { name, email, phone } = req.body;
-
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: 'User already exists' });
-    }
 
-    // Create user without a password (default password can be changed later)
     const user = new User({
       name,
       email,
       phone,
-      password: bcrypt.hashSync('defaultpassword', 8), // Temporary password
+      password: bcrypt.hashSync('defaultpassword', 8),
       isAdmin: false,
     });
 
@@ -132,7 +126,7 @@ userRouter.put(
   expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (user) {
-      user.notes = req.body.notes || ''; // Update notes
+      user.notes = req.body.notes || '';
       await user.save();
       res.send({ message: 'Notes updated successfully', notes: user.notes });
     } else {
@@ -145,19 +139,17 @@ userRouter.post(
   '/signin',
   expressAsyncHandler(async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
-    if (user) {
-      if (bcrypt.compareSync(req.body.password, user.password)) {
-        res.send({
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          token: generateToken(user),
-        });
-        return;
-      }
+    if (user && bcrypt.compareSync(req.body.password, user.password)) {
+      res.send({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        token: generateToken(user),
+      });
+    } else {
+      res.status(401).send({ message: 'Invalid email or password' });
     }
-    res.status(401).send({ message: 'Invalid email or password' });
   })
 );
 
@@ -166,31 +158,20 @@ userRouter.post(
   expressAsyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
-    // Password complexity requirements (example: minimum length, uppercase, lowercase, digit, and special character)
-    // At least one digit ((?=.*\d))
-    // At least one lowercase letter ((?=.*[a-z]))
-    // At least one uppercase letter ((?=.*[A-Z]))
-    // At least one special character ((?=.*[^a-zA-Z\d]))
-    // A minimum length of 8 characters (.{8,})
     const passwordRegex =
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d]).{8,}$/;
 
     if (!passwordRegex.test(password)) {
-      return res
-        .status(400)
-        .send({ message: 'Password does not meet complexity requirements.' });
+      return res.status(400).send({
+        message: 'Password does not meet complexity requirements.',
+      });
     }
 
-    // Create the user if the email domain is valid
     const hashedPassword = bcrypt.hashSync(password, 8);
 
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
+    const newUser = new User({ name, email, password: hashedPassword });
     const user = await newUser.save();
+
     res.send({
       _id: user._id,
       name: user.name,
@@ -204,8 +185,7 @@ userRouter.post(
 userRouter.post(
   '/usersByIds',
   expressAsyncHandler(async (req, res) => {
-    const userIds = req.body.userIds;
-    const users = await User.find({ _id: { $in: userIds } });
+    const users = await User.find({ _id: { $in: req.body.userIds } });
     res.send(users);
   })
 );
@@ -216,20 +196,15 @@ userRouter.post(
   isAdmin,
   expressAsyncHandler(async (req, res) => {
     const { emailRecipient, subject, message } = req.body;
-
-    // Log the values for debugging
-    // console.log('Subject:', subject);
-    // console.log('Message:', message);
-
     const emailContent = {
       from: 'lindalloyd.com',
-      to: `${emailRecipient}`,
-      subject: subject || 'No Subject Provided', // Fallback for missing subject
-      html: `<p>${message || 'No message provided'}</p>`, // Fallback for missing message
+      to: emailRecipient,
+      subject: subject || 'No Subject Provided',
+      html: `<p>${message || 'No message provided'}</p>`,
     };
 
     try {
-      const info = await transporter.sendMail(emailContent);
+      await transporter.sendMail(emailContent);
       res.send({ message: 'Email sent successfully' });
     } catch (error) {
       console.error('Error sending email:', error);
@@ -246,9 +221,8 @@ userRouter.put(
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      if (req.body.password) {
+      if (req.body.password)
         user.password = bcrypt.hashSync(req.body.password, 8);
-      }
 
       const updatedUser = await user.save();
       res.send({
@@ -264,7 +238,6 @@ userRouter.put(
   })
 );
 
-// reset password
 userRouter.post(
   '/forget-password',
   expressAsyncHandler(async (req, res) => {
@@ -272,30 +245,28 @@ userRouter.post(
 
     if (user) {
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: '10m', // Change the expiration time to 10 minutes
+        expiresIn: '10m',
       });
       user.resetToken = token;
       await user.save();
 
-      console.log(`${baseUrl()}/reset-password/${token}`);
-
       const emailContent = {
         from: 'lindalloyd.com',
         to: `${user.name} <${user.email}>`,
-        subject: `Reset Password`,
-        html: ` 
-        <p>Please Click the following link to reset your password, link expires in 10 minutes</p> 
-        <a href="${baseUrl()}/reset-password/${token}"}>Reset Password</a>
+        subject: 'Reset Password',
+        html: `
+          <p>Please click the link to reset your password (expires in 10 minutes)</p>
+          <a href="${baseUrl()}/reset-password/${token}">Reset Password</a>
         `,
       };
 
       try {
-        // Send the email using the `transporter`
-        const info = await transporter.sendMail(emailContent);
+        await transporter.sendMail(emailContent);
       } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Error sending password reset email:', error);
       }
-      res.send({ message: 'We sent reset password link to your email.' });
+
+      res.send({ message: 'We sent a reset password link to your email.' });
     } else {
       res.status(404).send({ message: 'Email Not Found' });
     }
@@ -307,19 +278,13 @@ userRouter.post(
   expressAsyncHandler(async (req, res) => {
     const { password, token } = req.body;
 
-    // Password complexity requirements (example: minimum length, uppercase, lowercase, digit, and special character)
-    // At least one digit ((?=.*\d))
-    // At least one lowercase letter ((?=.*[a-z]))
-    // At least one uppercase letter ((?=.*[A-Z]))
-    // At least one special character ((?=.*[^a-zA-Z\d]))
-    // A minimum length of 8 characters (.{8,})
     const passwordRegex =
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d]).{8,}$/;
 
     if (!passwordRegex.test(password)) {
-      return res
-        .status(400)
-        .send({ message: 'Password does not meet complexity requirements.' });
+      return res.status(400).send({
+        message: 'Password does not meet complexity requirements.',
+      });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decode) => {
@@ -330,9 +295,7 @@ userRouter.post(
         if (user) {
           user.password = bcrypt.hashSync(password, 8);
           await user.save();
-          res.send({
-            message: 'Password reset successfully',
-          });
+          res.send({ message: 'Password reset successfully' });
         } else {
           res.status(404).send({ message: 'User not found' });
         }
@@ -341,4 +304,4 @@ userRouter.post(
   })
 );
 
-export default userRouter;
+module.exports = userRouter;

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const homeContentSchema = new mongoose.Schema({
   title: { type: String, required: false },
@@ -9,4 +9,4 @@ const homeContentSchema = new mongoose.Schema({
 
 const HomeContent = mongoose.model('HomeContent', homeContentSchema);
 
-export default HomeContent;
+module.exports = HomeContent;

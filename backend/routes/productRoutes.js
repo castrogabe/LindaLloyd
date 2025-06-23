@@ -1,20 +1,27 @@
-import express from 'express';
-import expressAsyncHandler from 'express-async-handler';
-import fs from 'fs';
-import multer from 'multer';
-import path from 'path';
-import Product from '../models/productModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+const express = require('express');
+const expressAsyncHandler = require('express-async-handler');
+const fs = require('fs');
+const path = require('path');
+const Product = require('../models/productModel.js');
+const { isAuth, isAdmin } = require('../utils.js');
+const multer = require('multer');
 
 const categoryUploadPath = path.join(process.cwd(), 'uploads/categories'); // ✅ Define the path
 
 // Configure storage for category images
+if (!fs.existsSync(categoryUploadPath)) {
+  fs.mkdirSync(categoryUploadPath, { recursive: true });
+}
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, categoryUploadPath); // ✅ Now uses the correct path
+    cb(null, categoryUploadPath);
   },
   filename(req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    // ✅ Clean up the filename: remove spaces and unsafe characters
+    const safeName = file.originalname
+      .replace(/\s+/g, '_') // Replace spaces with underscores
+      .replace(/[^a-zA-Z0-9_.-]/g, ''); // Remove unsafe characters
+    cb(null, `${Date.now()}-${safeName}`);
   },
 });
 
@@ -257,4 +264,4 @@ productRouter.get('/:id', async (req, res) => {
     : res.status(404).send({ message: 'Product Not Found' });
 });
 
-export default productRouter;
+module.exports = productRouter;

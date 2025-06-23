@@ -1,13 +1,36 @@
-import express from 'express';
-import asyncHandler from 'express-async-handler';
-import multer from 'multer';
-import { isAuth, isAdmin } from '../utils.js';
-import AboutContent from '../models/aboutContentModel.js';
-
-// Multer setup for file uploads
-const upload = multer({ dest: 'uploads/' });
+const express = require('express');
+const asyncHandler = require('express-async-handler');
+const multer = require('multer');
+const { isAuth, isAdmin } = require('../utils.js');
+const AboutContent = require('../models/aboutContentModel');
+const path = require('path');
+const fs = require('fs');
 
 const aboutRouter = express.Router();
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const uploadDir = isProduction
+  ? '/var/data/uploads'
+  : path.join(__dirname, '../uploads');
+
+// Ensure upload dir exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  fs.chmodSync(uploadDir, 0o777);
+}
+
+// ✅ Multer with diskStorage to /uploads or /var/data/uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = `${Date.now()}-${file.originalname}`;
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage });
 
 // Fetch about content
 aboutRouter.get(
@@ -44,10 +67,13 @@ aboutRouter.put(
     }
 
     await content.save();
+
+    // ✅ Ensure response includes full image object
     res.json({ jumbotronImage: content.jumbotronImage });
   })
 );
 
+// DELETE jumbotron
 aboutRouter.delete(
   '/jumbotron',
   isAuth,
@@ -65,31 +91,16 @@ aboutRouter.delete(
 );
 
 // Update about content (with multiple image upload)
+// PUT full content (optional multi-image support)
 aboutRouter.put(
   '/',
   isAuth,
   isAdmin,
-  upload.array('images', 10), // Allow multiple images to be uploaded at once
   asyncHandler(async (req, res) => {
     const { sections } = req.body;
-
-    // Map through sections and update images if new files are provided
-    const updatedSections = sections.map((section, sectionIndex) => {
-      const images = section.images.map((image, imgIndex) => {
-        const uploadedFile = req.files && req.files[imgIndex];
-
-        return {
-          url: uploadedFile ? `/uploads/${uploadedFile.filename}` : image.url,
-          name: image.name || '',
-        };
-      });
-
-      return { ...section, images };
-    });
-
     const content = await AboutContent.findOneAndUpdate(
       {},
-      { sections: updatedSections },
+      { sections },
       { new: true, upsert: true }
     );
     res.json(content);
@@ -121,4 +132,4 @@ aboutRouter.put(
   })
 );
 
-export default aboutRouter;
+module.exports = aboutRouter;

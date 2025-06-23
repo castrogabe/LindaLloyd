@@ -43,7 +43,7 @@ export default function Home() {
         </Helmet>
         <br />
         {homeContent && (
-          <div className='text-center'>
+          <div className='container'>
             <h2>{homeContent.title}</h2>
             <h4>
               {homeContent.h4Text.map((text, index) => (

@@ -1,9 +1,9 @@
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs'; // Import the fs module
-import { isAdmin, isAuth } from '../utils.js';
-import Product from '../models/productModel.js';
+const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const { isAdmin, isAuth } = require('../utils.js');
+const fs = require('fs');
+const Product = require('../models/productModel.js');
 
 const uploadRouter = express.Router();
 
@@ -13,13 +13,15 @@ const uploadDir = isProduction ? '/var/data/uploads' : 'uploads';
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, uploadDir); // Use the appropriate directory based on environment
+    cb(null, uploadDir);
   },
   filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
+    const cleanFilename = file.originalname
+      .replace(/\s+/g, '_') // Replace spaces with underscores
+      .replace(/[^a-zA-Z0-9_.-]/g, ''); // Remove unsafe characters
+
+    const filename = `${file.fieldname}-${Date.now()}-${cleanFilename}`;
+    cb(null, filename);
   },
 });
 
@@ -231,4 +233,4 @@ uploadRouter.use((err, req, res, next) => {
   }
 });
 
-export default uploadRouter;
+module.exports = uploadRouter;

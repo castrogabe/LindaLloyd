@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema(
   {
@@ -37,6 +37,7 @@ const orderSchema = new mongoose.Schema(
     taxPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    orderName: { type: String },
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
     isShipped: { type: Boolean, default: false },
@@ -51,5 +52,4 @@ const orderSchema = new mongoose.Schema(
 );
 
 const Order = mongoose.model('Order', orderSchema);
-
-export default Order;
+module.exports = Order;

@@ -61,20 +61,8 @@ const Footer = () => {
               </li>
 
               <li>
-                <Link to='/soldGallery' className='email1'>
-                  Sold Antiques
-                </Link>
-              </li>
-
-              <li>
-                <Link to='/soldGallery' className='email1'>
+                <Link to='/soldGallery' className='email'>
                   Sold Gallery
-                </Link>
-              </li>
-
-              <li>
-                <Link to='/soldGallery' className='email1'>
-                  Gallery
                 </Link>
               </li>
 

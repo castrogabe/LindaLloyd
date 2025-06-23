@@ -713,3 +713,57 @@ folder: pages
 index.css >
 
 App.js >
+
+# 19th Commit-CSS var--font-family, Bug fix in Search, SMS alerts for new orders, Admin form for SMS, SEO index.html updated, replace PayPal and Stripe with Square, Backend to CommonJS for Square, Jumbotron Dynamic for AboutUs, SEO for SocialMedia
+
+BACKEND
+nvm install 18
+nvm use 18
+** entire backend converted to CommonJS for Square **
+folder: model
+productModel.js > updated for SMS using orderName: {type: String}, updated for phone.carrier
+
+folder: routes
+aboutRoutes.js > updated
+orderRoutes.js > updated for GMAIL to SMS text message for sales or messages, updated for Square and deleted Stripe
+stripeRoutes.js > deleted
+squareRoutes.js > created
+userRoutes.js > updated for phone.carrier
+
+.env > updated for Square, deleted PayPal and Stripe, setup for both production and testing
+.env.example > updated for Square, deleted PayPal and Stripe
+config.js > updated for Square, deleted PayPal and Stripe
+server.js > update for the frontend/build and use build
+utils.js > updated for GMAIL to SMS text messaging
+
+FRONTEND
+index.html > updated meta tags for SEO "Search Engine Optimization", Square SDK by adding script tag
+
+folder: components
+AdminPagination.js > updated with { pathname: '/admin/products', search: pageSearch } for Products, Users, Orders, Messages errors
+CheckoutSteps.js > updated
+StripeCheckout.js > deleted, not needed since we are only using Square
+SquareCheckout.js > added for Square payments
+Footer.js > updated for Sold Gallery
+Header.js > updated for Sold Gallery, useEffect for SMS text messages and toast notifications
+ProductCard.js > updated for 2 col on mobile
+
+folder: pages
+AboutUs.js > updated fixed jumbotron upload for render
+Cart.js > updated bottom comments
+OrderDetails.js > updated replaced TEXT with div for SMS text messages, removed PaymentMethod since we are only using Square
+OrderHistory.js > updated, removed PaymentMethod since we are only using Square
+OrderPayment.js > added
+PlaceOrder.js > updated replaced TEXT with div for SMS text messages, deleted PayPal and Stripe, added Square
+PaymentMethod.js > deleted, not needed since we are only using Square
+ShippingAddress.js > updated, navigate to PlaceOrder from PaymentMethod(deleted)
+Search.js > updated Sidebar fixed
+UserEdit.js > updated for SMS phone.carrier
+UserList.js > updated for Carrier
+
+App.js > deleted PaymentMethod.js, added OrderPayment.js
+
+index.js > deleted PayPal
+
+React vs18
+npm install --legacy-peer-deps

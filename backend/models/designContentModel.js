@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const designContentSchema = new mongoose.Schema({
   sections: [
@@ -11,4 +11,4 @@ const designContentSchema = new mongoose.Schema({
 
 const DesignContent = mongoose.model('DesignContent', designContentSchema);
 
-export default DesignContent;
+module.exports = DesignContent;

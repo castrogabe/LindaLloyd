@@ -162,6 +162,7 @@ export default function UserList() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [carrier, setCarrier] = useState('');
 
   useEffect(() => {
     if (users.length > 0) {
@@ -218,7 +219,7 @@ export default function UserList() {
     try {
       const { data } = await axios.post(
         '/api/users/add',
-        { name, email, phone },
+        { name, email, phone, carrier },
         { headers: { Authorization: `Bearer ${userInfo.token}` } }
       );
       toast.success('User added successfully', { autoClose: 1000 });
@@ -290,6 +291,7 @@ export default function UserList() {
                   <th>NAME</th>
                   <th>EMAIL</th>
                   <th>PHONE</th>
+                  <th>Phone Carrier</th>
                   <th>IS ADMIN</th>
                   <th>ACTIONS</th>
                 </tr>
@@ -302,6 +304,7 @@ export default function UserList() {
                       <td>{user.name}</td>
                       <td>{user.email}</td>
                       <td>{user.phone || 'N/A'}</td>
+                      <td>{user.carrier || 'N/A'}</td>
                       <td>{user.isAdmin ? 'YES' : 'NO'}</td>
                       <td>
                         <Button

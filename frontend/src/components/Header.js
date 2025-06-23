@@ -7,7 +7,8 @@ import { useContext, useEffect, useState } from 'react';
 import { Store } from '../Store';
 import { getError } from '../utils';
 import axios from 'axios';
-import SearchBox from '../components/SearchBox';
+import SearchBox from './SearchBox';
+import { useRef } from 'react';
 
 function Header() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
@@ -31,22 +32,30 @@ function Header() {
 
   const [messagesCount, setMessagesCount] = useState(0);
   const [summaryData, setSummaryData] = useState(0);
+  const prevMessagesCountRef = useRef(0);
+  const prevNumOrdersRef = useRef(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (userInfo && userInfo.token) {
+        if (userInfo && userInfo.isAdmin) {
           const config = {
             headers: { Authorization: `Bearer ${userInfo.token}` },
           };
-          const messagesResponse = await axios.get('/api/messages', config);
-          setMessagesCount(messagesResponse.data.length);
 
-          const summaryResponse = await axios.get(
-            '/api/orders/summary',
-            config
-          );
-          setSummaryData(summaryResponse.data.orders);
+          const messagesRes = await axios.get('/api/messages', config);
+          const newMessages = messagesRes.data.length;
+
+          const summaryRes = await axios.get('/api/orders/summary', config);
+          const newOrders = summaryRes.data.orders?.[0]?.numOrders || 0;
+
+          // Update state for badges
+          setMessagesCount(newMessages);
+          setSummaryData(summaryRes.data.orders);
+
+          // Update refs for next comparison
+          prevMessagesCountRef.current = newMessages;
+          prevNumOrdersRef.current = newOrders;
         }
       } catch (err) {
         toast.error(getError(err));
@@ -54,6 +63,8 @@ function Header() {
     };
 
     fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
   }, [userInfo]);
 
   return (
@@ -169,12 +180,15 @@ function Header() {
                   <LinkContainer to='/admin/dashboard'>
                     <NavDropdown.Item>Dashboard</NavDropdown.Item>
                   </LinkContainer>
+
                   <LinkContainer to='/admin/products'>
                     <NavDropdown.Item>Products</NavDropdown.Item>
                   </LinkContainer>
+
                   <LinkContainer to='/admin/users'>
                     <NavDropdown.Item>Users</NavDropdown.Item>
                   </LinkContainer>
+
                   <LinkContainer to='/admin/orders'>
                     <NavDropdown.Item>
                       Orders{' '}
@@ -185,6 +199,7 @@ function Header() {
                       )}
                     </NavDropdown.Item>
                   </LinkContainer>
+
                   <LinkContainer to='/admin/messages'>
                     <NavDropdown.Item>
                       Messages{' '}

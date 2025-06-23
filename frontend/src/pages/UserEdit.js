@@ -43,6 +43,7 @@ export default function UserEdit() {
   const [phone, setPhone] = useState(''); // Added phone state
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingDelay, setLoadingDelay] = useState(true);
+  const [carrier, setCarrier] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +55,7 @@ export default function UserEdit() {
         setName(data.name);
         setEmail(data.email);
         setPhone(data.phone || ''); // Fetch phone, default to empty string if missing
+        setCarrier(data.carrier || '');
         setIsAdmin(data.isAdmin);
         setTimeout(() => {
           setLoadingDelay(false); // Set loadingDelay to false after the delay
@@ -75,11 +77,11 @@ export default function UserEdit() {
       dispatch({ type: 'UPDATE_REQUEST' });
       await axios.put(
         `/api/users/${userId}`,
-        { _id: userId, name, email, phone, isAdmin }, // Include phone number in request
+        { _id: userId, name, email, phone, carrier, isAdmin },
         {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
-      );
+      ); // Include phone number in request
       dispatch({
         type: 'UPDATE_SUCCESS',
       });
@@ -94,10 +96,10 @@ export default function UserEdit() {
   return (
     <Container className='small-container'>
       <Helmet>
-        <title>Edit User ${userId}</title>
+        <title>User Edit ${userId}</title>
       </Helmet>
       <br />
-      <h4 className='box'>Edit User {userId}</h4>
+      <h4 className='box'>User Edit {userId}</h4>
       {(loadingDelay && <SkeletonUserEdit delay={1000} />) || (
         <>
           {loading ? (
@@ -131,6 +133,28 @@ export default function UserEdit() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
+              </Form.Group>
+
+              <Form.Group className='mb-3' controlId='carrier'>
+                <Form.Label>Phone Carrier for SMS</Form.Label>
+                <Form.Select
+                  value={carrier}
+                  onChange={(e) => setCarrier(e.target.value)}
+                >
+                  <option value=''>Select Carrier</option>
+                  <option value='vtext.com'>Verizon</option>
+                  <option value='txt.att.net'>AT&T</option>
+                  <option value='tmomail.net'>T-Mobile</option>
+                  <option value='messaging.sprintpcs.com'>Sprint</option>
+                  <option value='vmobl.com'>Virgin Mobile</option>
+                  <option value='messaging.nextel.com'>Nextel</option>
+                  <option value='myboostmobile.com'>Boost Mobile</option>
+                  <option value='mymetropcs.com'>MetroPCS</option>
+                  <option value='text.republicwireless.com'>
+                    Republic Wireless
+                  </option>
+                  <option value='textnow.me'>TextNow</option>
+                </Form.Select>
               </Form.Group>
 
               <Form.Check

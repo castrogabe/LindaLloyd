@@ -1,7 +1,7 @@
-import express from 'express';
-import expressAsyncHandler from 'express-async-handler';
-import DesignContent from '../models/designContentModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+const express = require('express');
+const expressAsyncHandler = require('express-async-handler');
+const DesignContent = require('../models/designContentModel');
+const { isAuth, isAdmin } = require('../utils.js');
 
 const designRouter = express.Router();
 
@@ -30,4 +30,4 @@ designRouter.put(
   })
 );
 
-export default designRouter;
+module.exports = designRouter;

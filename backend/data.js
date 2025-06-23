@@ -1,7 +1,7 @@
 // http://localhost:8000/api/seed
 // go to this link and it will load the data into the database
 
-import bcrypt from 'bcryptjs';
+const bcrypt = require('bcryptjs');
 
 const data = {
   users: [
@@ -25,7 +25,7 @@ const data = {
       category: 'Table Top',
       categoryImage: '/uploads/categories/tableTop.png',
       image: '/images/1.png',
-      images: ['/images/1.png', '/images/1a.png', '/images/1b.png'], // Add additional images if available
+      images: ['/images/1.png', '/uploads/1a.png', '/uploads/1b.png'], // Add additional images if available
       price: 50,
       salePrice: null,
       countInStock: 10,
@@ -461,4 +461,4 @@ const data = {
   ],
 };
 
-export default data;
+module.exports = data;

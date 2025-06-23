@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useContext, useEffect, useReducer, useRef, useState } from 'react';
+import { useContext, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Col, Row, ListGroup, Badge, Button } from 'react-bootstrap';
 import ReactImageMagnify from 'react-image-magnify';
@@ -12,6 +12,7 @@ import 'react-image-lightbox/style.css';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useMediaQuery } from 'react-responsive';
+import '../ProductMag.css';
 import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 
 const reducer = (state, action) => {
@@ -66,7 +67,6 @@ function ProductMag() {
     fetchData();
   }, [slug]);
 
-  // Content Edit Screen
   useEffect(() => {
     const fetchContent = async () => {
       dispatch({ type: 'FETCH_CONTENT_REQUEST' });
@@ -104,41 +104,15 @@ function ProductMag() {
     navigate('/cart');
   };
 
-  const openLightbox = (index) => {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
-  };
-
-  // zoom magnifier
-  const images = [product.image, ...product.images];
-  const [selectedImage, setSelectedImage] = useState(images[0]);
-  const hoverHandler = (image, i) => {
-    setSelectedImage(image);
-    refs.current[i].classList.add('active1');
-    for (var j = 0; j < images.length; j++) {
-      if (i !== j) {
-        refs.current[j].classList.remove('active1');
-      }
-    }
-    const textElement = document.querySelector('.text');
-    if (textElement) {
-      textElement.textContent = 'Click to Enlarge or Hover to Zoom';
-    }
-  };
-  const hoverOffHandler = (i) => {
-    refs.current[i].classList.remove('active1');
-  };
-
-  const refs = useRef([]);
-  refs.current = [];
-  const addRefs = (el) => {
-    if (el && !refs.current.includes(el)) {
-      refs.current.push(el);
-    }
-  };
-  // end zoom magnifier
-
   const mobileView = useMediaQuery({ maxWidth: 992 });
+  const images = Array.from(new Set([product.image, ...product.images]));
+  const [selectedImage, setSelectedImage] = useState('');
+
+  useEffect(() => {
+    if (product.image && images.length > 0) {
+      setSelectedImage(product.image);
+    }
+  }, [product.image, images.length]);
 
   const handleArrowClick = (direction) => {
     let newIndex;
@@ -185,15 +159,15 @@ function ProductMag() {
             className='control-arrow control-prev'
             onClick={() => handleArrowClick('prev')}
           >
-            {/* left triangle */}
             <span>&#9664;</span>
           </button>
         </Col>
+
         <Col md={4} className='container'>
           {mobileView ? (
             <Carousel>
-              {product.images.map((image, index) => (
-                <div key={index}>
+              {images.map((image, i) => (
+                <div key={i}>
                   <img
                     src={image}
                     alt={product.name}
@@ -205,33 +179,41 @@ function ProductMag() {
             </Carousel>
           ) : (
             <div className='left'>
-              {/* thumbnail images */}
               <div className='left_1'>
-                {[product.image, ...product.images].map((image, i) => (
+                {images.map((image, i) => (
                   <div
-                    className={i === 0 ? 'img_wrap active' : 'img_wrap'}
                     key={i}
-                    onMouseOver={() => hoverHandler(image, i)}
-                    onMouseLeave={() => hoverOffHandler(i)}
-                    ref={addRefs}
-                    onClick={() => openLightbox(i + 1)}
+                    className={`img_wrap ${
+                      selectedImage === image ? 'active1' : ''
+                    }`}
+                    onMouseEnter={() => setSelectedImage(image)}
+                    onClick={() => {
+                      setSelectedImage(image);
+                      setLightboxIndex(i);
+                      setLightboxOpen(true);
+                    }}
                   >
                     <Card.Img src={image} alt='' loading='lazy' />
                   </div>
                 ))}
               </div>
 
-              {/* main image */}
-              <div className='img-large' onClick={() => openLightbox(0)}>
+              <div
+                className='img-large'
+                onClick={() =>
+                  setLightboxOpen(true) ||
+                  setLightboxIndex(images.indexOf(selectedImage))
+                }
+              >
                 <ReactImageMagnify
                   {...{
                     smallImage: {
-                      src: selectedImage || product.image,
+                      src: selectedImage || '/images/default.png',
                       alt: '',
                       isFluidWidth: true,
                     },
                     largeImage: {
-                      src: selectedImage || product.image,
+                      src: selectedImage || '/images/default.png',
                       width: 1200,
                       height: 1800,
                     },
@@ -248,6 +230,7 @@ function ProductMag() {
             </div>
           )}
         </Col>
+
         <Col
           md={1}
           className='d-flex justify-content-center align-items-center'
@@ -256,10 +239,10 @@ function ProductMag() {
             className='control-arrow control-next'
             onClick={() => handleArrowClick('next')}
           >
-            {/* right triangle */}
             <span>&#9654;</span>
           </button>
         </Col>
+
         <Col md={6}>
           <div className='box'>
             <ListGroup variant='flush'>
@@ -323,12 +306,7 @@ function ProductMag() {
                           ${product.price.toFixed(2)}
                         </span>
                         <br />
-                        <span
-                          style={{
-                            color: 'red',
-                            fontWeight: 'bold',
-                          }}
-                        >
+                        <span style={{ color: 'red', fontWeight: 'bold' }}>
                           ${product.salePrice}
                         </span>
                       </>
@@ -350,11 +328,9 @@ function ProductMag() {
                   </Col>
                 </Row>
               </ListGroup.Item>
-
               <ListGroup.Item>
                 <div className='d-grid'>
                   {product.charishLink ? (
-                    // Display "View on Charish" if the product has a Charish link
                     <a
                       href={product.charishLink}
                       target='_blank'
@@ -366,13 +342,11 @@ function ProductMag() {
                     </a>
                   ) : product.countInStock > 0 ? (
                     <>
-                      {/* Display low quantity warning if 5 or less in stock */}
                       {product.countInStock <= 5 && (
                         <p style={{ color: 'red' }}>
                           Only {product.countInStock} Left, Buy Now!
                         </p>
                       )}
-                      {/* Display "Add to Cart" button if no Charish link */}
                       <Button onClick={addToCartHandler} variant='primary'>
                         Add to Cart
                       </Button>
@@ -392,28 +366,22 @@ function ProductMag() {
       <br />
 
       {/* Lightbox */}
-      <div className='lightbox'>
-        {lightboxOpen && (
-          <Lightbox
-            mainSrc={
-              lightboxIndex === 0
-                ? product.image
-                : product.images[lightboxIndex - 1]
-            }
-            nextSrc={
-              lightboxIndex === product.images.length
-                ? null
-                : product.images[lightboxIndex]
-            }
-            prevSrc={
-              lightboxIndex === 0 ? null : product.images[lightboxIndex - 2]
-            }
-            onCloseRequest={() => setLightboxOpen(false)}
-            onMovePrevRequest={() => setLightboxIndex(lightboxIndex - 1)}
-            onMoveNextRequest={() => setLightboxIndex(lightboxIndex + 1)}
-          />
-        )}
-      </div>
+      {lightboxOpen && (
+        <Lightbox
+          mainSrc={images[lightboxIndex]}
+          nextSrc={images[(lightboxIndex + 1) % images.length]}
+          prevSrc={images[(lightboxIndex + images.length - 1) % images.length]}
+          onCloseRequest={() => setLightboxOpen(false)}
+          onMovePrevRequest={() =>
+            setLightboxIndex(
+              (lightboxIndex + images.length - 1) % images.length
+            )
+          }
+          onMoveNextRequest={() =>
+            setLightboxIndex((lightboxIndex + 1) % images.length)
+          }
+        />
+      )}
 
       <br />
     </div>
