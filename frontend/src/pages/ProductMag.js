@@ -389,3 +389,8 @@ function ProductMag() {
 }
 
 export default ProductMag;
+
+// CategoriesCards  1 (Home)
+// Search.js (shows ProductsCards) (Add to Cart or ProductMag page)
+// Option 1: Click main image > ProductMag.js > Add to Cart > Cart.js  <= CURRENT STEP
+// Option 2: Add to Cart > Cart.js (opens Sidebar.js)

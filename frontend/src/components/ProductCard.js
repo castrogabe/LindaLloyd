@@ -126,7 +126,7 @@ function ProductCard({ product, handleSidebarOpen = () => {} }) {
               </Col>
               <Col xs={4}>
                 <Button
-                  className='btn btn-outline-dark btn-sm'
+                  className='btn btn-outline-dark btn-sm mt-2'
                   onClick={() => addToCartHandler(product)}
                   disabled={product.quantity < 1}
                 >

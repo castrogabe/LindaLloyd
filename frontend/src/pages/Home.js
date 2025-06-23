@@ -87,3 +87,8 @@ export default function Home() {
     </>
   );
 }
+
+// CategoriesCards  1 (Home)
+// Search.js (shows ProductsCards) <= CURRENT STEP (Add to Cart or ProductMag page)
+// Option 1: Add to Cart > Cart.js (opens Sidebar.js)
+// Option 2: Click main image > ProductMag.js > Add to Cart > Cart.js

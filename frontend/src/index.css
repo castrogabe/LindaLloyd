@@ -847,26 +847,16 @@ a.email:hover {
     flex-direction: column;
     align-items: center;
   }
-  .category-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  .category-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
   }
   .category-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    background: transparent; /* removes card look */
-    padding: 0; /* no extra padding unless desired */
+    border-radius: 16px;
+    overflow: visible; /* prevents "Add to cart" clipping */
     box-shadow: none;
-    border: none;
+    transition: none;
   }
-
   .category-card .card-title {
     font-size: 16px;
     font-weight: bold;
@@ -874,6 +864,11 @@ a.email:hover {
     padding-top: 10px;
     color: var(--medium);
     font-family: var(--font-primary);
+  }
+  .card-img-top:hover {
+    transform: scale(1.05); /* keep hover effect only on image */
+    box-shadow: 0 4px 20px 2px var(--hover);
+    border-radius: 5px;
   }
 
   /* ProductCard */

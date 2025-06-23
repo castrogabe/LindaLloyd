@@ -114,51 +114,53 @@ export default function Search() {
       </Helmet>
 
       <Row className='mt-3'>
-        <Col md={3} className='search'>
-          <div>
-            <h3>Categories</h3>
-            <ul>
-              <li key='any'>
-                <Link
-                  className={category === 'all' ? 'text-bold' : ''}
-                  to={getFilterUrl({ category: 'all' })}
-                >
-                  Any
-                </Link>
-              </li>
-              {categories.length > 0 ? (
-                categories.map((c, index) => (
-                  <li key={c._id || index}>
-                    <Link
-                      className={c._id === category ? 'text-bold' : ''}
-                      to={getFilterUrl({ category: c._id })}
-                    >
-                      {c._id}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li>Loading categories...</li>
-              )}
-            </ul>
-          </div>
-
-          <div>
-            <h3>Price</h3>
-            <ul>
-              {prices.map((p) => (
-                <li key={`price-${p.value}`}>
+        {!isMobile && (
+          <Col md={3} className='search'>
+            <div>
+              <h3>Categories</h3>
+              <ul>
+                <li key='any'>
                   <Link
-                    to={getFilterUrl({ price: p.value })}
-                    className={p.value === price ? 'text-bold' : ''}
+                    className={category === 'all' ? 'text-bold' : ''}
+                    to={getFilterUrl({ category: 'all' })}
                   >
-                    {p.name}
+                    Any
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </div>
-        </Col>
+                {categories.length > 0 ? (
+                  categories.map((c, index) => (
+                    <li key={c._id || index}>
+                      <Link
+                        className={c._id === category ? 'text-bold' : ''}
+                        to={getFilterUrl({ category: c._id })}
+                      >
+                        {c._id}
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li>Loading categories...</li>
+                )}
+              </ul>
+            </div>
+
+            <div>
+              <h3>Price</h3>
+              <ul>
+                {prices.map((p) => (
+                  <li key={`price-${p.value}`}>
+                    <Link
+                      to={getFilterUrl({ price: p.value })}
+                      className={p.value === price ? 'text-bold' : ''}
+                    >
+                      {p.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Col>
+        )}
 
         <Col md={9}>
           {loading ? (
@@ -207,3 +209,8 @@ export default function Search() {
     </div>
   );
 }
+
+// CategoriesCards  1 (Home)
+// Search.js (shows ProductsCards) (Add to Cart or ProductMag page) <= CURRENT STEP
+// Option 1: Click main image > ProductMag.js > Add to Cart > Cart.js
+// Option 2: Add to Cart > Cart.js (opens Sidebar.js)
