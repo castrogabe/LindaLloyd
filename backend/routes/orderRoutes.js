@@ -193,7 +193,7 @@ orderRouter.put(
         subject: `${updatedOrder.orderName} - New Paid Order`,
         message: `Total: $${updatedOrder.totalPrice.toFixed(2)}`,
         customerName: updatedOrder.user.name,
-        imageUrl: 'https://lindalloyd.onrender.com/images/logo.png',
+        imageUrl: 'https://lloyd-tme8.onrender.com/images/logo.png',
         orderName: updatedOrder.orderName,
       });
 

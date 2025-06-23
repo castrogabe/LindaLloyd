@@ -2,7 +2,8 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const isLive = process.env.NODE_ENV === 'production';
+// const isLive = process.env.NODE_ENV === 'production';
+const isLive = false;
 
 const config = {
   PORT: process.env.PORT || 8000,

@@ -779,7 +779,7 @@ Home.js > Add comments
 ProductMag.js > add comments
 Search.js > updated, commented out categories, prices for mobile view, add comments
 
-# 23rd Commit-Modify UI Search for mobile view, add comments
+# 21st Commit-Modify UI Search for mobile view, add comments
 
 FRONTEND
 folder: components
@@ -789,3 +789,14 @@ folder: pages
 Home.js > Add comments
 ProductMag.js > add comments
 Search.js > updated, commented out categories, prices for mobile view, add comments
+
+# 22nd Commit-Add Instructions for uploading products or adding Chairish, fix productModel, price field added.
+
+FRONTEND
+folder: components
+Header.js > added Instructions.js
+
+folder: pages
+Instructions.js > added
+
+App.js > added Instructions.js

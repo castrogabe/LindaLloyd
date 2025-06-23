@@ -181,6 +181,10 @@ function Header() {
                     <NavDropdown.Item>Dashboard</NavDropdown.Item>
                   </LinkContainer>
 
+                  <LinkContainer to='/admin/instructions'>
+                    <NavDropdown.Item>Instructions</NavDropdown.Item>
+                  </LinkContainer>
+
                   <LinkContainer to='/admin/products'>
                     <NavDropdown.Item>Products</NavDropdown.Item>
                   </LinkContainer>

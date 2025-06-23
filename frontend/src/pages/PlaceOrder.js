@@ -68,13 +68,11 @@ export default function PlaceOrder() {
       );
 
       ctxDispatch({ type: 'CART_CLEAR' });
-      dispatch({ type: 'CREATE_SUCCESS' });
       localStorage.removeItem('cartItems');
 
-      // ✅ Delay to allow message to render
       setTimeout(() => {
         navigate(`/order/${data.order._id}/payment`);
-      }, 800); // delay in ms
+      }, 1200); // 1.2 seconds for slightly smoother experience
     } catch (err) {
       dispatch({ type: 'CREATE_FAIL' });
       toast.error(getError(err));

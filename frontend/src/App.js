@@ -18,6 +18,7 @@ import ProductEdit from './pages/ProductEdit';
 import ProductList from './pages/ProductList';
 import UserEdit from './pages/UserEdit';
 import UserList from './pages/UserList';
+import Instructions from './pages/Instructions';
 
 // admin edit pages
 import AboutUsEdit from './pages/AboutUsEdit';
@@ -183,6 +184,14 @@ function App() {
               element={
                 <AdminRoute>
                   <Messages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path='/admin/instructions'
+              element={
+                <AdminRoute>
+                  <Instructions />
                 </AdminRoute>
               }
             />

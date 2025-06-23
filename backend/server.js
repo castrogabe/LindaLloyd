@@ -3,7 +3,6 @@ const path = require('path');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const cors = require('cors');
-
 const config = require('./config.js');
 const seedRouter = require('./routes/seedRoutes.js');
 const productRouter = require('./routes/productRoutes.js');
