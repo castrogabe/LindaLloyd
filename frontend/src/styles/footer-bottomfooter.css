@@ -1,0 +1,69 @@
+/* Footer */
+footer {
+  text-decoration: none !important;
+  color: var(--medium);
+  font-size: 1rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+.footer-col {
+  position: relative;
+  padding: 20px;
+  text-align: center;
+}
+
+/* footer social icons */
+a.socialIcon {
+  color: var(--medium);
+  margin: 0 1rem;
+}
+.socialIcon a:hover {
+  color: var(--medium);
+}
+.socialIcon {
+  margin: 0 1rem;
+  transition: transform 250ms;
+}
+a.icon {
+  color: var(--medium);
+  text-decoration: none !important;
+}
+a.email {
+  color: var(--medium);
+  text-decoration: none !important;
+  transition: color 0.3s ease;
+}
+a.email1 {
+  color: red;
+  text-decoration: none !important;
+  transition: color 0.3s ease;
+}
+a.chairish {
+  color: var(--primary);
+  text-decoration: none !important;
+}
+
+a.email:hover {
+  color: var(--hover);
+}
+
+.hrLine {
+  border-color: var(--medium);
+}
+
+/* Bottom Footer */
+.bottom-footer {
+  text-decoration: none;
+  width: 100%;
+  font-size: 1rem;
+  padding: 1rem;
+  background: black;
+  color: #ffffff;
+  text-align: center;
+}
+
+#linked {
+  color: var(--medium);
+  text-decoration: none;
+}

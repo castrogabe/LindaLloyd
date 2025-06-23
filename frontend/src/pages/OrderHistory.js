@@ -137,6 +137,7 @@ export default function OrderHistory() {
                       {order.shippingAddress.city},{' '}
                       {order.shippingAddress.states},{' '}
                       {order.shippingAddress.postalCode} <br />
+                      {order.shippingAddress.county},{' '}
                       {order.shippingAddress.country}
                     </div>
                   </td>

@@ -24,9 +24,11 @@ function Header() {
 
   const signoutHandler = () => {
     ctxDispatch({ type: 'USER_SIGNOUT' });
+    ctxDispatch({ type: 'CART_CLEAR' }); // ✅ Clears cart in reducer state
     localStorage.removeItem('userInfo');
     localStorage.removeItem('shippingAddress');
     localStorage.removeItem('paymentMethod');
+    localStorage.removeItem('cartItems'); // ✅ Clear cart
     window.location.href = '/signin';
   };
 

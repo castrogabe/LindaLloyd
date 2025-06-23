@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #ffffff;
+  --dark: #353b40;
+  --hover: #e9c973;
+  --medium: #9a9da0;
+  --light: #ebeded;
+  --facebook: #4968ad;
+  --youtube: #eb3223;
+  --button: #4968ad;
+  --font-primary: 'Cormorant', serif;
+}
+
+h1,
+h2,
+h3,
+p {
+  font-family: var(--font-primary);
+}
+
+main {
+  flex: 1;
+  min-height: 100vh;
+  background-color: var(--primary);
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--medium);
+  font-size: 20px;
+}
+h1,
+h2,
+h3,
+p,
+.content,
+.about,
+.search h3,
+.jumbotron1 {
+  font-family: var(--font-primary);
+  color: var(--medium);
+}
+.noWrap {
+  white-space: nowrap;
+}
+.pointer {
+  cursor: pointer;
+}
+.text-bold {
+  font-weight: bold;
+}
+
+.content {
+  max-width: 90%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.box {
+  background: #fff;
+  margin: 0 0 30px;
+  border: solid 1px var(--light);
+  padding: 30px;
+  -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--medium);
+  font-size: 20px;
+}
+
+h1 {
+  font-size: 35px;
+  font-family: var(--font-primary);
+  color: var(--medium);
+}
+h2 {
+  font-size: 30px;
+  font-family: var(--font-primary);
+  color: var(--medium);
+}
+p,
+.content,
+.about,
+.search h3,
+.jumbotron1 {
+  font-family: var(--font-primary);
+  color: var(--medium);
+  font-size: 20px;
+}
+
+.bg-info {
+  color: var(--medium);
+  background-color: var(--dark) !important;
+}
+
+.noWrap {
+  white-space: nowrap;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.img-large {
+  max-width: 100%;
+}
+.img-thumbnail {
+  height: 80px;
+}
+
+.small-container {
+  max-width: 600px;
+}
+
+.site-container {
+  transition: 0.4s;
+}
+.active-cont {
+  margin-left: 240px;
+}
+.active-nav {
+  left: 0;
+}
+.text-bold {
+  font-weight: bold;
+}
+
+.send-reply-button {
+  margin-right: 20px;
+}
+
+/* Customer Notes */
+.notes-row {
+  background-color: #fdf2c3; /* Light yellow background */
+}
+
+.notes-cell {
+  font-weight: bold;
+  color: #8b5e3c; /* Brown text */
+  padding: 10px;
+  border-top: 2px solid #ffcc00; /* Yellow border to separate notes */
+}
+
+.contact-button {
+  font-weight: bold;
+  text-decoration: none !important;
+}
+
+.details-list {
+  text-align: left;
+  list-style: none;
+  color: var(--medium);
+  padding-left: 0;
+}

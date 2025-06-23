@@ -3,6 +3,7 @@ const expressAsyncHandler = require('express-async-handler');
 const Order = require('../models/orderModel.js');
 const User = require('../models/userModel.js');
 const Product = require('../models/productModel.js');
+const { getTaxRate } = require('../taxRateIndex');
 
 const {
   isAuth,
@@ -95,19 +96,62 @@ orderRouter.post(
     const orderNameFromFirstItem =
       req.body.orderItems?.[0]?.name || 'Unnamed Order';
 
+    const stateAbbr = req.body.shippingAddress.states;
+    const countyName = req.body.shippingAddress.county;
+
+    if (!stateAbbr || !countyName) {
+      console.error('❌ Missing state or county:', {
+        stateAbbr,
+        countyName,
+        body: req.body.shippingAddress,
+      });
+      return res
+        .status(400)
+        .send({ message: 'State or county missing from shipping address' });
+    }
+
+    // console.log('📦 Incoming Order Request:', {
+    //   stateAbbr,
+    //   countyName,
+    //   items: req.body.orderItems?.length,
+    // });
+
+    let taxRate = 0;
+    try {
+      taxRate = getTaxRate(stateAbbr, countyName);
+    } catch (err) {
+      console.error('🔥 getTaxRate threw error:', err.message, {
+        stateAbbr,
+        countyName,
+      });
+      return res.status(500).send({ message: 'Invalid tax rate lookup' });
+    }
+
+    const taxPrice = Number((req.body.itemsPrice * taxRate).toFixed(2));
+    const totalPrice = req.body.itemsPrice + req.body.shippingPrice + taxPrice;
+
+    // console.log('🧑 req.user:', req.user); // <== ADD THIS
+
     const newOrder = new Order({
       orderItems: req.body.orderItems.map((x) => ({ ...x, product: x._id })),
       shippingAddress: req.body.shippingAddress,
       paymentMethod: req.body.paymentMethod,
       itemsPrice: req.body.itemsPrice,
       shippingPrice: req.body.shippingPrice,
-      taxPrice: req.body.taxPrice,
-      totalPrice: req.body.totalPrice,
+      taxPrice,
+      totalPrice,
       user: req.user._id,
       orderName: orderNameFromFirstItem,
     });
 
     const order = await newOrder.save();
+
+    // console.log(
+    //   '✅ Order saved with taxPrice:',
+    //   order.taxPrice,
+    //   'totalPrice:',
+    //   order.totalPrice
+    // );
 
     const populatedOrder = await Order.findById(order._id).populate(
       'user',
@@ -210,7 +254,7 @@ orderRouter.put(
         await product.save();
       }
 
-      console.log('🧾 Order Name:', order.orderName);
+      // console.log('🧾 Order Name:', order.orderName);
 
       // Send SMS after payment is successful
       await sendAdminSMS({

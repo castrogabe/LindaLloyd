@@ -27,18 +27,22 @@ export default function PlaceOrder() {
   const navigate = useNavigate();
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
-  const [{ loading, loadingStarted }, dispatch] = useReducer(reducer, {
+  const [{ loadingStarted }, dispatch] = useReducer(reducer, {
     loading: false,
     loadingStarted: false,
   });
+
   const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100;
 
   cart.itemsPrice = round2(
     cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
   );
   cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
-  cart.taxPrice = 0; // Tax will be applied by Square later
-  cart.totalPrice = cart.itemsPrice + cart.shippingPrice;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [taxPrice, setTaxPrice] = useState(0);
+
+  const totalPrice = round2(cart.itemsPrice + cart.shippingPrice + taxPrice);
 
   const placeOrderHandler = async () => {
     if (!cart.paymentMethod) {
@@ -49,6 +53,15 @@ export default function PlaceOrder() {
     try {
       dispatch({ type: 'CREATE_REQUEST' });
 
+      console.log('🧾 Sending order with:', {
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice,
+        totalPrice,
+        shippingState: cart.shippingAddress.states,
+        county: cart.shippingAddress.county,
+      });
+
       const { data } = await Axios.post(
         '/api/orders',
         {
@@ -57,8 +70,8 @@ export default function PlaceOrder() {
           paymentMethod: cart.paymentMethod,
           itemsPrice: cart.itemsPrice,
           shippingPrice: cart.shippingPrice,
-          taxPrice: cart.taxPrice,
-          totalPrice: cart.totalPrice,
+          taxPrice,
+          totalPrice,
         },
         {
           headers: {
@@ -72,14 +85,51 @@ export default function PlaceOrder() {
 
       setTimeout(() => {
         navigate(`/order/${data.order._id}/payment`);
-      }, 1200); // 1.2 seconds for slightly smoother experience
+      }, 1200);
     } catch (err) {
       dispatch({ type: 'CREATE_FAIL' });
       toast.error(getError(err));
     }
   };
 
-  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    console.log('📡 Tax useEffect fired:', {
+      states: cart.shippingAddress.states,
+      county: cart.shippingAddress.county,
+      itemsPrice: cart.itemsPrice,
+    });
+
+    const fetchTax = async () => {
+      try {
+        const { data } = await Axios.post('/api/tax/estimate', {
+          itemsPrice: cart.itemsPrice,
+          states: cart.shippingAddress.states,
+          county: cart.shippingAddress.county,
+        });
+        setTaxPrice(data.taxPrice);
+      } catch (err) {
+        console.error('⚠️ Tax estimate fetch failed:', err.message);
+        toast.warn(
+          'Could not estimate tax. Tax will be added manually if applicable.'
+        );
+        setTaxPrice(0);
+      }
+    };
+
+    console.log('📦 Estimating tax for', {
+      states: cart.shippingAddress.states,
+      county: cart.shippingAddress.county,
+      itemsPrice: cart.itemsPrice,
+    });
+
+    if (
+      cart.shippingAddress.states &&
+      cart.shippingAddress.county &&
+      cart.itemsPrice > 0
+    ) {
+      fetchTax();
+    }
+  }, [cart.shippingAddress, cart.itemsPrice]);
 
   useEffect(() => {
     if (localStorage.getItem('paymentMethod') !== 'Square') {
@@ -163,10 +213,12 @@ export default function PlaceOrder() {
                     <strong>Street: </strong> {cart.shippingAddress.city},
                     {cart.shippingAddress.states},
                     <br />
+                    <strong>State: </strong> {cart.shippingAddress.states},
+                    <br />
                     <strong>Zip Code: </strong>{' '}
                     {cart.shippingAddress.postalCode},
                     <br />
-                    <strong>State: </strong> {cart.shippingAddress.states},
+                    <strong>County: </strong> {cart.shippingAddress.county},
                     <br />
                     <strong>Country: </strong> {cart.shippingAddress.country}
                   </div>
@@ -194,6 +246,7 @@ export default function PlaceOrder() {
                         </Col>
                       </Row>
                     </ListGroup.Item>
+
                     <ListGroup.Item>
                       <Row>
                         <Col>Items</Col>
@@ -212,15 +265,17 @@ export default function PlaceOrder() {
                     <ListGroup.Item>
                       <Row>
                         <Col>Estimated Tax</Col>
+                        <Col>${taxPrice.toFixed(2)}</Col>
                       </Row>
                     </ListGroup.Item>
+
                     <ListGroup.Item>
                       <Row>
                         <Col>
-                          <strong> Order Total</strong>
+                          <strong>Order Total</strong>
                         </Col>
                         <Col>
-                          <strong>${cart.totalPrice.toFixed(2)}</strong>
+                          <strong>${totalPrice.toFixed(2)}</strong>
                         </Col>
                       </Row>
                     </ListGroup.Item>

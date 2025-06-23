@@ -821,3 +821,66 @@ folder: pages
 ProductEdit.js > updated with new category option
 
 index.css > updated
+
+# 24th Commit-update for Live SquareUp, SMS test message notification for Messages, css productCards, add global css > styles folder, State Taxes by each state and all respective counties
+
+BACKEND
+
+folder: models
+orderModel.js > updated, added countyName for taxes, Shipping Address
+userModel.js > updated, added ShippingAddress for Profile page
+
+folder: routes
+messageRoutes.js > updated for SMS Messages to admin for messages/Contact page
+orderRoutes.js > updated with County for tax by state and county
+squareRoutes.js > updated with turnery operator for live purchases
+userRoutes.js > updated
+
+stateTaxRates > added all counties for each state in a separate file (root)
+taxRateIndex.js > added for all states
+
+config.js > updated with const isLive = true; SquareUp payments
+.env > updated with correct live credentials
+
+FRONTEND
+folder: components
+CategoriesCard.js > updated
+Header.js > updated CLEAR_CART
+ProductCard.js > updated
+
+folder: pages
+Messages.js > updated
+OrderDetails.js > updated
+OrderHistory.js > updated
+OrderList.js > updated
+PlaceOrder.js > updated
+Profile.js > updated Shipping Address
+Search.js > updated
+ShippingAddress.js > updated county map
+
+folder: helpers created
+stateCountyMap.js > added (state county map for tax dropdown)
+
+index.html > updated with live and commented out the old SANDBOX
+index.css > updated the ProductCard to div className="productContainer", also added global styles folder
+styles > added
+base.css
+cart.css
+category-card.css
+checkout.css
+components.css
+custom-carousel.css
+footer-bottomfooter.css
+header-bottomheader.css
+home.css
+media-queries.css
+pagination.css
+product-card.css
+productmag.css
+search.css
+sidebar.css
+
+<script
+  type="text/javascript"
+  src="https:..."
+></script>

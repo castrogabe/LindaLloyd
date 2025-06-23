@@ -157,6 +157,8 @@ export default function OrderDetails() {
                 <br />
                 <strong>Postal Code:</strong> {order.shippingAddress.postalCode}
                 <br />
+                <strong>County:</strong> {order.shippingAddress.county}
+                <br />
                 <strong>Country:</strong> {order.shippingAddress.country}
               </div>
               {order.isShipped ? (

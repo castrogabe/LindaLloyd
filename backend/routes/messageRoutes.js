@@ -2,6 +2,7 @@ const express = require('express');
 const expressAsyncHandler = require('express-async-handler');
 const Message = require('../models/messageModel.js');
 const { isAuth, isAdmin, transporter } = require('../utils.js');
+const { sendAdminSMS } = require('../utils.js');
 
 const messageRouter = express.Router();
 
@@ -53,6 +54,13 @@ messageRouter.post('/contact', async (req, res) => {
       replyContent,
       replyEmail,
       replySentAt,
+    });
+
+    // ✅ SMS logic here
+    await sendAdminSMS({
+      subject: '📩 New Message Received',
+      message: `"${subject}"\nFrom: ${fullName} (${email})`,
+      customerName: fullName,
     });
 
     const savedMessage = await newMessage.save();

@@ -1,0 +1,46 @@
+// oregonCountyTaxRates.js
+const oregonCountyTaxRates = {
+  OR: {
+    default: 0.0, // Oregon has no state sales tax
+    counties: {
+      Baker: 0.0,
+      Benton: 0.0,
+      Clackamas: 0.0,
+      Clatsop: 0.0,
+      Columbia: 0.0,
+      Coos: 0.0,
+      Crook: 0.0,
+      Curry: 0.0,
+      Deschutes: 0.0,
+      Douglas: 0.0,
+      Gilliam: 0.0,
+      Grant: 0.0,
+      Harney: 0.0,
+      'Hood River': 0.0,
+      Jackson: 0.0,
+      Jefferson: 0.0,
+      Josephine: 0.0,
+      Klamath: 0.0,
+      Lake: 0.0,
+      Lane: 0.0,
+      Lincoln: 0.0,
+      Linn: 0.0,
+      Malheur: 0.0,
+      Marion: 0.0,
+      Morrow: 0.0,
+      Multnomah: 0.0,
+      Polk: 0.0,
+      Sherman: 0.0,
+      Tillamook: 0.0,
+      Umatilla: 0.0,
+      Union: 0.0,
+      Wallowa: 0.0,
+      Wasco: 0.0,
+      Washington: 0.0,
+      Wheeler: 0.0,
+      Yamhill: 0.0,
+    },
+  },
+};
+
+module.exports = oregonCountyTaxRates;

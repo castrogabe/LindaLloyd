@@ -1,11 +1,10 @@
 const dotenv = require('dotenv');
-
 dotenv.config();
 
-// const isLive = process.env.NODE_ENV === 'production';
-const isLive = false;
+const isLive = process.env.NODE_ENV === 'production';
 
 const config = {
+  isLive,
   PORT: process.env.PORT || 8000,
   JWT_SECRET: process.env.JWT_SECRET || 'Objetsdart',
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost/frontend',

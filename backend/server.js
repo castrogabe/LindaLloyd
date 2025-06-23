@@ -18,6 +18,7 @@ const faqRouter = require('./routes/faqRoutes.js');
 const productMagContentRouter = require('./routes/productMagContentRoutes.js');
 const subscribeRouter = require('./routes/subscribeRoutes.js');
 const squareRouter = require('./routes/squareRoutes.js');
+const taxRouter = require('./routes/taxRoutes.js');
 
 const app = express();
 
@@ -79,10 +80,6 @@ mongoose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/keys/paypal', (req, res) => {
-  res.send(config.PAYPAL_CLIENT_ID || 'sb');
-});
-
 app.use('/uploads', express.static(uploadDir));
 
 app.use(
@@ -107,6 +104,7 @@ app.use('/api/faqs', faqRouter);
 app.use('/api/productmagcontent', productMagContentRouter);
 app.use('/api/subscribe', subscribeRouter);
 app.use('/api/square', squareRouter);
+app.use('/api/tax', taxRouter);
 
 // React app serving
 app.use(express.static(path.join(__dirname, '../frontend/build')));

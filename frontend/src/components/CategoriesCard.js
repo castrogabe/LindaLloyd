@@ -32,16 +32,7 @@ export default function CategoriesCard() {
     <div className='categories-container content'>
       <Row>
         {categories.map((category) => (
-          <Col
-            key={category.name}
-            xs={6}
-            sm={12}
-            md={6}
-            lg={4}
-            className={`mb-4 ${
-              window.innerWidth < 768 ? 'd-flex justify-content-center' : ''
-            }`}
-          >
+          <Col xs={6} sm={6} md={3} lg={4} className='mb-4 px-2'>
             <div
               className='category-card'
               onClick={() =>

@@ -172,16 +172,11 @@ export default function Search() {
               <Row>
                 {products.map((product) => (
                   <Col
-                    key={product._id}
                     xs={6}
-                    sm={12}
-                    md={6}
-                    lg={4}
-                    className={`mb-4 ${
-                      window.innerWidth < 768
-                        ? 'd-flex justify-content-center'
-                        : ''
-                    }`}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    className='mb-4 px-2 d-flex align-items-stretch'
                   >
                     <ProductCard
                       product={product}

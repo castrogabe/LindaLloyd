@@ -135,6 +135,25 @@ userRouter.put(
   })
 );
 
+// Save address in DB
+userRouter.put(
+  '/address',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.shippingAddress = req.body;
+      const updatedUser = await user.save();
+      res.send({
+        message: 'Address saved',
+        shippingAddress: updatedUser.shippingAddress,
+      });
+    } else {
+      res.status(404).send({ message: 'User Not Found' });
+    }
+  })
+);
+
 userRouter.post(
   '/signin',
   expressAsyncHandler(async (req, res) => {
@@ -145,6 +164,7 @@ userRouter.post(
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        shippingAddress: user.shippingAddress, // ✅ Add this
         token: generateToken(user),
       });
     } else {
@@ -224,12 +244,24 @@ userRouter.put(
       if (req.body.password)
         user.password = bcrypt.hashSync(req.body.password, 8);
 
+      // ✅ Add this block:
+      if (req.body.shippingAddress) {
+        user.shippingAddress = {
+          ...user.shippingAddress,
+          ...req.body.shippingAddress,
+        };
+      }
+
       const updatedUser = await user.save();
       res.send({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
         isAdmin: updatedUser.isAdmin,
+        phone: updatedUser.phone,
+        carrier: updatedUser.carrier,
+        notes: updatedUser.notes,
+        shippingAddress: updatedUser.shippingAddress, // ✅ make sure this is returned
         token: generateToken(updatedUser),
       });
     } else {

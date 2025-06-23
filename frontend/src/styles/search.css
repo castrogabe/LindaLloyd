@@ -1,0 +1,60 @@
+/* Desktop SearchBox Icon */
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #333; /* Adjust color to match your design */
+}
+.icon-button:hover {
+  color: #000;
+}
+.search-icon-desktop {
+  position: absolute;
+  left: 100px; /* Adjust based on layout */
+  top: 50%;
+  transform: translateY(-50%);
+}
+.search-box-container {
+  position: absolute;
+  left: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+.mobile-search-container {
+  margin-right: 10px;
+}
+
+/* Hide SearchBox on mobile by default */
+.mobile-search-box {
+  display: none;
+}
+
+/* Sidebar filter list styling */
+.search ul {
+  list-style-type: none; /* Remove bullets */
+  padding-left: 0;
+  margin: 0;
+}
+
+.search li {
+  margin-bottom: 5px;
+}
+
+.search a {
+  color: var(--medium);
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.search a:hover {
+  color: var(--hover);
+}
+
+.search .text-bold {
+  font-weight: bold;
+  text-decoration: underline;
+}

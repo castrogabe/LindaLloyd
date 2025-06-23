@@ -13,7 +13,9 @@ squareRouter.post(
 
     try {
       const response = await axios.post(
-        'https://connect.squareupsandbox.com/v2/payments',
+        config.isLive
+          ? 'https://connect.squareup.com/v2/payments'
+          : 'https://connect.squareupsandbox.com/v2/payments',
         {
           source_id: sourceId,
           idempotency_key: randomUUID(),

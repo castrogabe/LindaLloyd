@@ -9,6 +9,16 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false, required: true },
     notes: { type: String, default: '' },
+
+    shippingAddress: {
+      fullName: { type: String },
+      address: { type: String },
+      city: { type: String },
+      states: { type: String },
+      county: { type: String },
+      postalCode: { type: String },
+      country: { type: String },
+    },
   },
   {
     timestamps: true,

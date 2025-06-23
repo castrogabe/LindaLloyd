@@ -58,6 +58,7 @@ const isAdmin = (req, res, next) => {
   }
 };
 
+// Create a transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   port: 587,
@@ -68,6 +69,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// send Admin SMS message
 const sendAdminSMS = async ({ subject, message, customerName, orderName }) => {
   try {
     const admins = await User.find({

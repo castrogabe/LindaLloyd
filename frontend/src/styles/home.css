@@ -1,0 +1,44 @@
+.home-card {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; /* Make all cards equal height */
+}
+
+/* Home h1 gold dot black outline */
+.item {
+  position: relative;
+  padding-right: 20px;
+  display: inline-block;
+}
+.item::after {
+  content: '';
+  height: 10px;
+  width: 10px;
+  background-color: gold;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: middle;
+  border: 1px solid black;
+}
+.item:last-child::after {
+  content: none;
+}
+
+/* tilde to outline the ~ in black */
+.outlined-tilde {
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+  font-size: 1.5em;
+}
+
+/***** Subscribe  *****/
+.subscribe-container {
+  text-align: center;
+  background-color: var(--light);
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}

@@ -1,0 +1,14 @@
+.my-button {
+  font-size: 1em;
+  line-height: normal;
+  text-transform: uppercase;
+  font-family: 'Lato', sans-serif;
+  font-weight: 900;
+  transition: all 0.3s ease-in-out;
+  border-radius: 45px;
+  padding: 0.5em 1em;
+  text-decoration: none;
+}
+.link {
+  text-decoration: none !important;
+}

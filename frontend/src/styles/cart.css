@@ -1,0 +1,44 @@
+/* Make cart items align in a single row */
+.cart-item {
+  display: flex;
+  flex-wrap: nowrap; /* Prevent stacking */
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+/* Adjust name width for better spacing */
+.cart-item-name {
+  flex-grow: 1;
+  font-size: 16px;
+}
+
+/* Center align price */
+.cart-item-price {
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Cart Icon and Badge */
+.nav-link.cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.nav-link.cart i {
+  font-size: 1.5rem;
+}
+.cart-badge {
+  position: absolute;
+  top: -8px; /* Adjust positioning for better alignment */
+  right: -10px; /* Fine-tune to align with the cart icon */
+  background-color: red;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 5px 8px;
+  min-width: 20px;
+  text-align: center;
+}

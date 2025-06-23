@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Row, Col } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import LazyLoad from 'react-lazyload';
@@ -63,22 +63,22 @@ function ProductCard({ product, handleSidebarOpen = () => {} }) {
     }
   };
 
-  // ProductCard is coming from Search.js
+  // ProductCard is coming from Search.js | styles/product-card.css
 
   return (
-    <div className='category-card'>
+    <div className='productContainer'>
       <Link to={`/product/${product.slug}`}>
         <LazyLoad height={200} offset={100}>
           <img
             src={product.image}
-            className='card-img-top'
             alt={product.name}
-            loading='lazy'
+            className='product-card-img'
+            onError={(e) => (e.target.src = '/images/default.png')}
           />
         </LazyLoad>
       </Link>
 
-      <div className='card-body'>
+      <div className='productContainer-body'>
         <Link
           to={`/product/${product.slug}`}
           style={{ textDecoration: 'none' }}
@@ -86,7 +86,7 @@ function ProductCard({ product, handleSidebarOpen = () => {} }) {
           <p>{product.name}</p>
         </Link>
 
-        <div className='card-text'>
+        <div className='productContainer-text'>
           {product.salePrice ? (
             <>
               <span style={{ textDecoration: 'line-through', color: 'gray' }}>
@@ -117,24 +117,20 @@ function ProductCard({ product, handleSidebarOpen = () => {} }) {
               Out of stock
             </Button>
           ) : (
-            <Row>
-              <Col xs={8}>
-                {product.countInStock <= 5 && (
-                  <p className='only-few-left'>
-                    Only {product.countInStock} left
-                  </p>
-                )}
-              </Col>
-              <Col xs={4}>
-                <Button
-                  className='btn btn-outline-dark btn-sm mt-2'
-                  onClick={() => addToCartHandler(product)}
-                  disabled={product.quantity < 1}
-                >
-                  {product.quantity < 1 ? 'Out of stock' : 'Add to cart'}
-                </Button>
-              </Col>
-            </Row>
+            <>
+              {product.countInStock <= 5 && (
+                <p className='only-few-left'>
+                  Only {product.countInStock} left
+                </p>
+              )}
+              <Button
+                className='btn product-button'
+                onClick={() => addToCartHandler(product)}
+                disabled={product.quantity < 1}
+              >
+                {product.quantity < 1 ? 'Out of stock' : 'Add to cart'}
+              </Button>
+            </>
           )}
         </div>
       </div>

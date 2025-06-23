@@ -40,18 +40,7 @@ export default function Collections() {
                 </Col>
               ))
             : products.map((product) => (
-                <Col
-                  key={product.slug}
-                  xs={6}
-                  sm={12}
-                  md={6}
-                  lg={4}
-                  className={`mb-4 ${
-                    window.innerWidth < 768
-                      ? 'd-flex justify-content-center'
-                      : ''
-                  }`}
-                >
+                <Col xs={6} sm={6} md={3} lg={4} className='mb-4 px-3'>
                   <div
                     className='category-card'
                     onClick={() => navigate(`/product/${product.slug}`)}

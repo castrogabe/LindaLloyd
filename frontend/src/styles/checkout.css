@@ -1,0 +1,15 @@
+/* Checkout */
+.btn-primary,
+.btn-outline-primary {
+  background-color: var(--button);
+  color: var(--primary);
+}
+
+.checkout-steps > div {
+  border-bottom: 0.2rem solid #a0a0a0;
+  color: #a0a0a0;
+}
+.checkout-steps > div.active {
+  border-bottom: 0.2rem solid var(--youtube);
+  color: #353b40;
+}

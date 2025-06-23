@@ -1,0 +1,73 @@
+/* Header */
+.header {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  background: var(--primary);
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.navbar-brand > img {
+  justify-content: center;
+  height: 350px;
+  width: 350px;
+  margin-top: -2rem;
+  margin-bottom: -2rem;
+}
+
+/* Position search and cart icons */
+.header-icons {
+  position: absolute;
+  right: 5%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Dropdown */
+.dropdown {
+  display: block;
+  position: relative;
+}
+/* Custom CSS for success variant dropdown */
+.nav-dropdown-success .dropdown-menu {
+  background-color: #d4edda;
+  color: #155724;
+}
+.nav-dropdown-success .dropdown-item:hover,
+.nav-dropdown-success .dropdown-item:focus {
+  background-color: #c3e6cb;
+  color: #155724;
+}
+/* Custom CSS for success variant dropdown title */
+.nav-dropdown-success .nav-link {
+  color: #28a745 !important; /* Green color for the title */
+}
+
+.bottom-header {
+  width: 100%;
+  background: var(--medium); /* Light gray background */
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.bottom-header .nav {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 3rem !important;
+}
+.bottom-header .nav-link {
+  padding: 0 2rem !important;
+}
+
+.bottom-header .nav-link {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  text-transform: uppercase;
+  color: white !important; /* Force text color to white */
+}
+
+.bottom-header .nav-link:hover {
+  color: var(--hover) !important;
+}

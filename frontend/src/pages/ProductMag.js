@@ -12,7 +12,6 @@ import 'react-image-lightbox/style.css';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useMediaQuery } from 'react-responsive';
-import '../ProductMag.css';
 import SkeletonProductMag from '../components/skeletons/SkeletonProductMag';
 
 const reducer = (state, action) => {

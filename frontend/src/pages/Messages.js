@@ -197,7 +197,6 @@ export default function Messages() {
                       <td>{message.fullName}</td>
                       <td>{message.email}</td>
                       <td>{message.subject}</td>
-                      {/* <td>{message.message}</td> */}
                       <td>
                         <textarea
                           className='td.message-cell'

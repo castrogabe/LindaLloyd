@@ -128,7 +128,7 @@ export default function OrderList() {
       User: order.user ? order.user.name : 'DELETED USER',
       Email: order.user ? order.user.email : '',
       Address: order.shippingAddress
-        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode}, ${order.shippingAddress.country}`
+        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode}, ${order.shippingAddress.county}, ${order.shippingAddress.country}`
         : '',
       Date: formatDate(order.createdAt),
       PaidAt: order.isPaid ? formatDate(order.paidAt) : 'No',
