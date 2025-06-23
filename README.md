@@ -693,3 +693,23 @@ mobile: update Header .navbar-nav .nav-link
 Search.js > updated
 index.css > updated with categories for mobile view, Subscribe
 App.js > update with Sold Antiques, Collections, updated from soldAntiques to soldGallery
+
+# 18th Commit-Dynamic Carousel Jumbotron Admin HomeContentEdit, AboutUs-Image is now Dynamic, CSS for ProductCard from flex Row to small card Col, removed rating, Header, SearchBox, Cart, SoldGallery, MailChimp
+
+BACKEND
+folder: models
+
+folder: routes
+
+server.js > updated
+
+FRONTEND
+folder: components
+Header.js >
+Footer.js >
+
+folder: pages
+
+index.css >
+
+App.js >
