@@ -884,3 +884,5 @@ sidebar.css
   type="text/javascript"
   src="https:..."
 ></script>
+
+# 25th Commit-fix illionoisCountyTaxRates naming to lowercase
