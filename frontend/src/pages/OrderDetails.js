@@ -40,6 +40,8 @@ export default function OrderDetails() {
   const params = useParams();
   const { id: orderId } = params;
   const navigate = useNavigate();
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [shippingPrice, setShippingPrice] = useState('');
   const [deliveryDays, setDeliveryDays] = useState('');
   const [carrierName, setCarrierName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -47,9 +49,31 @@ export default function OrderDetails() {
   const [{ loading, error, order, loadingShipped, successShipped }, dispatch] =
     useReducer(reducer, {
       loading: true,
-      order: {},
+      order: {
+        orderItems: [],
+        isPaid: false,
+        isShipped: false,
+        shippingInvoiceUrl: null,
+        shippingInvoicePaid: false,
+        shippingAddress: {
+          fullName: '',
+          address: '',
+          city: '',
+          states: '',
+          postalCode: '',
+          country: '',
+        },
+        itemsPrice: 0,
+        shippingPrice: 0,
+        taxPrice: 0,
+        totalPrice: 0,
+      },
       error: '',
+      loadingShipped: false,
+      successShipped: false,
     });
+
+  const isPaid = order?.isPaid ?? false;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -65,30 +89,29 @@ export default function OrderDetails() {
     };
 
     if (!userInfo) {
-      return navigate('/login');
+      navigate('/login');
+      return;
     }
-    if (!order._id || successShipped || order._id !== orderId) {
+
+    // Always fetch when no order or when orderId changes
+    if (!order || order._id !== orderId || successShipped) {
       fetchOrder();
-      if (successShipped) {
-        dispatch({ type: 'SHIPPED_RESET' });
-      }
+      if (successShipped) dispatch({ type: 'SHIPPED_RESET' });
     }
-  }, [order, userInfo, orderId, navigate, successShipped]);
+  }, [orderId, userInfo, navigate, order, successShipped]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (order?.shippingInvoiceUrl && !order?.shippingInvoicePaid) {
+      toast.error('Shipping invoice must be paid before shipping the order.');
+      return;
+    }
     try {
       dispatch({ type: 'SHIPPED_REQUEST' });
       const { data } = await axios.put(
         `/api/orders/${order._id}/shipped`,
-        {
-          deliveryDays,
-          carrierName,
-          trackingNumber,
-        },
-        {
-          headers: { authorization: `Bearer ${userInfo.token}` },
-        }
+        { deliveryDays, carrierName, trackingNumber },
+        { headers: { authorization: `Bearer ${userInfo.token}` } }
       );
       dispatch({ type: 'SHIPPED_SUCCESS', payload: data });
       toast.success('Order has shipped', { autoClose: 1000 });
@@ -98,48 +121,133 @@ export default function OrderDetails() {
     }
   };
 
-  return loading ? (
-    <Row>
-      {[...Array(8).keys()].map((i) => (
-        <Col key={i} md={12} className='mb-3'>
-          <SkeletonOrderDetails />
-        </Col>
-      ))}
-    </Row>
-  ) : error ? (
-    <MessageBox variant='danger'>{error}</MessageBox>
-  ) : (
+  const hasPerProductShipping = order?.orderItems?.some(
+    (item) => item.shippingCharge > 0
+  );
+
+  const requiresInvoice =
+    order?.orderItems?.every(
+      (item) =>
+        item.shippingCharge === null ||
+        item.shippingCharge === undefined ||
+        item.shippingCharge === 0
+    ) || false;
+
+  const invoiceSent = !!order?.shippingInvoiceUrl;
+  const invoicePaid = !!order?.shippingInvoicePaid;
+
+  const showShippingForm =
+    userInfo?.isAdmin &&
+    order?.isPaid &&
+    !order?.isShipped &&
+    ((hasPerProductShipping && !order?.shippingInvoiceUrl) ||
+      order?.shippingInvoicePaid);
+
+  useEffect(() => {
+    if (order?.isShipped) {
+      setDeliveryDays(order.deliveryDays || '');
+      setCarrierName(order.carrierName || '');
+      setTrackingNumber(order.trackingNumber || '');
+    }
+  }, [order]);
+
+  const handleSendShippingInvoice = async () => {
+    if (sendingInvoice) return;
+    setSendingInvoice(true);
+    try {
+      const { data } = await axios.put(
+        `/api/orders/${orderId}/shipping-price`,
+        { shippingPrice },
+        { headers: { authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Shipping invoice sent', { autoClose: 1000 });
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.order });
+    } catch (err) {
+      toast.error(getError(err));
+    } finally {
+      setSendingInvoice(false);
+    }
+  };
+
+  // EARLY RETURNS
+  if (loading) {
+    return (
+      <Row>
+        {[...Array(8).keys()].map((i) => (
+          <Col key={i} md={12} className='mb-3'>
+            <SkeletonOrderDetails />
+          </Col>
+        ))}
+      </Row>
+    );
+  }
+
+  if (error) {
+    return <MessageBox variant='danger'>{error}</MessageBox>;
+  }
+
+  if (!order || !order._id) {
+    return (
+      <MessageBox variant='danger'>Order not found or not loaded.</MessageBox>
+    );
+  }
+
+  return (
     <div className='content'>
       <Helmet>
         <title>Order {orderId}</title>
       </Helmet>
       <br />
-      <h4 className='box'>Order: {orderId}</h4>
+      {order && order._id && <h4 className='box'>Order: {order._id}</h4>}
+
       <Row>
         <Col md={6}>
           <div className='box'>
             <div className='body'>
               <title>Items</title>
               <ListGroup variant='flush'>
-                {order.orderItems.map((item) => (
-                  <ListGroup.Item key={item._id}>
-                    <Row className='align-items-center'>
-                      <Col md={6}>
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className='img-fluid rounded img-thumbnail'
-                        ></img>{' '}
-                        <Link className='link' to={`/product/${item.slug}`}>
-                          {item.name}
-                        </Link>
-                      </Col>
-                      <Col md={3}>Qty: {item.quantity}</Col>
-                      <Col md={3}>${item.price}</Col>
-                    </Row>
-                  </ListGroup.Item>
-                ))}
+                {order?.orderItems && order.orderItems.length > 0 ? (
+                  order.orderItems.map((item) => (
+                    <ListGroup.Item key={item._id}>
+                      <Row className='align-items-center'>
+                        <Col md={6}>
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className='img-fluid rounded img-thumbnail'
+                          />
+                          <Link className='link' to={`/product/${item.slug}`}>
+                            {item.name}
+                          </Link>
+                        </Col>
+                        <Col md={3}>Qty: {item.quantity}</Col>
+                        <Col md={3}>
+                          ${(item.salePrice || item.price).toFixed(2)}
+                        </Col>
+                      </Row>
+                    </ListGroup.Item>
+                  ))
+                ) : (
+                  <ListGroup.Item>No items found in this order.</ListGroup.Item>
+                )}
               </ListGroup>
+            </div>
+          </div>
+
+          <div className='box'>
+            <div className='body'>
+              <title>Payment</title>
+              <strong>Purchase Status:</strong>{' '}
+              {isPaid ? (
+                <MessageBox variant='success'>
+                  Paid with Square on {new Date(order.paidAt).toLocaleString()}
+                </MessageBox>
+              ) : (
+                <MessageBox variant='warning'>
+                  Payment pending. You will receive a separate Square payment
+                  link to complete the purchase.
+                </MessageBox>
+              )}
             </div>
           </div>
 
@@ -147,19 +255,14 @@ export default function OrderDetails() {
             <div className='body'>
               <title>Shipping</title>
               <div>
-                <strong>Name:</strong> {order.shippingAddress.fullName}
+                {order.shippingAddress.fullName}
                 <br />
-                <strong>Address:</strong> {order.shippingAddress.address}
+                {order.shippingAddress.address}
                 <br />
-                <strong>City:</strong> {order.shippingAddress.city}
+                {order.shippingAddress.city}, {order.shippingAddress.states}.{' '}
+                {order.shippingAddress.postalCode}
                 <br />
-                <strong>State:</strong> {order.shippingAddress.states}
-                <br />
-                <strong>Postal Code:</strong> {order.shippingAddress.postalCode}
-                <br />
-                <strong>County:</strong> {order.shippingAddress.county}
-                <br />
-                <strong>Country:</strong> {order.shippingAddress.country}
+                {order.shippingAddress.country}
               </div>
               {order.isShipped ? (
                 <MessageBox variant='success'>
@@ -168,26 +271,6 @@ export default function OrderDetails() {
               ) : (
                 <MessageBox variant='danger'>Not Shipped</MessageBox>
               )}
-            </div>
-          </div>
-
-          <div className='box'>
-            <div className='body'>
-              <title>Payment</title>
-              <div>
-                <strong>Status:</strong>{' '}
-                {order.isPaid ? (
-                  <MessageBox variant='success'>
-                    Paid with Square on{' '}
-                    {new Date(order.paidAt).toLocaleString()}
-                  </MessageBox>
-                ) : (
-                  <MessageBox variant='warning'>
-                    Payment pending. You will receive a separate Square payment
-                    link to complete the purchase.
-                  </MessageBox>
-                )}
-              </div>
             </div>
           </div>
         </Col>
@@ -206,8 +289,36 @@ export default function OrderDetails() {
                 <ListGroup.Item>
                   <Row>
                     <Col>Shipping</Col>
-                    <Col>${order.shippingPrice.toFixed(2)}</Col>
+                    <Col>
+                      {order.shippingPrice > 0
+                        ? `$${order.shippingPrice.toFixed(2)}`
+                        : requiresInvoice
+                        ? invoiceSent
+                          ? 'Awaiting Payment'
+                          : 'TBD'
+                        : hasPerProductShipping
+                        ? 'Included'
+                        : 'Pending'}
+                    </Col>
                   </Row>
+                  {order?.orderItems &&
+                    order.orderItems.map(
+                      (item, idx) =>
+                        !item.requiresShippingInvoice &&
+                        item.shippingCharge !== undefined && (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: '0.85em',
+                              color: '#666',
+                              paddingLeft: '1rem',
+                            }}
+                          >
+                            {item.name}: ${item.shippingCharge.toFixed(2)} ×{' '}
+                            {item.quantity}
+                          </div>
+                        )
+                    )}
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <Row>
@@ -229,12 +340,54 @@ export default function OrderDetails() {
             </div>
           </div>
 
-          {userInfo.isAdmin && order.isPaid && !order.isShipped && (
-            <Form>
-              {loadingShipped && <SkeletonOrderDetails />}
-              <div className='d-grid'>
-                {/* send shipping confirmation email when order ships */}
-                <h6>Admin fill in the fields below to send to customer</h6>
+          <div className='box'>
+            <div className='body'>
+              <title>Shipping Invoice</title>
+              {userInfo.isAdmin && requiresInvoice && !invoiceSent && (
+                <>
+                  <h5 style={{ color: 'red' }}>Send Shipping Price</h5>
+                  <Form.Group controlId='shippingPrice'>
+                    <Form.Control
+                      type='number'
+                      placeholder='Enter shipping price'
+                      value={shippingPrice}
+                      onChange={(e) => setShippingPrice(e.target.value)}
+                    />
+                  </Form.Group>
+                  <Button
+                    type='button'
+                    className='btn btn-primary mt-2'
+                    disabled={sendingInvoice}
+                    onClick={() => {
+                      if (!shippingPrice || parseFloat(shippingPrice) <= 0) {
+                        toast.error('Shipping price must be greater than zero');
+                        return;
+                      }
+                      handleSendShippingInvoice();
+                    }}
+                  >
+                    {sendingInvoice ? 'Sending...' : 'Save & Send Invoice'}
+                  </Button>
+                </>
+              )}
+              {invoicePaid && (
+                <div className='mt-3'>
+                  <strong>Shipping Status:</strong>{' '}
+                  <MessageBox variant='success'>
+                    Shipping Invoice Paid with Square on{' '}
+                    {new Date(order.shippingPaidAt).toLocaleString()}
+                  </MessageBox>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {showShippingForm && (
+            <div className='box'>
+              <h6 className='text-center mt-3'>
+                Admin fill in the fields below to send to customer
+              </h6>
+              <Form onSubmit={submitHandler}>
                 <Form.Group className='mb-3' controlId='days'>
                   <Form.Label>Delivery Days</Form.Label>
                   <Form.Control
@@ -243,27 +396,32 @@ export default function OrderDetails() {
                     required
                   />
                 </Form.Group>
-                <Form.Group className='mb-3' controlId='name'>
+                <Form.Group className='mb-2' controlId='carrierName'>
                   <Form.Label>Carrier Name</Form.Label>
                   <Form.Control
+                    type='text'
                     value={carrierName}
                     onChange={(e) => setCarrierName(e.target.value)}
-                    required
                   />
                 </Form.Group>
-                <Form.Group className='mb-3' controlId='slug'>
+                <Form.Group className='mb-2' controlId='trackingNumber'>
                   <Form.Label>Tracking Number</Form.Label>
                   <Form.Control
+                    type='text'
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
-                    required
                   />
                 </Form.Group>
-                <Button type='button' onClick={submitHandler}>
-                  Order Shipped
+                <Button
+                  type='submit'
+                  variant='primary'
+                  className='w-100 mt-2'
+                  disabled={loadingShipped}
+                >
+                  {loadingShipped ? 'Processing...' : 'Order Shipped'}
                 </Button>
-              </div>
-            </Form>
+              </Form>
+            </div>
           )}
         </Col>
       </Row>

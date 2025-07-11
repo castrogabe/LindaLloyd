@@ -886,3 +886,30 @@ sidebar.css
 ></script>
 
 # 25th Commit-fix illionoisCountyTaxRates naming to lowercase
+
+# 26th Commit-change from static hardcoded taxes to dynamic taxes via: address, npm install uuid
+
+BACKEND
+npm install uuid
+
+folder: models
+orderModel.js > updated with appliedTaxRate: { type: Number }
+
+folder: routes
+orderRoutes.js > updated
+taxRoutes.js > updated
+userRoutes.ss > updated
+
+config.js > updated
+utils.js > updated
+
+FRONTEND
+folder: components
+SquareCheckout.js > updated
+createTax.js > added
+
+folder: pages
+PlaceOrder.js > updated
+OrderDetails.js > updated
+OrderHistory.js > updated with taxes
+OrderList.js > updated | Filter by Month Download as Excel

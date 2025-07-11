@@ -1,24 +1,18 @@
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const User = require('./models/userModel.js');
+const User = require('./models/userModel.js'); // Assuming this path is correct
+const config = require('./config'); // <--- ADD THIS LINE HERE: Import the config file
 
 const getImageUrl = (imgPath) => {
   return imgPath.startsWith('http')
     ? imgPath
-    : baseUrl() + (imgPath.startsWith('/') ? imgPath : '/' + imgPath);
+    : config.baseUrl + (imgPath.startsWith('/') ? imgPath : '/' + imgPath);
 };
 
 // Function to calculate the total quantity of items in the order
 const calculateTotalQuantity = (order) => {
   return order.orderItems.reduce((total, item) => total + item.quantity, 0);
 };
-
-const baseUrl = () =>
-  process.env.BASE_URL
-    ? process.env.BASE_URL
-    : process.env.NODE_ENV !== 'production'
-    ? 'http://localhost:3000'
-    : 'https:lloyd-tme8.onrender.com';
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -35,18 +29,37 @@ const generateToken = (user) => {
 
 const isAuth = (req, res, next) => {
   const authorization = req.headers.authorization;
+  // console.log('Authorization Header received:', authorization);
+
   if (authorization) {
-    const token = authorization.slice(7);
-    jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
-      if (err) {
-        res.status(401).send({ message: 'Invalid Token' });
-      } else {
-        req.user = decode;
-        next();
+    const token = authorization.slice(7, authorization.length); // Bearer XXXXXX
+
+    jwt.verify(
+      token,
+      process.env.JWT_SECRET, // Make sure this secret matches the one used to sign the token
+      (err, decode) => {
+        if (err) {
+          console.error('ERROR: JWT Verification Failed!', err); // Log the full error object for more detail
+          if (err.name === 'TokenExpiredError') {
+            console.error('Reason: Token Expired');
+            return res.status(401).send({ message: 'Token Expired' });
+          } else if (err.name === 'JsonWebTokenError') {
+            console.error('Reason: Invalid Token Signature or malformed token');
+            return res.status(401).send({ message: 'Invalid Token' });
+          }
+          // Catch all other JWT errors
+          return res
+            .status(401)
+            .send({ message: `Authentication Error: ${err.message}` });
+        } else {
+          req.user = decode;
+          next(); // Proceed to the next middleware/route handler
+        }
       }
-    });
+    );
   } else {
-    res.status(401).send({ message: 'No Token' });
+    console.error('ERROR: Authorization header missing.');
+    res.status(401).send({ message: 'No Token provided' });
   }
 };
 
@@ -89,7 +102,7 @@ const sendAdminSMS = async ({ subject, message, customerName, orderName }) => {
       (message || '');
 
     const mailOptions = {
-      from: process.env.GMAIL_USER,
+      from: process.env.GMAIL_USER, // Ensure GMAIL_USER is defined in .env
       to: smsRecipients,
       subject: '',
       text: formattedMessage.trim(),
@@ -129,13 +142,12 @@ const payOrderEmailTemplate = (order) => {
           .map(
             (item) => `
               <tr>
-              <td><img src="${getImageUrl(item.image)}" alt="${
+                <td><img src="${getImageUrl(item.image)}" alt="${
               item.name
-            }" width="50" height="50" />
-            </td>
+            }" width="50" height="50" /></td>
                 <td>${item.name}</td>
                 <td align="center">Qty: ${item.quantity}</td>
-                <td align="right"> $${item.price.toFixed(2)}</td>
+                <td align="right">$${item.price.toFixed(2)}</td>
               </tr>`
           )
           .join('\n')}
@@ -148,9 +160,22 @@ const payOrderEmailTemplate = (order) => {
         <tr><td colspan="2">Tax Price:</td><td align="right">$${order.taxPrice.toFixed(
           2
         )}</td></tr>
-        <tr><td colspan="2">Shipping Price:</td><td align="right">$${order.shippingPrice.toFixed(
-          2
-        )}</td></tr>
+        ${
+          order.shippingPrice > 0
+            ? `<tr>
+                <td colspan="2">Shipping Price:</td>
+                <td align="right">$${order.shippingPrice.toFixed(2)}</td>
+              </tr>`
+            : order.shippingInvoiceUrl
+            ? `<tr>
+                <td colspan="2">Shipping Invoice:</td>
+                <td align="right"><a href="${order.shippingInvoiceUrl}">Click here to pay shipping</a></td>
+              </tr>`
+            : `<tr>
+                <td colspan="2">Shipping Price:</td>
+                <td align="right">To be invoiced separately</td>
+              </tr>`
+        }
         <tr><td colspan="2"><strong>Total Price:</strong></td><td align="right"><strong>$${order.totalPrice.toFixed(
           2
         )}</strong></td></tr>
@@ -159,6 +184,14 @@ const payOrderEmailTemplate = (order) => {
         }</td></tr>
       </tfoot>
     </table>
+
+    ${
+      !order.shippingPrice && order.shippingInvoiceUrl
+        ? `<p><strong>Note:</strong> Shipping is not included in this charge. You will receive a separate invoice based on packaging and destination before your item is shipped.</p>`
+        : ''
+    }
+
+    <hr/>
     <h2>Shipping address</h2>
     <p>
       ${order.shippingAddress.fullName},<br/>
@@ -170,6 +203,7 @@ const payOrderEmailTemplate = (order) => {
     <hr/>
     <p>Thanks for shopping with us.</p>`;
 };
+
 // end email receipt
 
 // ************************* send confirmation email *************************
@@ -219,9 +253,9 @@ const shipOrderEmailTemplate = (order) => {
         <tr><td colspan="2">Tax Price:</td><td align="right">$${order.taxPrice.toFixed(
           2
         )}</td></tr>
-        <tr><td colspan="2">Shipping Price:</td><td align="right">$${order.shippingPrice.toFixed(
-          2
-        )}</td></tr>
+      <tr><td colspan="2">Shipping Price:</td><td align="right">$${order.shippingPrice.toFixed(
+        2
+      )}</td></tr>
         <tr><td colspan="2"><strong>Total Price:</strong></td><td align="right"><strong>$${order.totalPrice.toFixed(
           2
         )}</strong></td></tr>
@@ -262,7 +296,6 @@ const sendShippingConfirmationEmail = async (req, order) => {
 };
 
 module.exports = {
-  baseUrl,
   generateToken,
   isAuth,
   isAdmin,

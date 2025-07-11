@@ -5,7 +5,6 @@ const reviewSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     comment: { type: String, required: true },
-    rating: { type: Number, required: true },
   },
   {
     timestamps: true,
@@ -27,6 +26,8 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: null, // Set default to null for optional sale prices
     },
+    requiresShippingInvoice: { type: Boolean, default: false },
+    shippingCharge: { type: Number, default: 0 },
     countInStock: { type: Number, required: true },
     charishLink: { type: String, required: false }, // URL to Charish listing
     condition: { type: String, required: true },

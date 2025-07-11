@@ -116,7 +116,17 @@ export default function OrderHistory() {
                     ))}
                   </td>
                   <td>{formatDate(order.createdAt)}</td>
-                  <td>{order.totalPrice.toFixed(2)}</td>
+
+                  <td>
+                    ${order.totalPrice.toFixed(2)}
+                    <br />
+                    <small className='text-muted'>
+                      Items: ${order.itemsPrice.toFixed(2)} <br />
+                      Shipping: ${order.shippingPrice.toFixed(2)} <br />
+                      Tax: ${order.taxPrice.toFixed(2)}
+                    </small>
+                  </td>
+
                   <td>
                     {order.orderItems.reduce(
                       (total, item) => total + item.quantity,
@@ -137,7 +147,6 @@ export default function OrderHistory() {
                       {order.shippingAddress.city},{' '}
                       {order.shippingAddress.states},{' '}
                       {order.shippingAddress.postalCode} <br />
-                      {order.shippingAddress.county},{' '}
                       {order.shippingAddress.country}
                     </div>
                   </td>

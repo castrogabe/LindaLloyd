@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap';
 
 export default function SquareCheckout({
   orderId,
+  squareOrderId, // ✅ Accept this
   totalPrice,
   userInfo,
   onSuccess,
@@ -68,7 +69,7 @@ export default function SquareCheckout({
         '/api/square/create-payment',
         {
           sourceId: result.token,
-          orderId,
+          orderId: squareOrderId, // ✅ Use correct Square Order ID
           amount: totalPrice,
         },
         {

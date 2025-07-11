@@ -22,6 +22,37 @@ const taxRouter = require('./routes/taxRoutes.js');
 
 const app = express();
 
+// --- CRUCIAL: PLACE BODY PARSERS EARLY ---
+// These middlewares parse the request body and make it available on req.body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// --- END CRUCIAL SECTION ---
+
+// --- DEBUG MIDDLEWARE (NOW IT WILL SEE THE PARSED BODY) ---
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith('/api/users/address')) {
+    console.log(`\n--- GLOBAL DEBUG: Request to ${req.originalUrl} ---`);
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Method:', req.method);
+    console.log(
+      'Authorization Header:',
+      req.headers.authorization ? 'Present' : 'Missing'
+    );
+    // req.user might still be UNDEFINED here if isAuth middleware hasn't run yet,
+    // but req.body *will* be populated if the request has a body.
+    console.log(
+      'req.user (from global middleware - before route specific isAuth):',
+      req.user ? JSON.stringify(req.user, null, 2) : 'UNDEFINED'
+    );
+    console.log(
+      'Request Body (now parsed):',
+      JSON.stringify(req.body, null, 2)
+    );
+  }
+  next();
+});
+// --- END GLOBAL DEBUG MIDDLEWARE ---
+
 const isProduction = process.env.NODE_ENV === 'production';
 const __dirnameCustom = path.resolve(); // Use path.resolve() for CommonJS
 
@@ -77,11 +108,7 @@ mongoose
     console.error('MongoDB Connection Error:', err.message);
   });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use('/uploads', express.static(uploadDir));
-
+// CORS middleware should be after body parsers but before routes
 app.use(
   cors({
     origin: 'http://localhost:3000',
@@ -93,7 +120,7 @@ app.use(
 app.use('/api/upload', uploadRouter);
 app.use('/api/seed', seedRouter);
 app.use('/api/products', productRouter);
-app.use('/api/users', userRouter);
+app.use('/api/users', userRouter); // This is where the request goes
 app.use('/api/orders', orderRouter);
 app.use('/api/messages', messageRouter);
 app.use('/api/emails', emailRouter);

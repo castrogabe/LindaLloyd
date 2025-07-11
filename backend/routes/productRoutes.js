@@ -45,6 +45,8 @@ productRouter.post(
       image: '/images/p1.jpg',
       price: 0,
       salePrice: 0, // Add salePrice field
+      requiresShippingInvoice: false, // Add this when creating new product
+      shippingCharge: 0, // Add Shipping Charge
       category: 'category',
       from: 'from',
       countInStock: 0,
@@ -76,6 +78,19 @@ productRouter.put(
       product.images = req.body.images || product.images;
       product.price = req.body.price || product.price;
       product.salePrice = req.body.salePrice; // Add salePrice update
+      // Save the toggle field
+      product.requiresShippingInvoice =
+        req.body.requiresShippingInvoice ?? product.requiresShippingInvoice;
+      // Only set shippingCharge if NOT using invoice-based shipping
+      if (req.body.requiresShippingInvoice) {
+        product.shippingCharge = 0; // reset shippingCharge to zero
+      } else {
+        product.shippingCharge =
+          req.body.shippingCharge !== undefined
+            ? Number(req.body.shippingCharge)
+            : product.shippingCharge;
+      }
+      product.shippingCharge = req.body.shippingCharge; // Add Shipping Charge
       product.category = req.body.category || product.category;
       product.categoryImage = req.body.categoryImage || product.categoryImage;
       product.from = req.body.from || product.from;

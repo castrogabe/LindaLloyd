@@ -315,6 +315,22 @@ function ProductMag() {
                   </Col>
                 </Row>
               </ListGroup.Item>
+
+              <ListGroup.Item>
+                <Row>
+                  <Col>Shipping:</Col>
+                  <Col>
+                    {product.shippingCharge === 0 ? (
+                      <span style={{ color: 'green', fontWeight: 'bold' }}>
+                        Free
+                      </span>
+                    ) : (
+                      `$${product.shippingCharge?.toFixed(2)}`
+                    )}
+                  </Col>
+                </Row>
+              </ListGroup.Item>
+
               <ListGroup.Item>
                 <Row>
                   <Col>Status:</Col>

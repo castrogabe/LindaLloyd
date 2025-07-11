@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema(
       address: { type: String },
       city: { type: String },
       states: { type: String },
-      county: { type: String },
       postalCode: { type: String },
       country: { type: String },
     },

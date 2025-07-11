@@ -9,6 +9,12 @@ const config = {
   JWT_SECRET: process.env.JWT_SECRET || 'Objetsdart',
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost/frontend',
 
+  // Ensure this is correct and present
+  baseUrl: isLive
+    ? process.env.BASE_URL_PRODUCTION // e.g., https://lindalloyd.onrender.com
+    : process.env.BASE_URL_DEVELOPMENT ||
+      `http://localhost:${process.env.PORT || 8000}`,
+
   auth: {
     user: process.env.NODE_USER,
     password: process.env.NODE_PASSWORD,
@@ -24,6 +30,9 @@ const config = {
     locationId: isLive
       ? process.env.SQUARE_LOCATION_ID
       : process.env.SQUARE_SANDBOX_LOCATION_ID,
+    taxUid: isLive
+      ? process.env.SQUARE_TAX_UID
+      : process.env.SQUARE_SANDBOX_TAX_UID,
   },
 
   mailchimp: {

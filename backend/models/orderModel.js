@@ -9,7 +9,8 @@ const orderSchema = new mongoose.Schema(
         quantity: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        salePrice: { type: Number, default: null }, // Add salePrice field
+        salePrice: { type: Number, default: null },
+        shippingCharge: { type: Number, default: null },
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Product',
@@ -21,7 +22,6 @@ const orderSchema = new mongoose.Schema(
       fullName: { type: String, required: true },
       address: { type: String, required: true },
       city: { type: String, required: true },
-      county: { type: String, required: true }, // ✅ NEW FIELD
       states: { type: String, required: true },
       postalCode: { type: String, required: true },
       country: { type: String, required: true },
@@ -35,13 +35,22 @@ const orderSchema = new mongoose.Schema(
     },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
+    shippingInvoiceUrl: { type: String },
     taxPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    appliedTaxRate: { type: Number }, // ← Add here
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+
     orderName: { type: String },
+
+    // ✅ NEW FIELD
+    squareOrderId: { type: String }, // Optional but useful for traceability
+    shippingInvoicePaid: { type: Boolean, default: false },
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
     isShipped: { type: Boolean, default: false },
+    shippingInvoiceSent: { type: Boolean, default: false },
+    shippingPaidAt: { type: Date },
     shippedAt: { type: Date },
     deliveryDays: { type: String },
     carrierName: { type: String },

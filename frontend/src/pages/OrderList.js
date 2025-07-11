@@ -1,7 +1,7 @@
 import axios from 'axios';
-import React, { useContext, useEffect, useReducer } from 'react';
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { toast } from 'react-toastify';
-import { Button, Table, Row, Col } from 'react-bootstrap';
+import { Button, Table, Row, Col, Form } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import MessageBox from '../components/MessageBox';
@@ -51,6 +51,9 @@ export default function OrderList() {
 
   const { state } = useContext(Store);
   const { userInfo } = state;
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [availableMonths, setAvailableMonths] = useState([]);
+
   const [
     { loading, error, orders, totalOrders, pages, successDelete },
     dispatch,
@@ -70,6 +73,22 @@ export default function OrderList() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
+
+        const uniqueMonths = Array.from(
+          new Set(orders.map((order) => order.createdAt.slice(0, 7)))
+        );
+
+        const months = Array.from(
+          new Set(
+            data.orders.map((order) => {
+              const date = new Date(order.createdAt);
+              return `${date.getFullYear()}-${String(
+                date.getMonth() + 1
+              ).padStart(2, '0')}`;
+            })
+          )
+        ).sort((a, b) => (a < b ? 1 : -1));
+        setAvailableMonths(months);
       } catch (err) {
         dispatch({
           type: 'FETCH_FAIL',
@@ -114,7 +133,17 @@ export default function OrderList() {
   }
 
   const exportToExcel = () => {
-    const data = orders.map((order) => ({
+    const filteredOrders = selectedMonth
+      ? orders.filter((order) => {
+          const date = new Date(order.createdAt);
+          const month = `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+          ).padStart(2, '0')}`;
+          return month === selectedMonth;
+        })
+      : orders;
+
+    const data = filteredOrders.map((order) => ({
       ID: order._id,
       Product: order.orderItems.map((item) => item.name).join(', '),
       Quantity: order.orderItems.reduce(
@@ -128,7 +157,7 @@ export default function OrderList() {
       User: order.user ? order.user.name : 'DELETED USER',
       Email: order.user ? order.user.email : '',
       Address: order.shippingAddress
-        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode}, ${order.shippingAddress.county}, ${order.shippingAddress.country}`
+        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode},  ${order.shippingAddress.country}`
         : '',
       Date: formatDate(order.createdAt),
       PaidAt: order.isPaid ? formatDate(order.paidAt) : 'No',
@@ -154,12 +183,37 @@ export default function OrderList() {
       <br />
       <h4 className='box'>
         Order List Page (
-        {totalOrders !== undefined ? totalOrders : 'Loading...'} )
+        {totalOrders !== undefined ? totalOrders : 'Loading...'})
       </h4>
       <div className='box'>
-        <Button variant='primary' onClick={exportToExcel}>
-          Download as Excel
-        </Button>
+        <Row className='mb-3'>
+          <Col md={4}>
+            <Form.Select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value=''>-- Filter by Month --</option>
+              {availableMonths.map((monthYear) => {
+                const [year, month] = monthYear.split('-');
+                const date = new Date(`${month}/01/${year}`);
+                const formatted = date.toLocaleString('default', {
+                  month: 'long',
+                  year: 'numeric',
+                });
+                return (
+                  <option key={monthYear} value={monthYear}>
+                    {formatted}
+                  </option>
+                );
+              })}
+            </Form.Select>
+          </Col>
+          <Col md={4}>
+            <Button variant='primary' onClick={exportToExcel}>
+              Download as Excel
+            </Button>
+          </Col>
+        </Row>
         <br />
         <br />
         {loading ? (

@@ -24,6 +24,7 @@ squareRouter.post(
             currency: 'USD',
           },
           location_id: config.square.locationId,
+          order_id: orderId, // ✅ Properly link payment to the tax-estimated Square order
           note: `Order ${orderId}`,
         },
         {

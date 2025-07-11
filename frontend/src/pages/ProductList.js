@@ -184,6 +184,7 @@ export default function ProductList() {
                   <th>NAME</th>
                   <th>QTY</th>
                   <th>PRICE</th>
+                  <th>SHIPPING CHARGE</th>
                   <th>CATEGORY</th>
                   <th>FROM</th>
                   <th>MATERIALS</th>
@@ -228,6 +229,22 @@ export default function ProductList() {
                         <>${product.price.toFixed(2)}</>
                       )}
                     </td>
+                    {/* shippingCharge */}
+                    <td
+                      style={{
+                        color:
+                          product.shippingCharge == null ||
+                          product.shippingCharge === 0
+                            ? 'gray'
+                            : 'inherit',
+                      }}
+                    >
+                      {product.shippingCharge == null ||
+                      product.shippingCharge === 0
+                        ? 'TBD'
+                        : `$${product.shippingCharge.toFixed(2)}`}
+                    </td>
+
                     <td style={{ textAlign: 'center' }}>
                       <div>{product.category}</div>
                       {product.categoryImage ? (

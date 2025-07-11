@@ -91,7 +91,7 @@ export default function Signup() {
               <div className='input-group'>
                 <Form.Control
                   type={showPassword ? 'text' : 'password'}
-                  placeholder='Example: minimum length, uppercase, lowercase, digit, and special character'
+                  placeholder='Example: minimum length 8, uppercase, lowercase, digit, and special character'
                   required
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -113,7 +113,7 @@ export default function Signup() {
               <div className='input-group'>
                 <Form.Control
                   type={showPassword ? 'text' : 'password'}
-                  placeholder='Example: minimum length, uppercase, lowercase, digit, and special character'
+                  placeholder='Example: minimum length 8, uppercase, lowercase, digit, and special character'
                   required
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />

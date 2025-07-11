@@ -11,6 +11,7 @@ const {
   transporter,
 } = require('../utils.js');
 const dns = require('dns');
+const mongoose = require('mongoose'); // Import mongoose to use isValidObjectId
 
 const userRouter = express.Router();
 
@@ -45,6 +46,44 @@ userRouter.get(
   expressAsyncHandler(async (req, res) => {
     const users = await User.find({});
     res.send(users);
+  })
+);
+
+userRouter.put(
+  '/profile',
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      if (req.body.password)
+        user.password = bcrypt.hashSync(req.body.password, 8);
+
+      // ✅ Add this block:
+      if (req.body.shippingAddress) {
+        // Merge existing shipping address with new data
+        user.shippingAddress = {
+          ...user.shippingAddress,
+          ...req.body.shippingAddress,
+        };
+      }
+
+      const updatedUser = await user.save();
+      res.send({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+        phone: updatedUser.phone,
+        carrier: updatedUser.carrier,
+        notes: updatedUser.notes,
+        shippingAddress: updatedUser.shippingAddress, // ✅ make sure this is returned
+        token: generateToken(updatedUser),
+      });
+    } else {
+      res.status(404).send({ message: 'User not found' });
+    }
   })
 );
 
@@ -137,19 +176,64 @@ userRouter.put(
 
 // Save address in DB
 userRouter.put(
-  '/address',
+  '/address', // Frontend ShippingAddress.js sends PUT to this URL
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.shippingAddress = req.body;
-      const updatedUser = await user.save();
-      res.send({
-        message: 'Address saved',
-        shippingAddress: updatedUser.shippingAddress,
-      });
-    } else {
-      res.status(404).send({ message: 'User Not Found' });
+    // console.log('--- Inside PUT /api/users/address ---');
+    // console.log('req.user:', req.user); // Log authenticated user
+    // console.log('req.user._id:', req.user?._id); // Log authenticated user's ID
+    // console.log('req.body (shipping address payload):', req.body); // Log incoming address data
+
+    try {
+      // Basic validation for req.user._id
+      if (!req.user || !req.user._id) {
+        console.error(
+          'Authentication Error: req.user or req.user._id is missing.'
+        );
+        return res.status(401).send({
+          message: 'Unauthorized: User not authenticated or ID missing.',
+        });
+      }
+      // Ensure the ID is a valid MongoDB ObjectId format
+      if (!mongoose.isValidObjectId(req.user._id)) {
+        console.error(
+          'Validation Error: req.user._id is not a valid ObjectId format.'
+        );
+        return res.status(400).send({ message: 'Invalid user ID format.' });
+      }
+
+      const user = await User.findById(req.user._id); // Find user by ID from authenticated token
+      if (user) {
+        // Explicitly assign fields to shippingAddress to ensure correct schema
+        user.shippingAddress = {
+          fullName: req.body.fullName || '',
+          address: req.body.address || '',
+          city: req.body.city || '',
+          states: req.body.states || '',
+          postalCode: req.body.postalCode || '',
+          country: req.body.country || '',
+        };
+        const updatedUser = await user.save();
+        res.send({
+          message: 'Address saved successfully', // More specific message
+          shippingAddress: updatedUser.shippingAddress,
+        });
+      } else {
+        res.status(404).send({ message: 'User Not Found' });
+      }
+    } catch (err) {
+      console.error('💥 Detailed Error in /api/users/address route:', err);
+      // More specific error handling for Mongoose CastError
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          message: `Invalid data format: ${err.message}`,
+          details: err.message,
+        });
+      } else {
+        res
+          .status(500)
+          .send({ message: 'Server error saving address', error: err.message });
+      }
     }
   })
 );
@@ -229,43 +313,6 @@ userRouter.post(
     } catch (error) {
       console.error('Error sending email:', error);
       res.status(500).send({ message: 'Failed to send email' });
-    }
-  })
-);
-
-userRouter.put(
-  '/profile',
-  isAuth,
-  expressAsyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      if (req.body.password)
-        user.password = bcrypt.hashSync(req.body.password, 8);
-
-      // ✅ Add this block:
-      if (req.body.shippingAddress) {
-        user.shippingAddress = {
-          ...user.shippingAddress,
-          ...req.body.shippingAddress,
-        };
-      }
-
-      const updatedUser = await user.save();
-      res.send({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        isAdmin: updatedUser.isAdmin,
-        phone: updatedUser.phone,
-        carrier: updatedUser.carrier,
-        notes: updatedUser.notes,
-        shippingAddress: updatedUser.shippingAddress, // ✅ make sure this is returned
-        token: generateToken(updatedUser),
-      });
-    } else {
-      res.status(404).send({ message: 'User not found' });
     }
   })
 );

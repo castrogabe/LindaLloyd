@@ -238,11 +238,11 @@ export default function UserList() {
   return (
     <div className='content'>
       <Helmet>
-        <title>Users</title>
+        <title>User List</title>
       </Helmet>
       <br />
       <h4 className='box'>
-        Users ({totalUsers !== undefined ? totalUsers : 'Loading...'})
+        User List ({totalUsers !== undefined ? totalUsers : 'Loading...'})
       </h4>
       <div className='box'>
         {loadingDelete && <SkeletonUserList delay={1000} />}

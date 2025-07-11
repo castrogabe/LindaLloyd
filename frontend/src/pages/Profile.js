@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import { getError } from '../utils';
 import axios from 'axios';
 import SkeletonProfile from '../components/skeletons/SkeletonProfile';
-import { stateCountyMap } from '../helpers/stateCountyMap';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -47,20 +46,22 @@ export default function Profile() {
   const [address, setAddress] = useState(shippingAddress.address || '');
   const [city, setCity] = useState(shippingAddress.city || '');
   const [states, setStates] = useState(shippingAddress.states || '');
-  const [county, setCounty] = useState(shippingAddress.county || '');
   const [postalCode, setPostalCode] = useState(
     shippingAddress.postalCode || ''
   );
-  const [country, setCountry] = useState(shippingAddress.country || 'USA');
+  const [country, setCountry] = useState(shippingAddress.country || 'US');
 
   const [, dispatch] = useReducer(reducer, {});
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
+    if (password || confirmPassword) {
+      if (password.trim() !== confirmPassword.trim()) {
+        toast.error('Passwords do not match');
+        return;
+      }
     }
+
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
       const { data } = await axios.put(
@@ -74,7 +75,6 @@ export default function Profile() {
             address,
             city,
             states,
-            county,
             postalCode,
             country,
           },
@@ -195,7 +195,6 @@ export default function Profile() {
                       {shippingAddress.address},<br />
                       {shippingAddress.city}, {shippingAddress.states},{' '}
                       {shippingAddress.postalCode},<br />
-                      County: {shippingAddress.county},<br />
                       {shippingAddress.country}
                     </p>
                     <div className='mb-3'>
@@ -243,32 +242,60 @@ export default function Profile() {
                       <Form.Label>State</Form.Label>
                       <Form.Select
                         value={states}
-                        onChange={(e) => {
-                          setStates(e.target.value);
-                          setCounty('');
-                        }}
+                        onChange={(e) => setStates(e.target.value)}
+                        required
                       >
-                        <option value=''>Select State</option>
-                        {Object.keys(stateCountyMap).map((abbr) => (
-                          <option key={abbr} value={abbr}>
-                            {abbr}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-
-                    <Form.Group className='mb-3' controlId='county'>
-                      <Form.Label>County</Form.Label>
-                      <Form.Select
-                        value={county}
-                        onChange={(e) => setCounty(e.target.value)}
-                      >
-                        <option value=''>Select County</option>
-                        {(stateCountyMap[states] || []).map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
+                        <option value=''>-- Select a State --</option>
+                        <option value='AL'>Alabama</option>
+                        <option value='AK'>Alaska</option>
+                        <option value='AZ'>Arizona</option>
+                        <option value='AR'>Arkansas</option>
+                        <option value='CA'>California</option>
+                        <option value='CO'>Colorado</option>
+                        <option value='CT'>Connecticut</option>
+                        <option value='DE'>Delaware</option>
+                        <option value='FL'>Florida</option>
+                        <option value='GA'>Georgia</option>
+                        <option value='HI'>Hawaii</option>
+                        <option value='ID'>Idaho</option>
+                        <option value='IL'>Illinois</option>
+                        <option value='IN'>Indiana</option>
+                        <option value='IA'>Iowa</option>
+                        <option value='KS'>Kansas</option>
+                        <option value='KY'>Kentucky</option>
+                        <option value='LA'>Louisiana</option>
+                        <option value='ME'>Maine</option>
+                        <option value='MD'>Maryland</option>
+                        <option value='MA'>Massachusetts</option>
+                        <option value='MI'>Michigan</option>
+                        <option value='MN'>Minnesota</option>
+                        <option value='MS'>Mississippi</option>
+                        <option value='MO'>Missouri</option>
+                        <option value='MT'>Montana</option>
+                        <option value='NE'>Nebraska</option>
+                        <option value='NV'>Nevada</option>
+                        <option value='NH'>New Hampshire</option>
+                        <option value='NJ'>New Jersey</option>
+                        <option value='NM'>New Mexico</option>
+                        <option value='NY'>New York</option>
+                        <option value='NC'>North Carolina</option>
+                        <option value='ND'>North Dakota</option>
+                        <option value='OH'>Ohio</option>
+                        <option value='OK'>Oklahoma</option>
+                        <option value='OR'>Oregon</option>
+                        <option value='PA'>Pennsylvania</option>
+                        <option value='RI'>Rhode Island</option>
+                        <option value='SC'>South Carolina</option>
+                        <option value='SD'>South Dakota</option>
+                        <option value='TN'>Tennessee</option>
+                        <option value='TX'>Texas</option>
+                        <option value='UT'>Utah</option>
+                        <option value='VT'>Vermont</option>
+                        <option value='VA'>Virginia</option>
+                        <option value='WA'>Washington</option>
+                        <option value='WV'>West Virginia</option>
+                        <option value='WI'>Wisconsin</option>
+                        <option value='WY'>Wyoming</option>
                       </Form.Select>
                     </Form.Group>
 
@@ -282,10 +309,19 @@ export default function Profile() {
 
                     <Form.Group className='mb-3' controlId='country'>
                       <Form.Label>Country</Form.Label>
-                      <Form.Control
+                      <Form.Select
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                      />
+                        required
+                      >
+                        <option value='US'>United States</option>
+                        {/* <option value='MX'>Mexico</option>
+                        <option value='CA'>Canada</option>
+                        <option value='GB'>United Kingdom</option>
+                        <option value='AU'>Australia</option>
+                        <option value='DE'>Germany</option>
+                        <option value='FR'>France</option> */}
+                      </Form.Select>
                     </Form.Group>
                   </>
                 )}

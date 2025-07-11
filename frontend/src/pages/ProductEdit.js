@@ -51,6 +51,9 @@ export default function ProductEdit() {
   const [slug, setSlug] = useState('');
   const [price, setPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
+  const [useFlatRateShipping, setUseFlatRateShipping] = useState(false);
+  const [requiresShippingInvoice, setRequiresShippingInvoice] = useState(false);
+  const [shippingCharge, setShippingCharge] = useState(0);
   const [image, setImage] = useState('');
   const [images, setImages] = useState([]);
   const [category, setCategory] = useState('');
@@ -79,6 +82,8 @@ export default function ProductEdit() {
         setSlug(data.slug);
         setPrice(data.price);
         setSalePrice(data.salePrice || '');
+        setShippingCharge(data.shippingCharge || '');
+        setRequiresShippingInvoice(data.requiresShippingInvoice || false);
         setImage(data.image);
         setImages(data.images || []);
         setCategory(data.category?._id || data.category);
@@ -136,10 +141,12 @@ export default function ProductEdit() {
           slug,
           price,
           salePrice: salePrice !== '' ? salePrice : undefined,
+          shippingCharge: useFlatRateShipping ? Number(shippingCharge) : 0,
+          requiresShippingInvoice,
           image,
           images,
           category: selectedCategory,
-          categoryImage, // ✅ Ensure categoryImage is sent
+          categoryImage,
           from,
           condition,
           dimensions,
@@ -340,6 +347,51 @@ export default function ProductEdit() {
               onChange={(e) => setSalePrice(e.target.value)}
             />
           </Form.Group>
+
+          <Form.Group controlId='shippingOptions'>
+            <Form.Label>Shipping Options</Form.Label>
+
+            <Form.Check
+              type='checkbox'
+              label='Flat Rate Shipping'
+              checked={useFlatRateShipping}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setUseFlatRateShipping(checked);
+                if (checked) {
+                  setRequiresShippingInvoice(false); // uncheck the other
+                }
+              }}
+            />
+
+            <Form.Check
+              type='checkbox'
+              label='Requires Separate Shipping Invoice'
+              checked={requiresShippingInvoice}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setRequiresShippingInvoice(checked);
+                if (checked) {
+                  setUseFlatRateShipping(false); // uncheck the other
+                  setShippingCharge(0); // reset charge
+                }
+              }}
+            />
+          </Form.Group>
+
+          {useFlatRateShipping && (
+            <Form.Group className='mb-3' controlId='shippingCharge'>
+              <Form.Label>Shipping Charge</Form.Label>
+              <Form.Control
+                type='number'
+                placeholder='Enter shipping charge'
+                value={shippingCharge}
+                onChange={(e) => setShippingCharge(e.target.value)}
+              />
+            </Form.Group>
+          )}
+
+          <br />
 
           <Form.Group className='mb-3' controlId='imageUpload'>
             <Form.Label>Upload Product Images</Form.Label>
