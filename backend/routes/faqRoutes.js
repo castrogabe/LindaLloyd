@@ -1,7 +1,7 @@
-const express = require('express');
-const asyncHandler = require('express-async-handler');
-const FaqContent = require('../models/faqContentModel');
-const { isAuth, isAdmin } = require('../utils.js');
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import FaqContent from '../models/faqContentModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
 const faqRouter = express.Router();
 
@@ -30,4 +30,4 @@ faqRouter.put(
   })
 );
 
-module.exports = faqRouter;
+export default faqRouter;

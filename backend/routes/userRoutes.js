@@ -1,17 +1,13 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const expressAsyncHandler = require('express-async-handler');
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel.js');
-const {
-  isAuth,
-  isAdmin,
-  generateToken,
-  baseUrl,
-  transporter,
-} = require('../utils.js');
-const dns = require('dns');
-const mongoose = require('mongoose'); // Import mongoose to use isValidObjectId
+// routes/userRoutes.js
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import expressAsyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
+import dns from 'dns'; // Keep if used, though often not needed directly in routes
+
+import User from '../models/userModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
 const userRouter = express.Router();
 
@@ -60,9 +56,7 @@ userRouter.put(
       if (req.body.password)
         user.password = bcrypt.hashSync(req.body.password, 8);
 
-      // ✅ Add this block:
       if (req.body.shippingAddress) {
-        // Merge existing shipping address with new data
         user.shippingAddress = {
           ...user.shippingAddress,
           ...req.body.shippingAddress,
@@ -78,7 +72,7 @@ userRouter.put(
         phone: updatedUser.phone,
         carrier: updatedUser.carrier,
         notes: updatedUser.notes,
-        shippingAddress: updatedUser.shippingAddress, // ✅ make sure this is returned
+        shippingAddress: updatedUser.shippingAddress,
         token: generateToken(updatedUser),
       });
     } else {
@@ -174,60 +168,44 @@ userRouter.put(
   })
 );
 
-// Save address in DB
 userRouter.put(
-  '/address', // Frontend ShippingAddress.js sends PUT to this URL
+  '/address',
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    // console.log('--- Inside PUT /api/users/address ---');
-    // console.log('req.user:', req.user); // Log authenticated user
-    // console.log('req.user._id:', req.user?._id); // Log authenticated user's ID
-    // console.log('req.body (shipping address payload):', req.body); // Log incoming address data
-
     try {
-      // Basic validation for req.user._id
       if (!req.user || !req.user._id) {
-        console.error(
-          'Authentication Error: req.user or req.user._id is missing.'
-        );
         return res.status(401).send({
           message: 'Unauthorized: User not authenticated or ID missing.',
         });
       }
-      // Ensure the ID is a valid MongoDB ObjectId format
+
       if (!mongoose.isValidObjectId(req.user._id)) {
-        console.error(
-          'Validation Error: req.user._id is not a valid ObjectId format.'
-        );
         return res.status(400).send({ message: 'Invalid user ID format.' });
       }
 
-      const user = await User.findById(req.user._id); // Find user by ID from authenticated token
+      const user = await User.findById(req.user._id);
       if (user) {
-        // Explicitly assign fields to shippingAddress to ensure correct schema
         user.shippingAddress = {
           fullName: req.body.fullName || '',
           address: req.body.address || '',
           city: req.body.city || '',
           states: req.body.states || '',
+          county: req.body.county || '', // <-- Add this line
           postalCode: req.body.postalCode || '',
           country: req.body.country || '',
         };
         const updatedUser = await user.save();
         res.send({
-          message: 'Address saved successfully', // More specific message
+          message: 'Address saved successfully',
           shippingAddress: updatedUser.shippingAddress,
         });
       } else {
         res.status(404).send({ message: 'User Not Found' });
       }
     } catch (err) {
-      console.error('💥 Detailed Error in /api/users/address route:', err);
-      // More specific error handling for Mongoose CastError
       if (err.name === 'CastError') {
         res.status(400).send({
           message: `Invalid data format: ${err.message}`,
-          details: err.message,
         });
       } else {
         res
@@ -248,7 +226,7 @@ userRouter.post(
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
-        shippingAddress: user.shippingAddress, // ✅ Add this
+        shippingAddress: user.shippingAddress,
         token: generateToken(user),
       });
     } else {
@@ -383,4 +361,4 @@ userRouter.post(
   })
 );
 
-module.exports = userRouter;
+export default userRouter;

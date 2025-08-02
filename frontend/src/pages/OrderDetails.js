@@ -1,15 +1,25 @@
+// src/screens/OrderDetailsScreen.js (or whatever your main file is named)
 import axios from 'axios';
 import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Button, Col, Row, ListGroup, Form } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Col, Row } from 'react-bootstrap';
 import MessageBox from '../components/MessageBox';
-import { Store } from '../Store';
+import { Store } from '../Store'; // Assuming this is your global store
 import { getError } from '../utils';
 import { toast } from 'react-toastify';
 import SkeletonOrderDetails from '../components/skeletons/SkeletonOrderDetails';
 
-function reducer(state, action) {
+// Import new components from orderDetails components folder
+import AdminShippingActions from '../components/orderDetails/AdminShippingActions';
+import OrderItemsCard from '../components/orderDetails/OrderItemsCard';
+import OrderSummaryCard from '../components/orderDetails/OrderSummaryCard';
+import PaymentStatusCard from '../components/orderDetails/PaymentStatusCard';
+import ShippingAddressCard from '../components/orderDetails/ShippingAddressCard';
+// AdminShippingForm used in AdminShippingActions
+
+// Reducer for order details (keep it here)
+const reducer = (state, action) => {
   switch (action.type) {
     case 'FETCH_REQUEST':
       return { ...state, loading: true, error: '' };
@@ -17,65 +27,87 @@ function reducer(state, action) {
       return { ...state, loading: false, order: action.payload, error: '' };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
-    case 'SHIPPED_REQUEST':
-      return { ...state, loadingShipped: true };
-    case 'SHIPPED_SUCCESS':
-      return { ...state, loadingShipped: false, successShipped: true };
-    case 'SHIPPED_FAIL':
-      return { ...state, loadingShipped: false };
-    case 'SHIPPED_RESET':
-      return {
-        ...state,
-        loadingShipped: false,
-        successShipped: false,
-      };
+    // Specific shipping action states (keep these here for now)
+    case 'MARK_INVOICE_SHIPPED_REQUEST':
+    case 'MARK_FLAT_RATE_SHIPPED_REQUEST':
+    case 'SHIP_INVOICE_REQUEST': // Keep old ones until refactor is complete
+    case 'SHIP_FLATRATE_REQUEST':
+      return { ...state, loading: true }; // Use general loading for now
+    case 'MARK_INVOICE_SHIPPED_SUCCESS':
+    case 'MARK_FLAT_RATE_SHIPPED_SUCCESS':
+    case 'SHIP_INVOICE_SUCCESS':
+    case 'SHIP_FLATRATE_SUCCESS':
+      return { ...state, loading: false }; // Loading done
+    case 'MARK_INVOICE_SHIPPED_FAIL':
+    case 'SHIP_INVOICE_FAIL':
+    case 'MARK_FLAT_RATE_SHIPPED_FAIL':
+    case 'SHIP_FLATRATE_FAIL':
+      return { ...state, loading: false, error: action.payload }; // Error handling
     default:
       return state;
   }
-}
+};
 
-export default function OrderDetails() {
-  const { state } = useContext(Store);
-  const { userInfo } = state;
-  const params = useParams();
-  const { id: orderId } = params;
+export default function OrderDetailsScreen() {
+  // Renamed from OrderDetails for clarity
+  const { id: orderId } = useParams();
   const navigate = useNavigate();
+  const {
+    state: { userInfo },
+  } = useContext(Store); // Get userInfo from context
+
+  const [{ loading, error, order }, dispatch] = useReducer(reducer, {
+    loading: true,
+    order: {},
+    error: '',
+  });
+
+  // State for Admin actions (e.g., sending invoice, shipping forms)
   const [sendingInvoice, setSendingInvoice] = useState(false);
   const [shippingPrice, setShippingPrice] = useState('');
-  const [deliveryDays, setDeliveryDays] = useState('');
-  const [carrierName, setCarrierName] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
 
-  const [{ loading, error, order, loadingShipped, successShipped }, dispatch] =
-    useReducer(reducer, {
-      loading: true,
-      order: {
-        orderItems: [],
-        isPaid: false,
-        isShipped: false,
-        shippingInvoiceUrl: null,
-        shippingInvoicePaid: false,
-        shippingAddress: {
-          fullName: '',
-          address: '',
-          city: '',
-          states: '',
-          postalCode: '',
-          country: '',
-        },
-        itemsPrice: 0,
-        shippingPrice: 0,
-        taxPrice: 0,
-        totalPrice: 0,
-      },
-      error: '',
-      loadingShipped: false,
-      successShipped: false,
-    });
+  // Form inputs for Invoice Shipping details
+  const [invoiceDeliveryDays, setInvoiceDeliveryDays] = useState('');
+  const [invoiceCarrierName, setInvoiceCarrierName] = useState('');
+  const [invoiceTrackingNumber, setInvoiceTrackingNumber] = useState('');
 
+  // Form inputs for Flat Rate/Included Shipping details
+  const [flatRateDeliveryDays, setFlatRateDeliveryDays] = useState('');
+  const [flatRateCarrierName, setFlatRateCarrierName] = useState('');
+  const [flatRateTrackingNumber, setFlatRateTrackingNumber] = useState('');
+
+  // Derived state for conditional rendering (from order data)
+  const requiresInvoiceOverall = order?.orderItems?.some(
+    (item) => item.requiresShippingInvoice
+  );
+  const hasFlatRateShippingOverall = order?.orderItems?.some(
+    (item) => item.useFlatRateShipping || item.shippingCharge > 0
+  );
+
+  const itemsRequiringInvoice =
+    order?.orderItems?.filter((item) => item.requiresShippingInvoice) || [];
+  const itemsWithFlatRateShipping =
+    order?.orderItems?.filter(
+      (item) => item.useFlatRateShipping || item.shippingCharge > 0
+    ) || [];
+  // You might not need itemsWithFreeShipping explicitly here if handled by hasFlatRateShippingOverall
+  const invoiceSent = !!order?.shippingInvoiceUrl;
+  const invoicePaid = !!order?.shippingInvoicePaid;
+  const invoiceItemsShipped = order?.invoiceShippingDetails?.isShipped ?? false;
+  const flatRateItemsShipped =
+    order?.flatRateShippingDetails?.isShipped ?? false;
   const isPaid = order?.isPaid ?? false;
 
+  const mixedShippingMethods =
+    requiresInvoiceOverall && hasFlatRateShippingOverall;
+
+  // Refactored useEffect for fetching order data
   useEffect(() => {
+    if (!userInfo) {
+      navigate('/login');
+      return;
+    }
+
     const fetchOrder = async () => {
       try {
         dispatch({ type: 'FETCH_REQUEST' });
@@ -88,80 +120,25 @@ export default function OrderDetails() {
       }
     };
 
-    if (!userInfo) {
-      navigate('/login');
-      return;
-    }
-
-    // Always fetch when no order or when orderId changes
-    if (!order || order._id !== orderId || successShipped) {
+    // Fetch if order is not loaded or orderId changes
+    if (!order._id || order._id !== orderId) {
       fetchOrder();
-      if (successShipped) dispatch({ type: 'SHIPPED_RESET' });
     }
-  }, [orderId, userInfo, navigate, order, successShipped]);
+  }, [orderId, userInfo, navigate, order._id]); // Add order._id to dependencies
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    if (order?.shippingInvoiceUrl && !order?.shippingInvoicePaid) {
-      toast.error('Shipping invoice must be paid before shipping the order.');
-      return;
-    }
-    try {
-      dispatch({ type: 'SHIPPED_REQUEST' });
-      const { data } = await axios.put(
-        `/api/orders/${order._id}/shipped`,
-        { deliveryDays, carrierName, trackingNumber },
-        { headers: { authorization: `Bearer ${userInfo.token}` } }
-      );
-      dispatch({ type: 'SHIPPED_SUCCESS', payload: data });
-      toast.success('Order has shipped', { autoClose: 1000 });
-    } catch (err) {
-      dispatch({ type: 'SHIPPED_FAIL', payload: getError(err) });
-      toast.error(getError(err));
-    }
-  };
-
-  const hasPerProductShipping = order?.orderItems?.some(
-    (item) => item.shippingCharge > 0
-  );
-
-  const requiresInvoice =
-    order?.orderItems?.every(
-      (item) =>
-        item.shippingCharge === null ||
-        item.shippingCharge === undefined ||
-        item.shippingCharge === 0
-    ) || false;
-
-  const invoiceSent = !!order?.shippingInvoiceUrl;
-  const invoicePaid = !!order?.shippingInvoicePaid;
-
-  const showShippingForm =
-    userInfo?.isAdmin &&
-    order?.isPaid &&
-    !order?.isShipped &&
-    ((hasPerProductShipping && !order?.shippingInvoiceUrl) ||
-      order?.shippingInvoicePaid);
-
-  useEffect(() => {
-    if (order?.isShipped) {
-      setDeliveryDays(order.deliveryDays || '');
-      setCarrierName(order.carrierName || '');
-      setTrackingNumber(order.trackingNumber || '');
-    }
-  }, [order]);
-
-  const handleSendShippingInvoice = async () => {
+  // Handlers for API calls (kept in parent to manage state and dispatch)
+  const handleSendShippingInvoice = async (e) => {
+    e.preventDefault(); // Prevent default form submission
     if (sendingInvoice) return;
     setSendingInvoice(true);
     try {
       const { data } = await axios.put(
         `/api/orders/${orderId}/shipping-price`,
-        { shippingPrice },
+        { shippingPrice: Number(shippingPrice) },
         { headers: { authorization: `Bearer ${userInfo.token}` } }
       );
       toast.success('Shipping invoice sent', { autoClose: 1000 });
-      dispatch({ type: 'FETCH_SUCCESS', payload: data.order });
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.order }); // Assuming backend sends {order: updatedOrder}
     } catch (err) {
       toast.error(getError(err));
     } finally {
@@ -169,7 +146,79 @@ export default function OrderDetails() {
     }
   };
 
-  // EARLY RETURNS
+  const handleMarkShippingInvoicePaid = async () => {
+    try {
+      const { data } = await axios.put(
+        `/api/orders/${orderId}/shipping-invoice-paid`,
+        {},
+        {
+          headers: {
+            authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+      toast.success('Shipping invoice marked as paid!');
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.order });
+    } catch (err) {
+      toast.error(getError(err));
+    }
+  };
+
+  const handleMarkInvoiceItemsShipped = async (shippingDetails) => {
+    // Now accepts shippingDetails directly
+    // No e.preventDefault() here, as the form handles it before calling this.
+    try {
+      dispatch({ type: 'MARK_INVOICE_SHIPPED_REQUEST' });
+      const { data } = await axios.put(
+        `/api/orders/${orderId}/mark-invoice-shipped`,
+        shippingDetails, // Use the passed shippingDetails object
+        { headers: { authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Invoice items marked as shipped!');
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.order });
+      setInvoiceDeliveryDays(''); // Clear form after success
+      setInvoiceCarrierName('');
+      setInvoiceTrackingNumber('');
+    } catch (err) {
+      toast.error(getError(err));
+      dispatch({ type: 'MARK_INVOICE_SHIPPED_FAIL', payload: getError(err) });
+    }
+  };
+
+  const handleMarkFlatRateItemsShipped = async (shippingDetails) => {
+    // Now accepts shippingDetails directly
+    // No e.preventDefault() here.
+    try {
+      dispatch({ type: 'MARK_FLAT_RATE_SHIPPED_REQUEST' });
+      const { data } = await axios.put(
+        `/api/orders/${orderId}/mark-flat-rate-shipped`,
+        shippingDetails, // Use the passed shippingDetails object
+        { headers: { authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Flat Rate/Included items marked as shipped!');
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.order });
+      setFlatRateDeliveryDays(''); // Clear form after success
+      setFlatRateCarrierName('');
+      setFlatRateTrackingNumber('');
+    } catch (err) {
+      toast.error(getError(err));
+      dispatch({ type: 'MARK_FLAT_RATE_SHIPPED_FAIL', payload: getError(err) });
+    }
+  };
+
+  // Helper for date formatting (can be a utils function too)
+  function formatDate(dateString) {
+    if (!dateString) return '';
+    const dateObject = new Date(dateString);
+    return `${(dateObject.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${dateObject
+      .getDate()
+      .toString()
+      .padStart(2, '0')}-${dateObject.getFullYear()}`;
+  }
+
+  // EARLY RETURNS (keep these)
   if (loading) {
     return (
       <Row>
@@ -202,235 +251,75 @@ export default function OrderDetails() {
 
       <Row>
         <Col md={6}>
-          <div className='box'>
-            <div className='body'>
-              <title>Items</title>
-              <ListGroup variant='flush'>
-                {order?.orderItems && order.orderItems.length > 0 ? (
-                  order.orderItems.map((item) => (
-                    <ListGroup.Item key={item._id}>
-                      <Row className='align-items-center'>
-                        <Col md={6}>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className='img-fluid rounded img-thumbnail'
-                          />
-                          <Link className='link' to={`/product/${item.slug}`}>
-                            {item.name}
-                          </Link>
-                        </Col>
-                        <Col md={3}>Qty: {item.quantity}</Col>
-                        <Col md={3}>
-                          ${(item.salePrice || item.price).toFixed(2)}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  ))
-                ) : (
-                  <ListGroup.Item>No items found in this order.</ListGroup.Item>
-                )}
-              </ListGroup>
-            </div>
-          </div>
+          {/* Order Items Card */}
+          <OrderItemsCard orderItems={order.orderItems} />
 
-          <div className='box'>
-            <div className='body'>
-              <title>Payment</title>
-              <strong>Purchase Status:</strong>{' '}
-              {isPaid ? (
-                <MessageBox variant='success'>
-                  Paid with Square on {new Date(order.paidAt).toLocaleString()}
-                </MessageBox>
-              ) : (
-                <MessageBox variant='warning'>
-                  Payment pending. You will receive a separate Square payment
-                  link to complete the purchase.
-                </MessageBox>
-              )}
-            </div>
-          </div>
+          {/* Payment Status Card */}
+          <PaymentStatusCard
+            isPaid={isPaid}
+            paidAt={order.paidAt}
+            formatDate={formatDate}
+          />
 
-          <div className='box'>
-            <div className='body'>
-              <title>Shipping</title>
-              <div>
-                {order.shippingAddress.fullName}
-                <br />
-                {order.shippingAddress.address}
-                <br />
-                {order.shippingAddress.city}, {order.shippingAddress.states}.{' '}
-                {order.shippingAddress.postalCode}
-                <br />
-                {order.shippingAddress.country}
-              </div>
-              {order.isShipped ? (
-                <MessageBox variant='success'>
-                  Shipped on {new Date(order.shippedAt).toLocaleString()}
-                </MessageBox>
-              ) : (
-                <MessageBox variant='danger'>Not Shipped</MessageBox>
-              )}
-            </div>
-          </div>
+          {/* Shipping Address Card */}
+          <ShippingAddressCard
+            shippingAddress={order.shippingAddress}
+            order={order} // Pass full order for derived shipping status
+            requiresInvoiceOverall={requiresInvoiceOverall}
+            hasFlatRateShippingOverall={hasFlatRateShippingOverall}
+            invoiceItemsShipped={invoiceItemsShipped}
+            flatRateItemsShipped={flatRateItemsShipped}
+          />
         </Col>
 
         <Col md={6}>
-          <div className='box'>
-            <div className='body'>
-              <title>Order Summary</title>
-              <ListGroup variant='flush'>
-                <ListGroup.Item>
-                  <Row>
-                    <Col>Items</Col>
-                    <Col>${order.itemsPrice.toFixed(2)}</Col>
-                  </Row>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Row>
-                    <Col>Shipping</Col>
-                    <Col>
-                      {order.shippingPrice > 0
-                        ? `$${order.shippingPrice.toFixed(2)}`
-                        : requiresInvoice
-                        ? invoiceSent
-                          ? 'Awaiting Payment'
-                          : 'TBD'
-                        : hasPerProductShipping
-                        ? 'Included'
-                        : 'Pending'}
-                    </Col>
-                  </Row>
-                  {order?.orderItems &&
-                    order.orderItems.map(
-                      (item, idx) =>
-                        !item.requiresShippingInvoice &&
-                        item.shippingCharge !== undefined && (
-                          <div
-                            key={idx}
-                            style={{
-                              fontSize: '0.85em',
-                              color: '#666',
-                              paddingLeft: '1rem',
-                            }}
-                          >
-                            {item.name}: ${item.shippingCharge.toFixed(2)} ×{' '}
-                            {item.quantity}
-                          </div>
-                        )
-                    )}
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Row>
-                    <Col>Tax</Col>
-                    <Col>${order.taxPrice.toFixed(2)}</Col>
-                  </Row>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Row>
-                    <Col>
-                      <strong>Total</strong>
-                    </Col>
-                    <Col>
-                      <strong>${order.totalPrice.toFixed(2)}</strong>
-                    </Col>
-                  </Row>
-                </ListGroup.Item>
-              </ListGroup>
-            </div>
-          </div>
+          {/* Order Summary Card */}
+          <OrderSummaryCard
+            order={order}
+            requiresInvoiceOverall={requiresInvoiceOverall}
+            hasFlatRateShippingOverall={hasFlatRateShippingOverall}
+            invoiceSent={invoiceSent}
+            invoicePaid={invoicePaid}
+            invoiceItemsShipped={invoiceItemsShipped}
+            handleMarkShippingInvoicePaid={handleMarkShippingInvoicePaid} // Pass handler down
+            userInfo={userInfo} // Pass userInfo for admin checks
+          />
 
-          <div className='box'>
-            <div className='body'>
-              <title>Shipping Invoice</title>
-              {userInfo.isAdmin && requiresInvoice && !invoiceSent && (
-                <>
-                  <h5 style={{ color: 'red' }}>Send Shipping Price</h5>
-                  <Form.Group controlId='shippingPrice'>
-                    <Form.Control
-                      type='number'
-                      placeholder='Enter shipping price'
-                      value={shippingPrice}
-                      onChange={(e) => setShippingPrice(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Button
-                    type='button'
-                    className='btn btn-primary mt-2'
-                    disabled={sendingInvoice}
-                    onClick={() => {
-                      if (!shippingPrice || parseFloat(shippingPrice) <= 0) {
-                        toast.error('Shipping price must be greater than zero');
-                        return;
-                      }
-                      handleSendShippingInvoice();
-                    }}
-                  >
-                    {sendingInvoice ? 'Sending...' : 'Save & Send Invoice'}
-                  </Button>
-                </>
-              )}
-              {invoicePaid && (
-                <div className='mt-3'>
-                  <strong>Shipping Status:</strong>{' '}
-                  <MessageBox variant='success'>
-                    Shipping Invoice Paid with Square on{' '}
-                    {new Date(order.shippingPaidAt).toLocaleString()}
-                  </MessageBox>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {showShippingForm && (
-            <div className='box'>
-              <h6 className='text-center mt-3'>
-                Admin fill in the fields below to send to customer
-              </h6>
-              <Form onSubmit={submitHandler}>
-                <Form.Group className='mb-3' controlId='days'>
-                  <Form.Label>Delivery Days</Form.Label>
-                  <Form.Control
-                    value={deliveryDays}
-                    onChange={(e) => setDeliveryDays(e.target.value)}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className='mb-2' controlId='carrierName'>
-                  <Form.Label>Carrier Name</Form.Label>
-                  <Form.Control
-                    type='text'
-                    value={carrierName}
-                    onChange={(e) => setCarrierName(e.target.value)}
-                  />
-                </Form.Group>
-                <Form.Group className='mb-2' controlId='trackingNumber'>
-                  <Form.Label>Tracking Number</Form.Label>
-                  <Form.Control
-                    type='text'
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                  />
-                </Form.Group>
-                <Button
-                  type='submit'
-                  variant='primary'
-                  className='w-100 mt-2'
-                  disabled={loadingShipped}
-                >
-                  {loadingShipped ? 'Processing...' : 'Order Shipped'}
-                </Button>
-              </Form>
-            </div>
+          {/* Admin Shipping Actions (New Component) */}
+          {userInfo?.isAdmin && (
+            <AdminShippingActions
+              order={order}
+              userInfo={userInfo}
+              requiresInvoiceOverall={requiresInvoiceOverall}
+              hasFlatRateShippingOverall={hasFlatRateShippingOverall}
+              invoiceSent={invoiceSent}
+              invoicePaid={invoicePaid}
+              invoiceItemsShipped={invoiceItemsShipped}
+              flatRateItemsShipped={flatRateItemsShipped}
+              mixedShippingMethods={mixedShippingMethods}
+              shippingPrice={shippingPrice}
+              setShippingPrice={setShippingPrice}
+              sendingInvoice={sendingInvoice}
+              handleSendShippingInvoice={handleSendShippingInvoice}
+              invoiceDeliveryDays={invoiceDeliveryDays}
+              setInvoiceDeliveryDays={setInvoiceDeliveryDays}
+              invoiceCarrierName={invoiceCarrierName}
+              setInvoiceCarrierName={setInvoiceCarrierName}
+              invoiceTrackingNumber={invoiceTrackingNumber}
+              setInvoiceTrackingNumber={setInvoiceTrackingNumber}
+              handleMarkInvoiceItemsShipped={handleMarkInvoiceItemsShipped}
+              flatRateDeliveryDays={flatRateDeliveryDays}
+              setFlatRateDeliveryDays={setFlatRateDeliveryDays}
+              flatRateCarrierName={flatRateCarrierName}
+              setFlatRateCarrierName={setFlatRateCarrierName}
+              flatRateTrackingNumber={flatRateTrackingNumber}
+              setFlatRateTrackingNumber={setFlatRateTrackingNumber}
+              handleMarkFlatRateItemsShipped={handleMarkFlatRateItemsShipped}
+              loading={loading} // Pass main loading state
+            />
           )}
         </Col>
       </Row>
     </div>
   );
 }
-
-// step 1 (Cart)
-// step 2 (ShippingAddress)
-// step 3 (PlaceOrder)
-// step 4 (OrderPayment)
-// lands on OrderDetails for payment <= CURRENT STEP

@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,11 +24,14 @@
     "nodemailer": "^6.9.2",
     "sharp": "^0.29.3",
     "slugify": "^1.6.6",
-    "square": "39.1.1",
+    "square": "^38.0.0",
     "streamifier": "^0.1.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

@@ -1,9 +1,9 @@
-const express = require('express');
-const asyncHandler = require('express-async-handler');
-const HomeContent = require('../models/homeContentModel');
-const { isAuth, isAdmin } = require('../utils.js');
+import express from 'express';
+import asyncHandler from 'express-async-handler';
+import HomeContent from '../models/homeContentModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
-const homeRouter = express.Router(); // ✅ corrected name
+const homeRouter = express.Router();
 
 // Fetch home content
 homeRouter.get(
@@ -34,4 +34,4 @@ homeRouter.put(
   })
 );
 
-module.exports = homeRouter; // ✅ export with correct name
+export default homeRouter;

@@ -1,9 +1,8 @@
-const express = require('express');
-const multer = require('multer');
-const { isAuth, isAdmin, transporter } = require('../utils.js');
+import express from 'express';
+import multer from 'multer';
+import { isAuth, isAdmin } from '../utils.js';
 
 const emailRouter = express.Router();
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -109,23 +108,18 @@ emailRouter.post(
     const { emailList, emailSubject, emailMessage, descriptions, prices } =
       req.body;
 
-    console.log('Received Body:', req.body);
-    console.log('Received Files:', req.files);
+    const emailFiles = req.files?.emailFiles || [];
+    const logoFile = req.files?.logoFile?.[0] || null;
 
-    const emailFiles = req.files ? req.files['emailFiles'] : [];
-    const logoFile =
-      req.files && req.files['logoFile'] ? req.files['logoFile'][0] : null;
-
-    // Ensure descriptions and prices are arrays
     const descriptionsArray = Array.isArray(descriptions)
       ? descriptions
       : descriptions
       ? [descriptions]
       : [];
+
     const pricesArray = Array.isArray(prices) ? prices : prices ? [prices] : [];
 
-    if (!emailFiles || emailFiles.length === 0) {
-      console.error('No email files received.');
+    if (emailFiles.length === 0) {
       return res.status(400).json({ message: 'No email files uploaded.' });
     }
 
@@ -161,15 +155,13 @@ emailRouter.post(
         items,
         logoCid
       ),
-      attachments: attachments,
+      attachments,
     };
 
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log('Email sent: ' + info.response);
       res.json({ message: 'Mass email sent successfully' });
     } catch (error) {
-      console.error('Error sending mass email:', error);
       res
         .status(500)
         .json({ message: 'Failed to send mass email', error: error.message });
@@ -177,4 +169,4 @@ emailRouter.post(
   }
 );
 
-module.exports = emailRouter;
+export default emailRouter;

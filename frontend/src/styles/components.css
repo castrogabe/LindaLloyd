@@ -12,3 +12,26 @@
 .link {
   text-decoration: none !important;
 }
+
+/* Target the checkbox input itself */
+.form-check-input {
+  border-color: #333; /* Darker border */
+  box-shadow: none; /* Remove default bootstrap shadow if any */
+}
+
+/* Style for when the checkbox is checked */
+.form-check-input:checked {
+  background-color: #007bff; /* A prominent blue, or your brand color */
+  border-color: #007bff; /* Match the background color */
+}
+
+/* Style for the label text to make it bolder/darker */
+.admin-shipping-checkbox-label {
+  color: #000 !important; /* Make text black and override any weaker default */
+  font-weight: bold; /* Make it bold */
+}
+
+/* Optional: Make the unchecked checkbox background slightly visible */
+.form-check-input:not(:checked) {
+  background-color: #f0f0f0; /* A very light grey to make it stand out against white */
+}

@@ -1,26 +1,29 @@
-const express = require('express');
-const expressAsyncHandler = require('express-async-handler');
-const fs = require('fs');
-const path = require('path');
-const Product = require('../models/productModel.js');
-const { isAuth, isAdmin } = require('../utils.js');
-const multer = require('multer');
+// routes/productRoutes.js
+import express from 'express';
+import expressAsyncHandler from 'express-async-handler';
+import fs from 'fs';
+import path from 'path';
+import multer from 'multer';
+import Product from '../models/productModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
-const categoryUploadPath = path.join(process.cwd(), 'uploads/categories'); // ✅ Define the path
+// In ESM, __dirname is not available. process.cwd() is generally used for root-relative paths.
+// Ensure categoryUploadPath is correctly resolved relative to your project root.
+const categoryUploadPath = path.join(process.cwd(), 'uploads/categories');
 
-// Configure storage for category images
+// Create directory if it doesn't exist
 if (!fs.existsSync(categoryUploadPath)) {
   fs.mkdirSync(categoryUploadPath, { recursive: true });
 }
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, categoryUploadPath);
   },
   filename(req, file, cb) {
-    // ✅ Clean up the filename: remove spaces and unsafe characters
     const safeName = file.originalname
-      .replace(/\s+/g, '_') // Replace spaces with underscores
-      .replace(/[^a-zA-Z0-9_.-]/g, ''); // Remove unsafe characters
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_.-]/g, '');
     cb(null, `${Date.now()}-${safeName}`);
   },
 });
@@ -44,9 +47,9 @@ productRouter.post(
       slug: 'name' + Date.now(),
       image: '/images/p1.jpg',
       price: 0,
-      salePrice: 0, // Add salePrice field
-      requiresShippingInvoice: false, // Add this when creating new product
-      shippingCharge: 0, // Add Shipping Charge
+      salePrice: 0,
+      requiresShippingInvoice: false,
+      shippingCharge: 0,
       category: 'category',
       from: 'from',
       countInStock: 0,
@@ -57,7 +60,7 @@ productRouter.post(
       period: 'period',
       maker: 'maker',
       provenance: false,
-      charishLink: '', // Add Charish Link Field (Default Empty)
+      charishLink: '',
     });
     const product = await newProduct.save();
     res.send({ message: 'Product Created', product });
@@ -69,28 +72,27 @@ productRouter.put(
   isAuth,
   isAdmin,
   expressAsyncHandler(async (req, res) => {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
+    const product = await Product.findById(req.params.id);
     if (product) {
       product.name = req.body.name || product.name;
       product.slug = req.body.slug || product.slug;
       product.image = req.body.image || product.image;
       product.images = req.body.images || product.images;
       product.price = req.body.price || product.price;
-      product.salePrice = req.body.salePrice; // Add salePrice update
-      // Save the toggle field
+      product.salePrice = req.body.salePrice;
       product.requiresShippingInvoice =
         req.body.requiresShippingInvoice ?? product.requiresShippingInvoice;
-      // Only set shippingCharge if NOT using invoice-based shipping
+
       if (req.body.requiresShippingInvoice) {
-        product.shippingCharge = 0; // reset shippingCharge to zero
+        product.shippingCharge = 0;
       } else {
         product.shippingCharge =
           req.body.shippingCharge !== undefined
             ? Number(req.body.shippingCharge)
             : product.shippingCharge;
       }
-      product.shippingCharge = req.body.shippingCharge; // Add Shipping Charge
+
+      product.shippingCharge = req.body.shippingCharge;
       product.category = req.body.category || product.category;
       product.categoryImage = req.body.categoryImage || product.categoryImage;
       product.from = req.body.from || product.from;
@@ -102,7 +104,7 @@ productRouter.put(
       product.period = req.body.period || product.period;
       product.maker = req.body.maker || product.maker;
       product.provenance = req.body.provenance || product.provenance;
-      product.charishLink = req.body.charishLink || product.charishLink; // Ensure Charish Link Can Be Updated
+      product.charishLink = req.body.charishLink || product.charishLink;
 
       await product.save();
       res.send({ message: 'Product Updated' });
@@ -119,10 +121,17 @@ productRouter.delete(
   expressAsyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (product) {
-      // Delete images
       const deleteImage = (img) => {
-        const imagePath = path.join(process.cwd(), img);
-        if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+        // Ensure img is a string and handle potential leading slash for path.join
+        const imagePath = path.join(
+          process.cwd(),
+          img.startsWith('/') ? img : '/' + img
+        );
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        } else {
+          console.warn(`Attempted to delete non-existent file: ${imagePath}`);
+        }
       };
 
       if (product.image) deleteImage(product.image);
@@ -177,7 +186,7 @@ productRouter.get(
       ...(category &&
         category !== 'all' && {
           category: { $regex: `^${category}$`, $options: 'i' },
-        }), // Ensures proper category filtering
+        }),
       ...(price &&
         price !== 'all' && {
           price: {
@@ -216,11 +225,10 @@ productRouter.get(
       {
         $group: {
           _id: '$category',
-          categoryImage: { $first: '$categoryImage' }, // ✅ Ensure categoryImage is included
+          categoryImage: { $first: '$categoryImage' },
         },
       },
     ]);
-
     res.send(categories);
   })
 );
@@ -262,7 +270,6 @@ productRouter.get('/slug/:slug', async (req, res) => {
     : res.status(404).send({ message: 'Product Not Found' });
 });
 
-// Get only sold products
 productRouter.get('/sold', async (req, res) => {
   try {
     const soldProducts = await Product.find({ sold: true });
@@ -279,4 +286,4 @@ productRouter.get('/:id', async (req, res) => {
     : res.status(404).send({ message: 'Product Not Found' });
 });
 
-module.exports = productRouter;
+export default productRouter;

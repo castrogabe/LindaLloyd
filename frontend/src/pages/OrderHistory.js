@@ -87,7 +87,7 @@ export default function OrderHistory() {
             <thead className='thead'>
               <tr>
                 <th>ID / PRODUCT</th>
-                <th>DATE</th>
+                <th>ORDER DATE</th>
                 <th>TOTAL</th>
                 <th>QTY</th>
                 <th>PAID</th>
@@ -139,7 +139,21 @@ export default function OrderHistory() {
                     {order.paymentMethod}
                   </td>
                   <td>
-                    <div>{formatDate(order.shippedAt)}</div>
+                    {/* <div>{formatDate(order.shippedAt)}</div> */}
+                    <td>
+                      {order.invoiceShippingDetails?.isShipped && (
+                        <div>
+                          <strong>Invoiced:</strong> <br />
+                          {formatDate(order.invoiceShippingDetails.shippedAt)}
+                        </div>
+                      )}
+                      {order.flatRateShippingDetails?.isShipped && (
+                        <div>
+                          <strong>Flat Rate:</strong> <br />
+                          {formatDate(order.flatRateShippingDetails.shippedAt)}
+                        </div>
+                      )}
+                    </td>
                   </td>
                   <td>
                     <div>
@@ -150,9 +164,66 @@ export default function OrderHistory() {
                       {order.shippingAddress.country}
                     </div>
                   </td>
-                  <td>{order.deliveryDays}</td>
+                  {/* <td>{order.deliveryDays}</td>
                   <td>{order.carrierName}</td>
-                  <td>{order.trackingNumber}</td>
+                  <td>{order.trackingNumber}</td> */}
+                  <td>
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <div>
+                        <strong>Invoiced:</strong> <br />
+                        {formatDate(order.invoiceShippingDetails.shippedAt)}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <div>
+                        <strong>Flat Rate:</strong> <br />
+                        {formatDate(order.flatRateShippingDetails.shippedAt)}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {order.invoiceShippingDetails?.deliveryDays && (
+                      <div>
+                        <strong>Invoiced:</strong> <br />
+                        {order.invoiceShippingDetails.deliveryDays}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.deliveryDays && (
+                      <div>
+                        <strong>Flat Rate:</strong> <br />
+                        {order.flatRateShippingDetails.deliveryDays}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {order.invoiceShippingDetails?.carrierName && (
+                      <div>
+                        <strong>Invoiced:</strong> <br />
+                        {order.invoiceShippingDetails.carrierName}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.carrierName && (
+                      <div>
+                        <strong>Flat Rate:</strong> <br />
+                        {order.flatRateShippingDetails.carrierName}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {order.invoiceShippingDetails?.trackingNumber && (
+                      <div>
+                        <strong>Invoiced:</strong> <br />
+                        {order.invoiceShippingDetails.trackingNumber}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.trackingNumber && (
+                      <div>
+                        <strong>Flat Rate:</strong> <br />
+                        {order.flatRateShippingDetails.trackingNumber}
+                      </div>
+                    )}
+                  </td>
+
                   <td>
                     <Button
                       type='button'

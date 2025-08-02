@@ -51,9 +51,9 @@ export default function ProductEdit() {
   const [slug, setSlug] = useState('');
   const [price, setPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
+  const [shippingCharge, setShippingCharge] = useState(0);
   const [useFlatRateShipping, setUseFlatRateShipping] = useState(false);
   const [requiresShippingInvoice, setRequiresShippingInvoice] = useState(false);
-  const [shippingCharge, setShippingCharge] = useState(0);
   const [image, setImage] = useState('');
   const [images, setImages] = useState([]);
   const [category, setCategory] = useState('');
@@ -82,6 +82,7 @@ export default function ProductEdit() {
         setSlug(data.slug);
         setPrice(data.price);
         setSalePrice(data.salePrice || '');
+        setUseFlatRateShipping(data.useFlatRateShipping || false); // ✅ ADD THIS LINE
         setShippingCharge(data.shippingCharge || '');
         setRequiresShippingInvoice(data.requiresShippingInvoice || false);
         setImage(data.image);

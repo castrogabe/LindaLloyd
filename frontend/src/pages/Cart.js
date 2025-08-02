@@ -111,13 +111,31 @@ export default function Cart() {
 
                         {/* Shipping */}
                         <Col xs={3} md={3}>
-                          {item.shippingCharge && item.shippingCharge > 0 ? (
+                          {/* {item.shippingCharge && item.shippingCharge > 0 ? (
                             <small style={{ color: 'gray' }}>
                               + ${item.shippingCharge.toFixed(2)} shipping
                             </small>
                           ) : (
                             <small style={{ color: 'green' }}>
                               Shipping Charges Added After Purchase
+                            </small>
+                          )} */}
+
+                          {item.useFlatRateShipping && item.shippingCharge ? (
+                            <small style={{ color: 'gray' }}>
+                              Flat Rate: ${item.shippingCharge.toFixed(2)}
+                            </small>
+                          ) : item.requiresShippingInvoice ? (
+                            <small style={{ color: 'green' }}>
+                              Shipping Invoiced After Purchase
+                            </small>
+                          ) : item.shippingCharge && item.shippingCharge > 0 ? (
+                            <small style={{ color: 'gray' }}>
+                              ${item.shippingCharge.toFixed(2)} shipping
+                            </small>
+                          ) : (
+                            <small style={{ color: 'green' }}>
+                              Free Shipping Included
                             </small>
                           )}
                         </Col>

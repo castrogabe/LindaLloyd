@@ -100,6 +100,7 @@ export default function Search() {
       search: `?category=${filterCategory}&query=${filterQuery}&price=${filterPrice}&order=${sortOrder}&page=${filterPage}`,
     };
   };
+
   const handleSidebarOpen = () => {
     if (!isMobile) {
       setIsSidebarOpen(true);
@@ -107,12 +108,22 @@ export default function Search() {
     }
   };
 
+  // --- NEW LOGIC: Determine the display category name ---
+  const displayCategoryName =
+    category === 'all'
+      ? 'All Products'
+      : categories.find((c) => c._id === category)?._id || 'Unknown Category';
+  // --- END NEW LOGIC ---
+
   return (
     <div className='content'>
       <Helmet>
         <title>Search Products</title>
       </Helmet>
-
+      <br />
+      {/* Show Category Name */}
+      {/* UPDATED: Display the category name here */}
+      <h4 className='box'>{displayCategoryName}</h4>
       <Row className='mt-3'>
         {!isMobile && (
           <Col md={3} className='search'>
@@ -177,6 +188,7 @@ export default function Search() {
                     md={4}
                     lg={3}
                     className='mb-4 px-2 d-flex align-items-stretch'
+                    key={product._id} // Added key for product map
                   >
                     <ProductCard
                       product={product}
@@ -204,8 +216,3 @@ export default function Search() {
     </div>
   );
 }
-
-// CategoriesCards  1 (Home)
-// Search.js (shows ProductsCards) (Add to Cart or ProductMag page) <= CURRENT STEP
-// Option 1: Click main image > ProductMag.js > Add to Cart > Cart.js
-// Option 2: Add to Cart > Cart.js (opens Sidebar.js)

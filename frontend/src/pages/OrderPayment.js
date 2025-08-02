@@ -70,7 +70,7 @@ export default function OrderPayment() {
   ) : (
     <div className='content'>
       <br />
-      <CheckoutSteps step1 step2 step3 step4 />
+      <CheckoutSteps step1 step2 step3 />
       <br />
       <Helmet>
         <title>Order Payment</title>

@@ -913,3 +913,58 @@ PlaceOrder.js > updated
 OrderDetails.js > updated
 OrderHistory.js > updated with taxes
 OrderList.js > updated | Filter by Month Download as Excel
+
+# 27th Commit-ShippingCost toggle added during the sale or after the sale, backend converted to ESM (not ES6) for square
+
+BACKEND
+folder: models
+orderModel.js > updated
+
+folder: routes
+orderRoutes.js > updated with orderRoutes Folder:
+adminRoutes.js > added
+adminShippingRoutes.js > added
+orderCreateRoutes.js > added
+orderDetailsRoutes.js > added
+orderMineRoutes.js > added
+orderPaymentRoutes.js > added
+orderSoldRoutes.js > added
+orderSummaryRoutes.js > added
+testRoutes.js > added
+squareRoutes.js > updated
+
+utils.js > updated
+
+package.json > updated to "square": "^38.0.0"
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+
+FRONTEND
+index.html > switched to sandbox testing
+
+folder: components
+orderDetails folder > added
+AdminShippingActions.js > added
+AdminShippingForm.js > added
+OrderItemsCard.js > added
+PaymentStatusCard.js > added
+ShippingAddressCard.js > added
+SquareCheckout.js > updated
+
+folder: helpers > added
+stateCountyMap.js > added
+
+folder: pages
+Cart.js > updated
+OrderDetails.js > updated (Divided into multiple components)
+OrderDetailsWorks.js > added Flat-Rate and Invoiced shipping
+OrderHistory.js > updated with taxes
+OrderList.js > updated Flat-Rate and Invoiced shipping
+OrderPayment.js > updated
+PlaceOrder.js > updated
+ProductEdit.js > updated
+ProductList.js > updated
+Profile.js > updated
+Search.js > updated
+ShippingAddress.js > updated

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
 import SkeletonShippingAddress from '../components/skeletons/SkeletonShippingAddress';
+import { stateCountyMap } from '../helpers/stateCountyMap';
 
 export default function ShippingAddress() {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ export default function ShippingAddress() {
   const [postalCode, setPostalCode] = useState(
     shippingAddress.postalCode || ''
   );
+  const [county, setCounty] = useState(shippingAddress.county || '');
+  const [country, setCountry] = useState(shippingAddress.country || 'USA');
 
-  const [country, setCountry] = useState(shippingAddress.country || 'US');
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(!shippingAddress?.address); // default to form if no address
 
@@ -47,6 +49,7 @@ export default function ShippingAddress() {
       address,
       city,
       states,
+      county,
       postalCode,
       country,
     };
@@ -63,17 +66,11 @@ export default function ShippingAddress() {
     ctxDispatch({ type: 'USER_SIGNIN', payload: updatedUserInfo });
     localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo));
 
-    try {
-      await axios.put('/api/users/address', updatedAddress, {
-        headers: { Authorization: `Bearer ${userInfo.token}` },
-      });
-      navigate('/placeorder');
-    } catch (err) {
-      console.error(
-        '💥 Failed to save shipping address:',
-        err.response?.data || err.message
-      );
-    }
+    await axios.put('/api/users/address', updatedAddress, {
+      headers: { Authorization: `Bearer ${userInfo.token}` },
+    });
+
+    navigate('/placeorder');
   };
 
   return (
@@ -102,7 +99,9 @@ export default function ShippingAddress() {
                   {shippingAddress.city}, {shippingAddress.states},{' '}
                   {shippingAddress.postalCode},
                   <br />
-                  {shippingAddress.country}
+                  <strong>County:</strong> {shippingAddress.county},
+                  <br />
+                  <strong>Country:</strong> {shippingAddress.country}
                 </p>
 
                 <div className='mb-3'>
@@ -150,60 +149,18 @@ export default function ShippingAddress() {
                   <Form.Label>State</Form.Label>
                   <Form.Select
                     value={states}
-                    onChange={(e) => setStates(e.target.value)}
+                    onChange={(e) => {
+                      setStates(e.target.value);
+                      setCounty('');
+                    }}
                     required
                   >
-                    <option value=''>-- Select a State --</option>
-                    <option value='AL'>Alabama</option>
-                    <option value='AK'>Alaska</option>
-                    <option value='AZ'>Arizona</option>
-                    <option value='AR'>Arkansas</option>
-                    <option value='CA'>California</option>
-                    <option value='CO'>Colorado</option>
-                    <option value='CT'>Connecticut</option>
-                    <option value='DE'>Delaware</option>
-                    <option value='FL'>Florida</option>
-                    <option value='GA'>Georgia</option>
-                    <option value='HI'>Hawaii</option>
-                    <option value='ID'>Idaho</option>
-                    <option value='IL'>Illinois</option>
-                    <option value='IN'>Indiana</option>
-                    <option value='IA'>Iowa</option>
-                    <option value='KS'>Kansas</option>
-                    <option value='KY'>Kentucky</option>
-                    <option value='LA'>Louisiana</option>
-                    <option value='ME'>Maine</option>
-                    <option value='MD'>Maryland</option>
-                    <option value='MA'>Massachusetts</option>
-                    <option value='MI'>Michigan</option>
-                    <option value='MN'>Minnesota</option>
-                    <option value='MS'>Mississippi</option>
-                    <option value='MO'>Missouri</option>
-                    <option value='MT'>Montana</option>
-                    <option value='NE'>Nebraska</option>
-                    <option value='NV'>Nevada</option>
-                    <option value='NH'>New Hampshire</option>
-                    <option value='NJ'>New Jersey</option>
-                    <option value='NM'>New Mexico</option>
-                    <option value='NY'>New York</option>
-                    <option value='NC'>North Carolina</option>
-                    <option value='ND'>North Dakota</option>
-                    <option value='OH'>Ohio</option>
-                    <option value='OK'>Oklahoma</option>
-                    <option value='OR'>Oregon</option>
-                    <option value='PA'>Pennsylvania</option>
-                    <option value='RI'>Rhode Island</option>
-                    <option value='SC'>South Carolina</option>
-                    <option value='SD'>South Dakota</option>
-                    <option value='TN'>Tennessee</option>
-                    <option value='TX'>Texas</option>
-                    <option value='UT'>Utah</option>
-                    <option value='VT'>Vermont</option>
-                    <option value='VA'>Virginia</option>
-                    <option value='WA'>Washington</option>
-                    <option value='WV'>West Virginia</option>
-                    <option value='WI'>Wisconsin</option>
-                    <option value='WY'>Wyoming</option>
+                    <option value=''>Select State</option>
+                    {Object.keys(stateCountyMap).map((abbr) => (
+                      <option key={abbr} value={abbr}>
+                        {abbr}
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
 
@@ -216,21 +173,29 @@ export default function ShippingAddress() {
                   />
                 </Form.Group>
 
+                <Form.Group className='mb-3' controlId='county'>
+                  <Form.Label>County</Form.Label>
+                  <Form.Select
+                    value={county}
+                    onChange={(e) => setCounty(e.target.value)}
+                    required
+                  >
+                    <option value=''>Select County</option>
+                    {(stateCountyMap[states] || []).map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+
                 <Form.Group className='mb-3' controlId='country'>
                   <Form.Label>Country</Form.Label>
-                  <Form.Select
+                  <Form.Control
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                     required
-                  >
-                    <option value='US'>United States</option>
-                    {/* <option value='MX'>Mexico</option>
-                    <option value='CA'>Canada</option>
-                    <option value='GB'>United Kingdom</option>
-                    <option value='AU'>Australia</option>
-                    <option value='DE'>Germany</option>
-                    <option value='FR'>France</option> */}
-                  </Form.Select>
+                  />
                 </Form.Group>
 
                 <div className='mb-3'>

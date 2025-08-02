@@ -1,8 +1,8 @@
-const express = require('express');
-const expressAsyncHandler = require('express-async-handler');
-const axios = require('axios');
-const { randomUUID } = require('crypto');
-const config = require('../config.js');
+import express from 'express';
+import expressAsyncHandler from 'express-async-handler';
+import axios from 'axios';
+import { randomUUID } from 'crypto';
+import config from '../config.js';
 
 const squareRouter = express.Router();
 
@@ -24,7 +24,6 @@ squareRouter.post(
             currency: 'USD',
           },
           location_id: config.square.locationId,
-          order_id: orderId, // ✅ Properly link payment to the tax-estimated Square order
           note: `Order ${orderId}`,
         },
         {
@@ -55,4 +54,4 @@ squareRouter.get('/key', (req, res) => {
   });
 });
 
-module.exports = squareRouter;
+export default squareRouter;

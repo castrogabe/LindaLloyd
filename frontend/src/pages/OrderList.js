@@ -53,6 +53,7 @@ export default function OrderList() {
   const { userInfo } = state;
   const [selectedMonth, setSelectedMonth] = useState('');
   const [availableMonths, setAvailableMonths] = useState([]);
+  const [loadingResendKey, setLoadingResendKey] = useState(null);
 
   const [
     { loading, error, orders, totalOrders, pages, successDelete },
@@ -73,10 +74,6 @@ export default function OrderList() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
-
-        const uniqueMonths = Array.from(
-          new Set(orders.map((order) => order.createdAt.slice(0, 7)))
-        );
 
         const months = Array.from(
           new Set(
@@ -125,6 +122,7 @@ export default function OrderList() {
 
   // Function to format date (MM-DD-YYYY)
   function formatDate(dateString) {
+    if (!dateString) return ''; // return empty string if date is null or undefined
     const dateObject = new Date(dateString);
     const month = String(dateObject.getMonth() + 1).padStart(2, '0');
     const day = String(dateObject.getDate()).padStart(2, '0');
@@ -143,36 +141,179 @@ export default function OrderList() {
         })
       : orders;
 
-    const data = filteredOrders.map((order) => ({
-      ID: order._id,
-      Product: order.orderItems.map((item) => item.name).join(', '),
-      Quantity: order.orderItems.reduce(
-        (total, item) => total + item.quantity,
-        0
-      ),
-      OrderPrice: order.itemsPrice,
-      ShippingCost: order.shippingPrice,
-      Tax: order.taxPrice,
-      Total: order.totalPrice.toFixed(2),
-      User: order.user ? order.user.name : 'DELETED USER',
-      Email: order.user ? order.user.email : '',
-      Address: order.shippingAddress
-        ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode},  ${order.shippingAddress.country}`
-        : '',
-      Date: formatDate(order.createdAt),
-      PaidAt: order.isPaid ? formatDate(order.paidAt) : 'No',
-      Paid: order.isPaid ? 'Yes' : 'No',
-      PaymentMethod: order.paymentMethod,
-      ShippedDate: formatDate(order.shippedAt),
-      DeliveryDays: order.deliveryDays,
-      CarrierName: order.carrierName,
-      TrackingNumber: order.trackingNumber,
-    }));
+    // --- UPDATED EXCEL EXPORT LOGIC ---
+    const data = filteredOrders.flatMap((order) => {
+      const baseData = {
+        ID: order._id,
+        OrderPrice: order.itemsPrice,
+        Tax: order.taxPrice,
+        Total: order.totalPrice.toFixed(2),
+        User: order.user ? order.user.name : 'DELETED USER',
+        Email: order.user ? order.user.email : '',
+        Address: order.shippingAddress
+          ? `${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.states}, ${order.shippingAddress.postalCode},  ${order.shippingAddress.country}`
+          : '',
+        Date: formatDate(order.createdAt),
+        PaidAt: order.isPaid ? formatDate(order.paidAt) : 'No',
+        Paid: order.isPaid ? 'Yes' : 'No',
+        PaymentMethod: order.paymentMethod,
+      };
+
+      const rows = [];
+
+      // Add row for Invoice Shipping Details if applicable
+      if (order.invoiceShippingDetails?.isShipped) {
+        rows.push({
+          ...baseData,
+          Product: order.orderItems
+            .filter((item) => item.requiresShippingInvoice)
+            .map((item) => item.name)
+            .join(', '),
+          Quantity: order.orderItems
+            .filter((item) => item.requiresShippingInvoice)
+            .reduce((total, item) => total + item.quantity, 0),
+          ShippingCost: order.separateShippingPrice, // Use separateShippingPrice for invoice part
+          ShippedDate: formatDate(order.invoiceShippingDetails.shippedAt),
+          DeliveryDays: order.invoiceShippingDetails.deliveryDays,
+          CarrierName: order.invoiceShippingDetails.carrierName,
+          TrackingNumber: order.invoiceShippingDetails.trackingNumber,
+          ShippingType: 'Invoiced Items',
+        });
+      }
+
+      // Add row for Flat Rate Shipping Details if applicable
+      if (order.flatRateShippingDetails?.isShipped) {
+        rows.push({
+          ...baseData,
+          Product: order.orderItems
+            .filter(
+              (item) =>
+                item.useFlatRateShipping ||
+                (item.shippingCharge > 0 && !item.requiresShippingInvoice)
+            )
+            .map((item) => item.name)
+            .join(', '),
+          Quantity: order.orderItems
+            .filter(
+              (item) =>
+                item.useFlatRateShipping ||
+                (item.shippingCharge > 0 && !item.requiresShippingInvoice)
+            )
+            .reduce((total, item) => total + item.quantity, 0),
+          ShippingCost: order.orderItems
+            .filter(
+              (item) =>
+                item.useFlatRateShipping ||
+                (item.shippingCharge > 0 && !item.requiresShippingInvoice)
+            )
+            .reduce((total, item) => total + item.shippingCharge, 0), // Sum flat rate charges for these items
+          ShippedDate: formatDate(order.flatRateShippingDetails.shippedAt),
+          DeliveryDays: order.flatRateShippingDetails.deliveryDays,
+          CarrierName: order.flatRateShippingDetails.carrierName,
+          TrackingNumber: order.flatRateShippingDetails.trackingNumber,
+          ShippingType: 'Flat Rate Items',
+        });
+      }
+
+      // If neither is shipped but the order exists, include a row for the overall order
+      if (
+        !order.invoiceShippingDetails?.isShipped &&
+        !order.flatRateShippingDetails?.isShipped
+      ) {
+        rows.push({
+          ...baseData,
+          Product: order.orderItems.map((item) => item.name).join(', '),
+          Quantity: order.orderItems.reduce(
+            (total, item) => total + item.quantity,
+            0
+          ),
+          ShippingCost: order.shippingPrice, // Overall shipping price
+          ShippedDate: 'Not Shipped',
+          DeliveryDays: '',
+          CarrierName: '',
+          TrackingNumber: '',
+          ShippingType: 'Overall Order (Not Shipped)',
+        });
+      } else if (
+        rows.length === 0 &&
+        (order.invoiceShippingDetails || order.flatRateShippingDetails)
+      ) {
+        // Fallback for cases where shipping details exist but aren't marked shipped yet
+        rows.push({
+          ...baseData,
+          Product: order.orderItems.map((item) => item.name).join(', '),
+          Quantity: order.orderItems.reduce(
+            (total, item) => total + item.quantity,
+            0
+          ),
+          ShippingCost: order.shippingPrice,
+          ShippedDate: 'Pending Shipment',
+          DeliveryDays: '',
+          CarrierName: '',
+          TrackingNumber: '',
+          ShippingType: 'Overall Order (Pending)',
+        });
+      }
+
+      return rows;
+    });
+    // --- END UPDATED EXCEL EXPORT LOGIC ---
 
     const worksheet = utils.json_to_sheet(data);
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, 'Orders');
     writeFile(workbook, 'Orders.xlsx');
+  };
+
+  const handleResendPurchaseConfirmation = async (orderId) => {
+    const key = `${orderId}-purchase`;
+    try {
+      setLoadingResendKey(key);
+      await axios.put(
+        `/api/orders/${orderId}/resend-purchase-confirmation`,
+        {},
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Purchase confirmation email resent');
+    } catch (err) {
+      toast.error(getError(err));
+    } finally {
+      setLoadingResendKey(null);
+    }
+  };
+
+  const handleResendInvoiceShipping = async (orderId) => {
+    const key = `${orderId}-invoice`;
+    try {
+      setLoadingResendKey(key);
+      await axios.put(
+        `/api/orders/${orderId}/resend-invoice-shipping`,
+        {},
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Invoice shipping confirmation email resent');
+    } catch (err) {
+      toast.error(getError(err));
+    } finally {
+      setLoadingResendKey(null);
+    }
+  };
+
+  const handleResendFlatRateShipping = async (orderId) => {
+    const key = `${orderId}-flatRate`;
+    try {
+      setLoadingResendKey(key);
+      await axios.put(
+        `/api/orders/${orderId}/resend-flat-rate-shipping`,
+        {},
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Flat rate shipping confirmation email resent');
+    } catch (err) {
+      toast.error(getError(err));
+    } finally {
+      setLoadingResendKey(null);
+    }
   };
 
   return (
@@ -234,11 +375,10 @@ export default function OrderList() {
                 <th>USER</th>
                 <th>DATE</th>
                 <th>ORDER PRICE</th>
-                <th>SHIPPING COST</th>
+                <th>SHIPPING INFO</th>
                 <th>TAX</th>
                 <th>TOTAL</th>
                 <th>QTY</th>
-                <th>PAID</th>
                 <th>SHIPPED DATE</th>
                 <th>DELIVERY DAYS</th>
                 <th>CARRIER NAME</th>
@@ -288,42 +428,219 @@ export default function OrderList() {
                   </td>
                   <td>{formatDate(order.createdAt)}</td>
                   <td>{order.itemsPrice.toFixed(2)}</td>
-                  <td>{order.shippingPrice.toFixed(2)}</td>
+
+                  <td>
+                    {/* Display shipping info for each item group */}
+                    {order.orderItems.map((item) => {
+                      if (item.requiresShippingInvoice) {
+                        return (
+                          <div
+                            key={`${item._id}-invoice-info`}
+                            style={{ marginBottom: '8px' }}
+                          >
+                            <strong>{item.name}</strong>
+                            <br />
+                            <small className='text-muted'>
+                              Separate Shipping Invoice
+                              <br />
+                              Shipping Paid: $
+                              {order.separateShippingPrice
+                                ? order.separateShippingPrice.toFixed(2)
+                                : 'N/A'}{' '}
+                              on{' '}
+                              {order.shippingPaidAt
+                                ? formatDate(order.shippingPaidAt)
+                                : 'N/A'}
+                            </small>
+                          </div>
+                        );
+                      } else if (
+                        item.useFlatRateShipping ||
+                        (item.shippingCharge &&
+                          item.shippingCharge > 0 &&
+                          !item.requiresShippingInvoice)
+                      ) {
+                        return (
+                          <div
+                            key={`${item._id}-flatrate-info`}
+                            style={{ marginBottom: '8px' }}
+                          >
+                            <strong>{item.name}</strong>
+                            <br />
+                            <small className='text-muted'>
+                              Flat Rate Shipping: $
+                              {item.shippingCharge
+                                ? item.shippingCharge.toFixed(2)
+                                : 'N/A'}
+                            </small>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div
+                            key={`${item._id}-free-info`}
+                            style={{ marginBottom: '8px' }}
+                          >
+                            <strong>{item.name}</strong>
+                            <br />
+                            <small className='text-muted'>
+                              Free Shipping Included
+                            </small>
+                          </div>
+                        );
+                      }
+                    })}
+                  </td>
+
                   <td>{order.taxPrice.toFixed(2)}</td>
                   <td>{order.totalPrice.toFixed(2)}</td>
                   <td>
+                    This Order Items:{' '}
                     {order.orderItems.reduce(
-                      (total, item) => total + item.quantity,
+                      (sum, item) => sum + item.quantity,
+                      0
+                    )}{' '}
+                    {/* Corrected to sum current order items */}
+                    <br />
+                    {/* The "All Orders Items Sold" calculation is incorrect here as 'orders' is paginated.
+                        It should be calculated from a full dataset or a separate API call.
+                        Keeping it as is for now, but note for future.
+                    */}
+                    All Orders Items Sold:{' '}
+                    {orders.reduce(
+                      (sum, o) =>
+                        sum +
+                        o.orderItems.reduce(
+                          (qty, item) => qty + item.quantity,
+                          0
+                        ),
                       0
                     )}
                   </td>
+                  {/* --- NEW: Display Shipped Date, Delivery Days, Carrier Name, Tracking Number for each group --- */}
                   <td>
-                    {order.isPaid ? formatDate(order.paidAt) : 'No'}
-                    <br />
-                    {order.paymentMethod}
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Invoiced:</strong>
+                        <br />
+                        {formatDate(order.invoiceShippingDetails.shippedAt)}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Flat Rate:</strong>
+                        <br />
+                        {formatDate(order.flatRateShippingDetails.shippedAt)}
+                      </div>
+                    )}
+                    {!order.isFullyShipped && (
+                      <div style={{ marginBottom: '8px' }}>Not Shipped</div>
+                    )}
                   </td>
-                  <td>{formatDate(order.shippedAt)}</td>
-                  <td>{order.deliveryDays}</td>
-                  <td>{order.carrierName}</td>
-                  <td>{order.trackingNumber}</td>
+                  <td>
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Invoiced:</strong>
+                        <br />
+                        {order.invoiceShippingDetails.deliveryDays}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Flat Rate:</strong>
+                        <br />
+                        {order.flatRateShippingDetails.deliveryDays}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Invoiced:</strong>
+                        <br />
+                        {order.invoiceShippingDetails.carrierName}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Flat Rate:</strong>
+                        <br />
+                        {order.flatRateShippingDetails.carrierName}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Invoiced:</strong>
+                        <br />
+                        {order.invoiceShippingDetails.trackingNumber}
+                      </div>
+                    )}
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Flat Rate:</strong>
+                        <br />
+                        {order.flatRateShippingDetails.trackingNumber}
+                      </div>
+                    )}
+                  </td>
+                  {/* --- END NEW DISPLAY LOGIC --- */}
                   <td>
                     <Button
-                      type='button'
                       variant='primary'
-                      onClick={() => {
-                        navigate(`/order/${order._id}`);
-                      }}
+                      size='sm'
+                      onClick={() => navigate(`/order/${order._id}`)}
                     >
                       Details
                     </Button>
                     &nbsp;
                     <Button
-                      type='button'
-                      variant='primary'
+                      variant='danger'
+                      size='sm'
                       onClick={() => deleteHandler(order)}
                     >
                       Delete
                     </Button>
+                    <br />
+                    <Button
+                      variant='info'
+                      size='sm'
+                      disabled={loadingResendKey === `${order._id}-purchase`}
+                      onClick={() =>
+                        handleResendPurchaseConfirmation(order._id)
+                      }
+                    >
+                      {loadingResendKey === `${order._id}-purchase`
+                        ? 'Sending...'
+                        : 'Resend Purchase Confirmation Email'}
+                    </Button>
+                    <br />
+                    {order.invoiceShippingDetails?.isShipped && (
+                      <Button
+                        variant='info'
+                        size='sm'
+                        disabled={loadingResendKey === `${order._id}-invoice`}
+                        onClick={() => handleResendInvoiceShipping(order._id)}
+                      >
+                        {loadingResendKey === `${order._id}-invoice`
+                          ? 'Sending...'
+                          : 'Resend Invoiced Shipping Email'}
+                      </Button>
+                    )}
+                    <br />
+                    {order.flatRateShippingDetails?.isShipped && (
+                      <Button
+                        variant='info'
+                        size='sm'
+                        disabled={loadingResendKey === `${order._id}-flatRate`}
+                        onClick={() => handleResendFlatRateShipping(order._id)}
+                      >
+                        {loadingResendKey === `${order._id}-flatRate`
+                          ? 'Sending...'
+                          : 'Resend Flat Rate Shipping Email'}
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}

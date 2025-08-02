@@ -95,6 +95,15 @@ export default function SquareCheckout({
     <div>
       <div id='card-container' ref={cardRef}></div>
       <br />
+      {loading && (
+        <div className='text-center mt-3'>
+          <div className='spinner-border text-primary' role='status'></div>
+          <div className='mt-2 fw-bold text-danger'>
+            Please do not refresh or leave the page while payment is
+            processing...
+          </div>
+        </div>
+      )}
       <Button onClick={handlePayment} disabled={loading}>
         {loading ? 'Processing...' : 'Pay with Card'}
       </Button>

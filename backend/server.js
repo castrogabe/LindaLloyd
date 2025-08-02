@@ -1,34 +1,34 @@
-const express = require('express');
-const path = require('path');
-const mongoose = require('mongoose');
-const fs = require('fs');
-const cors = require('cors');
-const config = require('./config.js');
-const seedRouter = require('./routes/seedRoutes.js');
-const productRouter = require('./routes/productRoutes.js');
-const userRouter = require('./routes/userRoutes.js');
-const orderRouter = require('./routes/orderRoutes.js');
-const uploadRouter = require('./routes/uploadRoutes.js');
-const messageRouter = require('./routes/messageRoutes.js');
-const emailRouter = require('./routes/emailRoutes.js');
-const homeContentRouter = require('./routes/homeContentRoutes.js');
-const aboutRouter = require('./routes/aboutRoutes.js');
-const designRouter = require('./routes/designRoutes.js');
-const faqRouter = require('./routes/faqRoutes.js');
-const productMagContentRouter = require('./routes/productMagContentRoutes.js');
-const subscribeRouter = require('./routes/subscribeRoutes.js');
-const squareRouter = require('./routes/squareRoutes.js');
-const taxRouter = require('./routes/taxRoutes.js');
+import express from 'express';
+import path from 'path';
+import mongoose from 'mongoose';
+import fs from 'fs';
+import cors from 'cors';
+import config from './config.js';
 
+// Route imports
+import adminRoutes from './routes/orderRoutes/AdminRoutes.js';
+import seedRouter from './routes/seedRoutes.js';
+import productRouter from './routes/productRoutes.js';
+import userRouter from './routes/userRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import uploadRouter from './routes/uploadRoutes.js';
+import messageRouter from './routes/messageRoutes.js';
+import emailRouter from './routes/emailRoutes.js';
+import homeContentRouter from './routes/homeContentRoutes.js';
+import aboutRouter from './routes/aboutRoutes.js';
+import designRouter from './routes/designRoutes.js';
+import faqRouter from './routes/faqRoutes.js';
+import productMagContentRouter from './routes/productMagContentRoutes.js';
+import subscribeRouter from './routes/subscribeRoutes.js';
+import squareRouter from './routes/squareRoutes.js';
+import taxRouter from './routes/taxRoutes.js';
+
+// --- Setup ---
 const app = express();
-
-// --- CRUCIAL: PLACE BODY PARSERS EARLY ---
-// These middlewares parse the request body and make it available on req.body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// --- END CRUCIAL SECTION ---
 
-// --- DEBUG MIDDLEWARE (NOW IT WILL SEE THE PARSED BODY) ---
+// --- Debug middleware ---
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api/users/address')) {
     console.log(`\n--- GLOBAL DEBUG: Request to ${req.originalUrl} ---`);
@@ -38,23 +38,13 @@ app.use((req, res, next) => {
       'Authorization Header:',
       req.headers.authorization ? 'Present' : 'Missing'
     );
-    // req.user might still be UNDEFINED here if isAuth middleware hasn't run yet,
-    // but req.body *will* be populated if the request has a body.
-    console.log(
-      'req.user (from global middleware - before route specific isAuth):',
-      req.user ? JSON.stringify(req.user, null, 2) : 'UNDEFINED'
-    );
-    console.log(
-      'Request Body (now parsed):',
-      JSON.stringify(req.body, null, 2)
-    );
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
   }
   next();
 });
-// --- END GLOBAL DEBUG MIDDLEWARE ---
 
 const isProduction = process.env.NODE_ENV === 'production';
-const __dirnameCustom = path.resolve(); // Use path.resolve() for CommonJS
+const __dirnameCustom = path.resolve();
 
 const uploadDir = isProduction
   ? '/var/data/uploads'
@@ -78,9 +68,7 @@ try {
 
 app.get('/list-uploads', (req, res) => {
   fs.readdir(uploadDir, (err, files) => {
-    if (err) {
-      return res.status(500).send('Unable to scan directory');
-    }
+    if (err) return res.status(500).send('Unable to scan directory');
     res.send(files);
   });
 });
@@ -96,6 +84,7 @@ app.get('/debug-uploads', (req, res) => {
   });
 });
 
+// --- DB connection ---
 mongoose.set('strictQuery', true);
 mongoose
   .connect(process.env.MONGODB_URI, {
@@ -103,12 +92,11 @@ mongoose
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 10000,
   })
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => {
-    console.error('MongoDB Connection Error:', err.message);
+    console.error('❌ MongoDB Connection Error:', err.message);
   });
 
-// CORS middleware should be after body parsers but before routes
 app.use(
   cors({
     origin: 'http://localhost:3000',
@@ -116,12 +104,13 @@ app.use(
   })
 );
 
-// Routes
+// --- Route mounting ---
+app.use('/api/orders', adminRoutes);
 app.use('/api/upload', uploadRouter);
 app.use('/api/seed', seedRouter);
 app.use('/api/products', productRouter);
-app.use('/api/users', userRouter); // This is where the request goes
-app.use('/api/orders', orderRouter);
+app.use('/api/users', userRouter);
+app.use('/api/orders', orderRoutes);
 app.use('/api/messages', messageRouter);
 app.use('/api/emails', emailRouter);
 app.use('/api/homecontent', homeContentRouter);
@@ -130,21 +119,21 @@ app.use('/api/design', designRouter);
 app.use('/api/faqs', faqRouter);
 app.use('/api/productmagcontent', productMagContentRouter);
 app.use('/api/subscribe', subscribeRouter);
-app.use('/api/square', squareRouter);
 app.use('/api/tax', taxRouter);
+app.use('/api/square', squareRouter);
 
-// React app serving
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+// --- Serve frontend ---
+app.use(express.static(path.join(__dirnameCustom, '../frontend/build')));
 app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'))
+  res.sendFile(path.join(__dirnameCustom, '../frontend/build/index.html'))
 );
 
-// Error middleware
+// --- Error handler ---
 app.use((err, req, res, next) => {
   res.status(500).send({ message: err.message });
 });
 
-// Start server
+// --- Start server ---
 const port = config.PORT || 8000;
 app.listen(port, () => {
   console.log(`✅ Server running at http://localhost:${port}`);

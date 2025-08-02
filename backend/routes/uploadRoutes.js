@@ -1,31 +1,38 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const { isAdmin, isAuth } = require('../utils.js');
-const fs = require('fs');
-const Product = require('../models/productModel.js');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import Product from '../models/productModel.js';
+import { fileURLToPath } from 'url';
+import { isAuth, isAdmin } from '../utils.js';
+
+// Needed for __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const uploadRouter = express.Router();
 
-// Use /var/data/uploads for Render (production) and ./uploads for local development
+// Use /var/data/uploads for Render (production) and ./uploads for local dev
 const isProduction = process.env.NODE_ENV === 'production';
-const uploadDir = isProduction ? '/var/data/uploads' : 'uploads';
+const uploadDir = isProduction
+  ? '/var/data/uploads'
+  : path.join(__dirname, '../uploads');
 
+// Configure multer storage
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, uploadDir);
   },
   filename(req, file, cb) {
     const cleanFilename = file.originalname
-      .replace(/\s+/g, '_') // Replace spaces with underscores
-      .replace(/[^a-zA-Z0-9_.-]/g, ''); // Remove unsafe characters
-
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_.-]/g, '');
     const filename = `${file.fieldname}-${Date.now()}-${cleanFilename}`;
     cb(null, filename);
   },
 });
 
-// Ensure the upload directory exists
+// Ensure upload directories exist
 try {
   if (!fs.existsSync(uploadDir)) {
     console.log(`Creating upload directory at ${uploadDir}`);
@@ -35,26 +42,21 @@ try {
   console.error('Failed to create upload directory:', error);
 }
 
+// File type filter
 function checkFileType(file, cb) {
   const filetypes = /jpg|jpeg|png|gif/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    cb(null, true);
-  } else {
-    cb(new Error('Images only! (JPG, JPEG, PNG, GIF allowed)'));
-  }
+  if (extname && mimetype) cb(null, true);
+  else cb(new Error('Images only! (JPG, JPEG, PNG, GIF allowed)'));
 }
 
 const upload = multer({
   storage,
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
+  fileFilter: (req, file, cb) => checkFileType(file, cb),
 });
 
-// Upload multiple images endpoint
+// Upload multiple images
 uploadRouter.post(
   '/',
   isAuth,
@@ -64,22 +66,14 @@ uploadRouter.post(
     if (!req.files || req.files.length === 0) {
       return res.status(400).send({ message: 'No files uploaded.' });
     }
-
-    // Map through uploaded files and return their paths
     const fileUrls = req.files.map((file) => `/uploads/${file.filename}`);
-
     res.send({ urls: fileUrls });
   }
 );
 
-// Ensure upload directory and subdirectories exist
+// Category upload directory
 const categoryUploadPath = path.join(uploadDir, 'categories');
-
 try {
-  if (!fs.existsSync(uploadDir)) {
-    console.log(`Creating base upload directory at ${uploadDir}`);
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
   if (!fs.existsSync(categoryUploadPath)) {
     console.log(`Creating categories directory at ${categoryUploadPath}`);
     fs.mkdirSync(categoryUploadPath, { recursive: true });
@@ -99,7 +93,6 @@ uploadRouter.post(
       if (!req.file) {
         return res.status(400).send({ message: 'No file uploaded.' });
       }
-
       const { categoryId } = req.body;
       if (!categoryId) {
         return res.status(400).send({ message: 'Category ID is required' });
@@ -108,7 +101,6 @@ uploadRouter.post(
       const oldPath = req.file.path;
       const newPath = path.join(categoryUploadPath, req.file.filename);
 
-      // Move the file
       fs.rename(oldPath, newPath, async (err) => {
         if (err) {
           console.error('Error moving file:', err);
@@ -116,8 +108,6 @@ uploadRouter.post(
         }
 
         const fileUrl = `/uploads/categories/${req.file.filename}`;
-
-        // ✅ Update all products in that category with new image
         const updated = await Product.updateMany(
           { category: categoryId },
           { $set: { categoryImage: fileUrl } }
@@ -135,7 +125,7 @@ uploadRouter.post(
   }
 );
 
-// DELETE category image from DB and disk
+// Remove category image
 uploadRouter.put(
   '/category/:categoryId/remove-image',
   isAuth,
@@ -143,26 +133,22 @@ uploadRouter.put(
   async (req, res) => {
     try {
       const { categoryId } = req.params;
-
-      // Find one product with this category to get the image path
       const oneProduct = await Product.findOne({ category: categoryId });
-      if (!oneProduct || !oneProduct.categoryImage) {
+      if (!oneProduct?.categoryImage) {
         return res.status(404).send({ message: 'Category image not found' });
       }
 
-      const categoryImagePath = oneProduct.categoryImage; // e.g. '/uploads/categories/accessories.png'
+      const filename = path.basename(oneProduct.categoryImage);
+      const imagePath = path.join(
+        isProduction ? '/var/data/uploads/categories' : categoryUploadPath,
+        filename
+      );
 
-      // Construct full server path
-      const filename = path.basename(categoryImagePath);
-      const imagePath = path.join('/var/data/uploads/categories', filename);
-
-      // Delete file if it exists
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
         console.log(`Deleted: ${imagePath}`);
       }
 
-      // Remove categoryImage field from all products in that category
       const updated = await Product.updateMany(
         { category: categoryId },
         { $unset: { categoryImage: '' } }
@@ -178,6 +164,7 @@ uploadRouter.put(
   }
 );
 
+// Upload new category image by ID (renames file)
 uploadRouter.put(
   '/category/:categoryId/image',
   isAuth,
@@ -186,32 +173,28 @@ uploadRouter.put(
   async (req, res) => {
     try {
       const { categoryId } = req.params;
-
       if (!req.file) {
         return res.status(400).send({ message: 'No file uploaded.' });
       }
 
-      // Move uploaded file to categories folder
-      const uploadDir =
-        process.env.NODE_ENV === 'production'
-          ? '/var/data/uploads/categories'
-          : 'uploads/categories';
+      const destDir = isProduction
+        ? '/var/data/uploads/categories'
+        : path.join(__dirname, '../uploads/categories');
+
       const filename = `${req.file.fieldname}-${Date.now()}${path.extname(
         req.file.originalname
       )}`;
-      const destPath = path.join(uploadDir, filename);
+      const destPath = path.join(destDir, filename);
 
-      // Ensure directory exists
-      fs.mkdirSync(uploadDir, { recursive: true });
+      fs.mkdirSync(destDir, { recursive: true });
       fs.renameSync(req.file.path, destPath);
 
       const imageUrl = `/uploads/categories/${filename}`;
-
-      // ✅ Update all products with this category
       const result = await Product.updateMany(
         { category: categoryId },
         { $set: { categoryImage: imageUrl } }
       );
+
       res.send({
         image: imageUrl,
         message: `${result.modifiedCount} product(s) updated with new category image.`,
@@ -223,6 +206,7 @@ uploadRouter.put(
   }
 );
 
+// Multer error handler
 uploadRouter.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     res.status(400).send({ message: 'File upload error: ' + err.message });
@@ -233,4 +217,4 @@ uploadRouter.use((err, req, res, next) => {
   }
 });
 
-module.exports = uploadRouter;
+export default uploadRouter;

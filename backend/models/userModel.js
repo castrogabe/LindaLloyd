@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
       fullName: { type: String },
       address: { type: String },
       city: { type: String },
+      county: { type: String },
       states: { type: String },
       postalCode: { type: String },
       country: { type: String },
@@ -25,4 +26,4 @@ const userSchema = new mongoose.Schema(
 );
 
 const User = mongoose.model('User', userSchema);
-module.exports = User;
+export default User;

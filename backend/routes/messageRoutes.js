@@ -1,13 +1,13 @@
-const express = require('express');
-const expressAsyncHandler = require('express-async-handler');
-const Message = require('../models/messageModel.js');
-const { isAuth, isAdmin, transporter } = require('../utils.js');
-const { sendAdminSMS } = require('../utils.js');
+import express from 'express';
+import expressAsyncHandler from 'express-async-handler';
+import Message from '../models/messageModel.js';
+import { isAuth, isAdmin } from '../utils.js';
 
 const messageRouter = express.Router();
 
-const PAGE_SIZE = 12; // Define the number of items per page
+const PAGE_SIZE = 12;
 
+// Admin: Paginated message list
 messageRouter.get(
   '/admin',
   isAuth,
@@ -20,58 +20,63 @@ messageRouter.get(
     const messages = await Message.find()
       .skip(pageSize * (page - 1))
       .limit(pageSize);
-    const countMessages = await Message.countDocuments(); // Count total number of messages
+    const countMessages = await Message.countDocuments();
+
     res.send({
       messages,
-      totalMessages: countMessages, // Include totalMessages in the response
+      totalMessages: countMessages,
       page,
-      pages: Math.ceil(countMessages / pageSize), // Calculate total pages based on pageSize
+      pages: Math.ceil(countMessages / pageSize),
     });
   })
 );
 
-messageRouter.post('/contact', async (req, res) => {
-  try {
-    const {
-      update_time,
-      fullName,
-      email,
-      subject,
-      message,
-      replied,
-      replyContent,
-      replyEmail,
-      replySentAt,
-    } = req.body;
+// User: Submit contact form
+messageRouter.post(
+  '/contact',
+  expressAsyncHandler(async (req, res) => {
+    try {
+      const {
+        update_time,
+        fullName,
+        email,
+        subject,
+        message,
+        replied,
+        replyContent,
+        replyEmail,
+        replySentAt,
+      } = req.body;
 
-    const newMessage = new Message({
-      update_time,
-      fullName,
-      email,
-      subject,
-      message,
-      replied,
-      replyContent,
-      replyEmail,
-      replySentAt,
-    });
+      const newMessage = new Message({
+        update_time,
+        fullName,
+        email,
+        subject,
+        message,
+        replied,
+        replyContent,
+        replyEmail,
+        replySentAt,
+      });
 
-    // ✅ SMS logic here
-    await sendAdminSMS({
-      subject: '📩 New Message Received',
-      message: `"${subject}"\nFrom: ${fullName} (${email})`,
-      customerName: fullName,
-    });
+      await sendAdminSMS({
+        subject: '📩 New Message Received',
+        message: `"${subject}"\nFrom: ${fullName} (${email})`,
+        customerName: fullName,
+      });
 
-    const savedMessage = await newMessage.save();
-    res.status(201).json(savedMessage);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Failed to save message', error: error.message });
-  }
-});
+      const savedMessage = await newMessage.save();
+      res.status(201).json(savedMessage);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: 'Failed to save message', error: error.message });
+    }
+  })
+);
 
+// Admin: Fetch all messages
 messageRouter.get(
   '/',
   expressAsyncHandler(async (req, res) => {
@@ -86,6 +91,7 @@ messageRouter.get(
   })
 );
 
+// Admin: Delete message
 messageRouter.delete(
   '/',
   expressAsyncHandler(async (req, res) => {
@@ -113,6 +119,7 @@ messageRouter.delete(
   })
 );
 
+// Admin: Send reply email
 messageRouter.post(
   '/reply',
   expressAsyncHandler(async (req, res) => {
@@ -120,21 +127,18 @@ messageRouter.post(
       const { email, subject, message, replyContent } = req.body;
 
       const emailContent = {
-        from: 'lindalloydantiques@gmail.com', // Change this to your email address
+        from: 'lindalloydantiques@gmail.com',
         to: email,
-        subject: `Re: ${subject}`, // Append 'Re: ' to the original subject
+        subject: `Re: ${subject}`,
         html: `
           <h1>Reply to Your Message</h1>
           <p><strong>Subject:</strong> ${subject}</p>
-          <p><strong>Message Reply:</strong> ${message}</p>
+          <p><strong>Message Reply:</strong> ${replyContent}</p>
           <p>Thank you,</p>
           <p>lindalloyd.com</p>
         `,
       };
 
-      console.log('Reply Content:', replyContent);
-
-      // Send the email using the transporter
       const info = await transporter.sendMail(emailContent);
       console.log('Email sent:', info);
 
@@ -148,4 +152,4 @@ messageRouter.post(
   })
 );
 
-module.exports = messageRouter;
+export default messageRouter;

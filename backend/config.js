@@ -1,4 +1,5 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
+
 dotenv.config();
 
 const isLive = process.env.NODE_ENV === 'production';
@@ -42,4 +43,4 @@ const config = {
   },
 };
 
-module.exports = config;
+export default config;
