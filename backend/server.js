@@ -6,7 +6,6 @@ import cors from 'cors';
 import config from './config.js';
 
 // Route imports
-import adminRoutes from './routes/orderRoutes/AdminRoutes.js';
 import seedRouter from './routes/seedRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import userRouter from './routes/userRoutes.js';
@@ -105,7 +104,6 @@ app.use(
 );
 
 // --- Route mounting ---
-app.use('/api/orders', adminRoutes);
 app.use('/api/upload', uploadRouter);
 app.use('/api/seed', seedRouter);
 app.use('/api/products', productRouter);
