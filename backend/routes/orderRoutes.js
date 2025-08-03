@@ -1,13 +1,13 @@
 import express from 'express';
-import adminRoutes from './orderRoutes/AdminRoutes.js';
-import orderCreateRoutes from './orderRoutes/OrderCreateRoutes.js';
-import orderDetailsRoutes from './orderRoutes/OrderDetailsRoutes.js';
-import orderMineRoutes from './orderRoutes/OrderMineRoutes.js';
-import orderPaymentRoutes from './orderRoutes/OrderPaymentRoutes.js';
-import orderSoldRoutes from './orderRoutes/OrderSoldRoutes.js';
-import orderSummaryRoutes from './orderRoutes/OrderSummaryRoutes.js';
-import adminShippingRoutes from './orderRoutes/AdminShippingRoutes.js';
-import testRoutes from './orderRoutes/TestRoutes.js';
+import adminRoutes from './orderRoutes/adminRoutes.js';
+import orderCreateRoutes from './orderRoutes/orderCreateRoutes.js';
+import orderDetailsRoutes from './orderRoutes/orderDetailsRoutes.js';
+import orderMineRoutes from './orderRoutes/orderMineRoutes.js';
+import orderPaymentRoutes from './orderRoutes/orderPaymentRoutes.js';
+import orderSoldRoutes from './orderRoutes/orderSoldRoutes.js';
+import orderSummaryRoutes from './orderRoutes/orderSummaryRoutes.js';
+import adminShippingRoutes from './orderRoutes/adminShippingRoutes.js';
+import testRoutes from './orderRoutes/testRoutes.js';
 
 const orderRouter = express.Router();
 

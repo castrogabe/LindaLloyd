@@ -973,3 +973,9 @@ ShippingAddress.js > updated
 
 BACKEND
 server > updated removed redundant adminRoutes
+
+# 29th Commit-Fix case sensitive route imports
+
+BACKEND
+folder: routes
+orderRouts.js > updated
