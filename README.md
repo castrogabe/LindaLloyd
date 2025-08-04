@@ -979,3 +979,21 @@ server > updated removed redundant adminRoutes
 BACKEND
 folder: routes
 orderRouts.js > updated
+
+# 30th Commit-Build cd frontend > npm run build for deployment
+
+cd frontend
+npm install
+npm run build
+ls build:
+index.html
+asset.manifest.json
+static/
+favicon.ico
+
+cd ..
+test locally: npm start
+push code:
+git add .
+git commit -m "Built frontend for deployment"
+git push
