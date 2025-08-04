@@ -49,6 +49,8 @@ const uploadDir = isProduction
   ? '/var/data/uploads'
   : path.join(__dirnameCustom, 'uploads');
 
+app.use('/uploads', express.static(uploadDir));
+
 const categoryUploadPath = path.join(uploadDir, 'categories');
 if (!fs.existsSync(categoryUploadPath)) {
   fs.mkdirSync(categoryUploadPath, { recursive: true });

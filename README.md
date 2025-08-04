@@ -1022,3 +1022,8 @@ PlaceOrder.js > updated added ctxDispatch
 UserList.js > updated with VTEXT for admin SMS notifications Dropdown
 
 .gitignore > added
+
+# 34th Commit-server update
+
+BACKEND
+server.js > added app.use('/uploads', express.static(uploadDir));
