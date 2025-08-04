@@ -279,6 +279,37 @@ export default function UserList() {
                     onChange={(e) => setPhone(e.target.value)}
                   />
                 </Form.Group>
+                <Form.Group className='mb-3' controlId='carrier'>
+                  <Form.Label>Phone Carrier for SMS</Form.Label>
+                  <Form.Select
+                    value={carrier}
+                    onChange={(e) => setCarrier(e.target.value)}
+                  >
+                    <option value=''>-- Select Carrier --</option>
+                    <option value='@vtext.com'>
+                      Verizon / Spectrum Mobile (SMS)
+                    </option>
+                    <option value='@vzwpix.com'>
+                      Verizon / Spectrum Mobile (MMS)
+                    </option>
+                    <option value='@tmomail.net'>T-Mobile / Metro PCS</option>
+                    <option value='@att.net'>AT&T (SMS)</option>
+                    <option value='@mms.att.net'>AT&T (MMS)</option>
+                    <option value='@messaging.sprintpcs.com'>
+                      Sprint (SMS)
+                    </option>
+                    <option value='@pm.sprint.com'>Sprint (MMS)</option>
+                    <option value='@myboostmobile.com'>Boost Mobile</option>
+                    <option value='@text.republicwireless.com'>
+                      Republic Wireless
+                    </option>
+                    <option value='@msg.fi.google.com'>Google Fi</option>
+                    <option value='@message.ting.com'>Ting</option>
+                    <option value='@email.uscc.net'>US Cellular</option>
+                    <option value='@textnow.me'>TextNow</option>
+                  </Form.Select>
+                </Form.Group>
+
                 <Button type='submit' variant='primary'>
                   Add User
                 </Button>

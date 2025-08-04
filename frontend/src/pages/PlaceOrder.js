@@ -144,7 +144,7 @@ export default function PlaceOrder() {
       type: 'SAVE_PAYMENT_METHOD',
       payload: 'Square',
     });
-  }, []);
+  }, [ctxDispatch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

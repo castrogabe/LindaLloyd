@@ -84,12 +84,14 @@ export default function OrderDetailsScreen() {
     (item) => item.useFlatRateShipping || item.shippingCharge > 0
   );
 
-  const itemsRequiringInvoice =
-    order?.orderItems?.filter((item) => item.requiresShippingInvoice) || [];
-  const itemsWithFlatRateShipping =
-    order?.orderItems?.filter(
-      (item) => item.useFlatRateShipping || item.shippingCharge > 0
-    ) || [];
+  // TODO: May use itemsRequiringInvoice and itemsWithFlatRateShipping later
+  // const itemsRequiringInvoice =
+  //   order?.orderItems?.filter((item) => item.requiresShippingInvoice) || [];
+  // const itemsWithFlatRateShipping =
+  //   order?.orderItems?.filter(
+  //     (item) => item.useFlatRateShipping || item.shippingCharge > 0
+  //   ) || [];
+
   // You might not need itemsWithFreeShipping explicitly here if handled by hasFlatRateShippingOverall
   const invoiceSent = !!order?.shippingInvoiceUrl;
   const invoicePaid = !!order?.shippingInvoicePaid;

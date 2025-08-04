@@ -16,21 +16,21 @@ const squareClient = new Client({
 });
 
 // Debug logs for Square client initialization
-console.log('--- DEBUG: orderCreateRoutes.js Client Init ---');
-console.log('DEBUG: config.isLive:', config.isLive);
-console.log(
-  'DEBUG: config.square.accessToken (first 5 chars):',
-  config.square.accessToken
-    ? config.square.accessToken.substring(0, 5)
-    : 'N/A (Token missing)'
-);
-console.log('DEBUG: config.square.locationId:', config.square.locationId);
-console.log('DEBUG: typeof squareClient:', typeof squareClient);
-console.log(
-  'DEBUG: squareClient instanceof Client:',
-  squareClient instanceof Client
-);
-console.log('--- END DEBUG: orderCreateRoutes.js Client Init ---');
+// console.log('--- DEBUG: orderCreateRoutes.js Client Init ---');
+// console.log('DEBUG: config.isLive:', config.isLive);
+// console.log(
+//   'DEBUG: config.square.accessToken (first 5 chars):',
+//   config.square.accessToken
+//     ? config.square.accessToken.substring(0, 5)
+//     : 'N/A (Token missing)'
+// );
+// console.log('DEBUG: config.square.locationId:', config.square.locationId);
+// console.log('DEBUG: typeof squareClient:', typeof squareClient);
+// console.log(
+//   'DEBUG: squareClient instanceof Client:',
+//   squareClient instanceof Client
+// );
+// console.log('--- END DEBUG: orderCreateRoutes.js Client Init ---');
 
 router.post(
   '/',

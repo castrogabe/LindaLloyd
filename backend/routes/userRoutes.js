@@ -7,7 +7,13 @@ import mongoose from 'mongoose';
 import dns from 'dns'; // Keep if used, though often not needed directly in routes
 
 import User from '../models/userModel.js';
-import { isAuth, isAdmin } from '../utils.js';
+import {
+  isAuth,
+  isAdmin,
+  generateToken,
+  baseUrl,
+  transporter,
+} from '../utils.js';
 
 const userRouter = express.Router();
 

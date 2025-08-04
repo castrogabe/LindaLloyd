@@ -30,14 +30,14 @@ app.use(express.urlencoded({ extended: true }));
 // --- Debug middleware ---
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api/users/address')) {
-    console.log(`\n--- GLOBAL DEBUG: Request to ${req.originalUrl} ---`);
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', req.method);
-    console.log(
-      'Authorization Header:',
-      req.headers.authorization ? 'Present' : 'Missing'
-    );
-    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+    // console.log(`\n--- GLOBAL DEBUG: Request to ${req.originalUrl} ---`);
+    // console.log('Timestamp:', new Date().toISOString());
+    // console.log('Method:', req.method);
+    // console.log(
+    // 'Authorization Header:',
+    //  req.headers.authorization ? 'Present' : 'Missing'
+    // );
+    // console.log('Request Body:', JSON.stringify(req.body, null, 2));
   }
   next();
 });

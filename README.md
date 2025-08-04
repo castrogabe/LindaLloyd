@@ -1001,3 +1001,24 @@ git push
 # 31st Commit-update root package.json
 
 # 32nd Commit-update server for Render Deployment
+
+# 33rd Commit-Backend error fix for signup and non used vars, backend comment out logs, .gitignore in frontend root
+
+BACKEND
+folder: routes
+userRoutes.js > updated
+orderRoutes folder
+orderCreateRoutes.js > updated, commented out console.logs
+
+server.js > updated, commented out console.logs
+
+FRONTEND
+folder: components
+OrderSummaryCard.js > updated removed unused vars
+
+folder: pages
+OrderDetails.js > updated removed unused vars commented out
+PlaceOrder.js > updated added ctxDispatch
+UserList.js > updated with VTEXT for admin SMS notifications Dropdown
+
+.gitignore > added

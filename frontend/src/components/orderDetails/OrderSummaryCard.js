@@ -1,9 +1,6 @@
 // src/components/orderDetails/OrderSummaryCard.js
 import React from 'react';
 import { ListGroup, Row, Col, Button } from 'react-bootstrap';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { getError } from '../../utils';
 
 const OrderSummaryCard = ({
   order,
