@@ -121,9 +121,11 @@ app.use('/api/tax', taxRouter);
 app.use('/api/square', squareRouter);
 
 // --- Serve frontend ---
-app.use(express.static(path.join(__dirnameCustom, '../frontend/build')));
+const rootDir = path.resolve();
+
+app.use(express.static(path.join(rootDir, 'frontend', 'build')));
 app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirnameCustom, '../frontend/build/index.html'))
+  res.sendFile(path.join(rootDir, 'frontend', 'build', 'index.html'))
 );
 
 // --- Error handler ---
