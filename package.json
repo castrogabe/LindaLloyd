@@ -1,5 +1,5 @@
 {
-  "name": "lloyd",
+  "name": "lindalloyd",
   "version": "1.0.0",
   "description": "deployment",
   "main": "index.js",
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/castrogabe/Lloyd"
+    "url": "git+https://github.com/castrogabe/LindaLloyd"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/castrogabe/Lloyd/deployment"
+    "url": "https://github.com/castrogabe/LindaLloyd/deployment"
   },
-  "homepage": "https://github.com/castrogabe/Lloyd#readme"
+  "homepage": "https://github.com/castrogabe/LindaLloyd#readme"
 }
