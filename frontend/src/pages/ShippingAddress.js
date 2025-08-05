@@ -44,6 +44,13 @@ export default function ShippingAddress() {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // ✅ Block HI/AK at the UI level
+    if (['HI', 'AK'].includes(states)) {
+      alert('We currently do not ship to Alaska or Hawaii.');
+      return;
+    }
+
     const updatedAddress = {
       fullName,
       address,
@@ -85,9 +92,10 @@ export default function ShippingAddress() {
           <br />
           <CheckoutSteps step1 step2 />
           <br />
+          <h1 className='box'>
+            Shipping Address | Shipping within Continental US only
+          </h1>
           <div className='container small-container'>
-            <h1 className='box'>Shipping Address</h1>
-
             {!showForm && shippingAddress?.address ? (
               <div className='saved-address-box'>
                 <p>
@@ -156,11 +164,15 @@ export default function ShippingAddress() {
                     required
                   >
                     <option value=''>Select State</option>
-                    {Object.keys(stateCountyMap).map((abbr) => (
-                      <option key={abbr} value={abbr}>
-                        {abbr}
-                      </option>
-                    ))}
+                    {Object.keys(stateCountyMap)
+                      .filter(
+                        (abbr) => !['HI', 'AK'].includes(abbr) // ❌ Exclude Hawaii and Alaska
+                      )
+                      .map((abbr) => (
+                        <option key={abbr} value={abbr}>
+                          {abbr}
+                        </option>
+                      ))}
                   </Form.Select>
                 </Form.Group>
 
@@ -192,10 +204,13 @@ export default function ShippingAddress() {
                 <Form.Group className='mb-3' controlId='country'>
                   <Form.Label>Country</Form.Label>
                   <Form.Control
+                    as='select'
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    required
-                  />
+                    disabled
+                  >
+                    <option value='US'>United States</option>
+                  </Form.Control>
                 </Form.Group>
 
                 <div className='mb-3'>

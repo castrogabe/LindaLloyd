@@ -93,9 +93,10 @@ mongoose
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 10000,
   })
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch((err) => {
-    console.error('❌ MongoDB Connection Error:', err.message);
+  .then(() => {
+    if (process.env.DEBUG_LOGS === 'true') {
+      console.log('✅ Connected to MongoDB');
+    }
   });
 
 app.use(

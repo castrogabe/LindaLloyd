@@ -104,7 +104,7 @@ const sendAdminSMS = async ({ subject, message, customerName, orderName }) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Admin SMS alert sent to:', smsRecipients);
+    // console.log('Admin SMS alert sent to:', smsRecipients);
   } catch (err) {
     console.error('Failed to send admin SMS:', err);
   }
@@ -524,9 +524,9 @@ const sendShippingConfirmationEmail = async (req, order, shippingType) => {
     };
 
     const info = await transporter.sendMail(emailContent);
-    console.log(
-      `✅ Shipping email sent to ${customerEmail} (${shippingType}), Message ID: ${info.messageId}`
-    );
+    // console.log(
+    //   `✅ Shipping email sent to ${customerEmail} (${shippingType}), Message ID: ${info.messageId}`
+    // );
   } catch (error) {
     console.error('❌ Failed to send shipping confirmation email:', error);
     if (error.response) {

@@ -65,7 +65,8 @@ const ShippingAddressCard = ({
                 No specific shipping methods applied to items.
               </p>
             )}
-            {!order.isFullyShipped && (
+            {((requiresInvoiceOverall && !invoiceItemsShipped) ||
+              (hasFlatRateShippingOverall && !flatRateItemsShipped)) && (
               <p className='mt-2 mb-0'>
                 Some items are still pending shipment.
               </p>

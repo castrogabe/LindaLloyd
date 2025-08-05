@@ -167,7 +167,7 @@ router.put(
           .status(500)
           .send({ message: 'Square customer creation returned no ID' });
       }
-      console.log('✅ Square customer created:', customerId);
+      // console.log('✅ Square customer created:', customerId);
     } catch (err) {
       console.error('❌ Failed to create Square customer:', err);
       return res
@@ -196,10 +196,10 @@ router.put(
       });
 
       squareOrderId = squareOrderResponse.result.order.id;
-      console.log(
-        '📦 Square Order Response:',
-        JSON.stringify(squareOrderResponse.result, bigIntReplacer, 2)
-      );
+      // console.log(
+      //   '📦 Square Order Response:',
+      //   JSON.stringify(squareOrderResponse.result, bigIntReplacer, 2)
+      // );
     } catch (err) {
       console.error('❌ Failed to create Square order:', err);
       return res.status(500).send({ message: 'Square order creation failed' });
@@ -236,10 +236,10 @@ router.put(
       };
 
       invoiceCreated = await invoicesApi.createInvoice(invoicePayload);
-      console.log(
-        '✅ Invoice Created:',
-        JSON.stringify(invoiceCreated.result.invoice, bigIntReplacer, 2)
-      );
+      // console.log(
+      //   '✅ Invoice Created:',
+      //   JSON.stringify(invoiceCreated.result.invoice, bigIntReplacer, 2)
+      // );
 
       const publishPayload = {
         version: invoiceCreated.result.invoice.version,
@@ -250,10 +250,10 @@ router.put(
         invoiceCreated.result.invoice.id,
         publishPayload
       );
-      console.log(
-        '✅ Invoice Published:',
-        publishedInvoice.result.invoice.publicUrl
-      );
+      // console.log(
+      //   '✅ Invoice Published:',
+      //   publishedInvoice.result.invoice.publicUrl
+      // );
     } catch (err) {
       console.error('❌ Failed to create or publish invoice:', err);
       if (err instanceof ApiError) {

@@ -533,9 +533,13 @@ export default function OrderList() {
                         {formatDate(order.flatRateShippingDetails.shippedAt)}
                       </div>
                     )}
-                    {!order.isFullyShipped && (
+                    {/* {!order.isFullyShipped && (
                       <div style={{ marginBottom: '8px' }}>Not Shipped</div>
-                    )}
+                    )} */}
+                    {!order.invoiceShippingDetails?.isShipped &&
+                      !order.flatRateShippingDetails?.isShipped && (
+                        <div style={{ marginBottom: '8px' }}>Not Shipped</div>
+                      )}
                   </td>
                   <td>
                     {order.invoiceShippingDetails?.isShipped && (

@@ -59,7 +59,7 @@ router.put(
 
       try {
         const info = await transporter.sendMail(emailContent);
-        console.log('Email sent:', info.messageId);
+        // console.log('Email sent:', info.messageId);
         res.send({ message: 'Order Paid', order: updatedOrder });
       } catch (error) {
         console.error('Error sending email:', error);

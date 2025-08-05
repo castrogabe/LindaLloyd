@@ -14,14 +14,14 @@ taxRouter.post(
       return res.status(400).send({ message: 'Missing tax estimate data' });
     }
 
-    console.log('📩 Estimating tax for:', { itemsPrice, states, county });
+    // console.log('📩 Estimating tax for:', { itemsPrice, states, county });
 
     try {
       const normalizedState = states.trim().toUpperCase();
       const normalizedCounty = county.trim();
       const taxRate = getTaxRate(normalizedState, normalizedCounty);
       const taxPrice = Number((itemsPrice * taxRate).toFixed(2));
-      console.log(`✅ Tax estimate: ${taxRate} => $${taxPrice}`);
+      // console.log(`✅ Tax estimate: ${taxRate} => $${taxPrice}`);
 
       res.send({ taxRate, taxPrice });
     } catch (err) {

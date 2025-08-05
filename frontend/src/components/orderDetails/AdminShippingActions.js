@@ -1,7 +1,7 @@
 // src/components/orderDetails/AdminShippingActions.js
 import React, { useState, useEffect } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import AdminShippingForm from './AdminShippingForm'; // Corrected path // The reusable form component (adjust path if needed)
+import AdminShippingForm from './AdminShippingForm'; // Adjust if needed
 
 const AdminShippingActions = ({
   order,
@@ -13,10 +13,10 @@ const AdminShippingActions = ({
   invoiceItemsShipped,
   flatRateItemsShipped,
   mixedShippingMethods,
-  shippingPrice, // from parent
-  setShippingPrice, // from parent
-  sendingInvoice, // from parent
-  handleSendShippingInvoice, // from parent
+  shippingPrice,
+  setShippingPrice,
+  sendingInvoice,
+  handleSendShippingInvoice,
   invoiceDeliveryDays,
   setInvoiceDeliveryDays,
   invoiceCarrierName,
@@ -31,9 +31,8 @@ const AdminShippingActions = ({
   flatRateTrackingNumber,
   setFlatRateTrackingNumber,
   handleMarkFlatRateItemsShipped,
-  loading, // Overall loading from parent
+  loading,
 }) => {
-  // Internal state for toggling forms in mixed scenarios
   const [showInvoiceFormOption, setShowInvoiceFormOption] = useState(false);
   const [showPrepaidFormOption, setShowPrepaidFormOption] = useState(false);
 
@@ -46,17 +45,18 @@ const AdminShippingActions = ({
         (item.shippingCharge > 0 && !item.requiresShippingInvoice)
     ) || [];
 
-  // Conditions to determine if the *options* should be visible to the admin
   const canSendInvoice =
     userInfo?.isAdmin &&
     order?.isPaid &&
     requiresInvoiceOverall &&
     !invoiceSent;
+
   const canPreparePrepaidShipping =
     userInfo?.isAdmin &&
     order?.isPaid &&
     hasFlatRateShippingOverall &&
     !flatRateItemsShipped;
+
   const canPrepareInvoiceShipping =
     userInfo?.isAdmin &&
     order?.isPaid &&
@@ -65,19 +65,21 @@ const AdminShippingActions = ({
     invoicePaid &&
     !invoiceItemsShipped;
 
-  // Effect for auto-selection of forms based on order state (from your original code)
   useEffect(() => {
     if (order && userInfo?.isAdmin) {
       if (mixedShippingMethods) {
         setShowInvoiceFormOption(false);
         setShowPrepaidFormOption(false);
       } else {
-        if (canPrepareInvoiceShipping || canSendInvoice) {
+        if (canPrepareInvoiceShipping) {
           setShowInvoiceFormOption(true);
           setShowPrepaidFormOption(false);
         } else if (canPreparePrepaidShipping) {
           setShowPrepaidFormOption(true);
           setShowInvoiceFormOption(false);
+        } else {
+          setShowInvoiceFormOption(false);
+          setShowPrepaidFormOption(false);
         }
       }
     }
@@ -92,15 +94,10 @@ const AdminShippingActions = ({
 
   return (
     <div className='box mt-3'>
-      {' '}
-      {/* Changed from ListGroup.Item to div for consistent box styling */}
-      <h5 className='mb-3'>Admin Shipping Actions</h5>{' '}
-      {/* Use h5 for consistency */}
-      {/* Admin form to send shipping invoice (if applicable and not sent) */}
+      <h5 className='mb-3'>Admin Shipping Actions</h5>
+
       {canSendInvoice && (
         <div className='mt-3 mb-3'>
-          {' '}
-          {/* Removed inner 'box' as this component already has it */}
           <h6 className='text-center mb-3'>Send Shipping Invoice</h6>
           <Form onSubmit={handleSendShippingInvoice}>
             <Form.Group className='mb-2' controlId='shippingPrice'>
@@ -124,13 +121,11 @@ const AdminShippingActions = ({
           </Form>
         </div>
       )}
-      {/* Forms for Marking as Shipped */}
+
       {mixedShippingMethods && (
         <div className='mt-3 mb-3'>
-          {' '}
-          {/* Removed inner 'box' as this component already has it */}
           <h6 className='text-center mb-3'>Select Shipping Action</h6>
-          {/* Checkbox for Invoice Items (if not yet shipped and applicable) */}
+
           {!invoiceItemsShipped && canPrepareInvoiceShipping && (
             <div className='mb-3'>
               <Form.Check
@@ -165,7 +160,7 @@ const AdminShippingActions = ({
               />
             </div>
           )}
-          {/* Checkbox for Flat Rate/Included Items (if not yet shipped and applicable) */}
+
           {!flatRateItemsShipped && canPreparePrepaidShipping && (
             <div className='mb-3'>
               <Form.Check
@@ -203,23 +198,25 @@ const AdminShippingActions = ({
           )}
         </div>
       )}
-      {/* Render Invoice Shipping Form */}
+
+      {/* ✅ Invoice-shipped form — now requires invoicePaid to show */}
       {(showInvoiceFormOption ||
-        (canPrepareInvoiceShipping && !mixedShippingMethods)) && (
-        <AdminShippingForm
-          title='Mark Invoice-Shipped Items as Shipped'
-          items={itemsRequiringInvoice}
-          deliveryDays={invoiceDeliveryDays}
-          setDeliveryDays={setInvoiceDeliveryDays}
-          carrierName={invoiceCarrierName}
-          setCarrierName={setInvoiceCarrierName}
-          trackingNumber={invoiceTrackingNumber}
-          setTrackingNumber={setInvoiceTrackingNumber}
-          loadingShipped={loading}
-          submitHandler={handleMarkInvoiceItemsShipped}
-        />
-      )}
-      {/* Render Flat Rate Shipping Form */}
+        (canPrepareInvoiceShipping && !mixedShippingMethods)) &&
+        invoicePaid && (
+          <AdminShippingForm
+            title='Mark Invoice-Shipped Items as Shipped'
+            items={itemsRequiringInvoice}
+            deliveryDays={invoiceDeliveryDays}
+            setDeliveryDays={setInvoiceDeliveryDays}
+            carrierName={invoiceCarrierName}
+            setCarrierName={setInvoiceCarrierName}
+            trackingNumber={invoiceTrackingNumber}
+            setTrackingNumber={setInvoiceTrackingNumber}
+            loadingShipped={loading}
+            submitHandler={handleMarkInvoiceItemsShipped}
+          />
+        )}
+
       {(showPrepaidFormOption ||
         (canPreparePrepaidShipping && !mixedShippingMethods)) && (
         <AdminShippingForm
@@ -235,7 +232,7 @@ const AdminShippingActions = ({
           submitHandler={handleMarkFlatRateItemsShipped}
         />
       )}
-    </div> // Closing div for AdminShippingActions box
+    </div>
   );
 };
 

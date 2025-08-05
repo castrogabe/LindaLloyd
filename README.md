@@ -1027,3 +1027,20 @@ UserList.js > updated with VTEXT for admin SMS notifications Dropdown
 
 BACKEND
 server.js > added app.use('/uploads', express.static(uploadDir));
+
+# 35th Commit-comment out code in backend, clear up eslint warnings, Flag for HI, AK not shipping outside of Continental US
+
+BACKEND
+folder: routes
+orderRoutes > folder
+orderCreateRoutes.js > updated for shipping inside continental US only, not HI and AK
+
+FRONTEND
+folder: components
+orderDetails > folder
+AdminShippingActions.js > updated
+ShippingAddressCard.js > updated
+
+folder: pages
+HomeContentEdit.js > updated
+Instructions.js > updated

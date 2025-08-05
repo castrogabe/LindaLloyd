@@ -32,6 +32,7 @@ const squareClient = new Client({
 // );
 // console.log('--- END DEBUG: orderCreateRoutes.js Client Init ---');
 
+// ✅ Block Alaska and Hawaii
 router.post(
   '/',
   isAuth,
@@ -49,6 +50,42 @@ router.post(
       return res
         .status(400)
         .send({ message: 'Shipping state and county required' });
+    }
+
+    // ✅ Block Alaska and Hawaii
+    if (['HI', 'AK'].includes(shippingAddress.states)) {
+      console.warn('⛔ Blocked shipping to HI/AK:', {
+        user: req.user?.email,
+        state: shippingAddress.states,
+      });
+      return res.status(400).send({
+        message: 'We currently do not ship to Alaska or Hawaii.',
+      });
+    }
+
+    // ✅ Normalize & block non-US countries
+    const normalizeCountryCode = (country) => {
+      if (!country) return 'US';
+      const lookup = {
+        usa: 'US',
+        us: 'US',
+        unitedstates: 'US',
+        united_states: 'US',
+        'united states': 'US',
+      };
+      return lookup[country.toLowerCase()] || country.toUpperCase();
+    };
+
+    const countryCode = normalizeCountryCode(shippingAddress.country);
+    if (countryCode !== 'US') {
+      console.warn('⛔ Blocked shipping attempt (non-US):', {
+        user: req.user?.email,
+        state: shippingAddress.states,
+        country: shippingAddress.country,
+      });
+      return res.status(400).send({
+        message: 'We currently only ship within the continental United States.',
+      });
     }
 
     // Fetch product details for each item to get accurate price, salePrice, shippingCharge
@@ -121,7 +158,7 @@ router.post(
         locality: shippingAddress.city,
         administrativeDistrictLevel1: shippingAddress.states,
         postalCode: shippingAddress.postalCode,
-        country: shippingAddress.country?.toUpperCase() || 'US',
+        country: normalizeCountryCode(shippingAddress.country),
       },
     };
 
@@ -149,7 +186,7 @@ router.post(
       squareOrderId = squareOrder.id;
 
       // Optionally, you can log or verify Square order details here
-      console.log('✅ Square order created:', squareOrderId);
+      // console.log('✅ Square order created:', squareOrderId);
     } catch (error) {
       console.error('❌ Square order creation error:', error);
       if (error instanceof ApiError) {
